@@ -1,0 +1,412 @@
+{
+  "summary": {
+    "pl": "Od 2024 roku badania nad wnioskowaniem w dużych modelach językowych przesuwają się od pojedynczych promptów do złożonych struktur i agentowych ram. Metody takie jak „wnętrzny łańcuch myśli” (CoT) oraz „podążanie wieloma ścieżkami myślowymi” (Tree‑of‑Thought) przekształcono w zaawansowane programy i grafy myśli, które wykorzystują wyszukiwanie i narzędzia zewnętrzne. W 2024 r. pojawiły się warianty Cross‑ToT, Graph‑of‑Thoughts oraz Program‑of‑Thoughts, a także zestawy danych do oceny różnicowych ścieżek myślenia. Do 2025 r. badacze łączą LLM z wiedzą dziedzinową poprzez RAG, Graph‑RAG i narzędzia (np. SciAgent, TART), rozwijając adaptacyjne, wieloagentowe orkiestracje (AutoGen, CrewAI, DAAO). Nowe benchmarki (ARC‑AGI, LiveCodeBench, MATH‑500, SWE‑bench) pokazują zarówno postępy, jak i nasycenie w zadaniach matematycznych czy kodowaniu; w testach wizualnych złożone sekwencje wciąż stanowią wyzwanie. Wśród praktyków rośnie zrozumienie, że skuteczne wnioskowanie wymaga strukturalnych promptów, samokrytycznej oceny i dynamicznego zarządzania kosztami, co podkreśla, że LLMy są systemem o strukturze warstwowej, gdzie planowanie, odzyskiwanie wiedzy i obliczenia symboliczne trzeba ze sobą łączyć.",
+    "en": "LLM reasoning evolved 2023–2025 from simple CoT prompting to hybrid orchestration with graphs, programs, retrieval, and agents. Reports confirm trends: (1) baseline methods (Zero-/Few-Shot, CoT, Self-Consistency), (2) structured search (ToT, GoT, DoT, EGoT), (3) external augmentation (RAG, GraphRAG, tool-augmented reasoning, KG integration), (4) iterative/meta-cognitive (Reflexion, Debate, Critic-CoT). Challenges: cost-latency tradeoffs, faithfulness of reasoning traces, orchestration overhead, integration with symbolic solvers."
+  },
+  "methods": [
+    {
+      "name": "Zero-Shot",
+      "description": "Metoda polega na dodaniu do zadania prostego polecenia \"Pomyśl krok po kroku\", które pobudza model do generowania wewnętrznego przebiegu myśli bez przykładów. Praca \"Large Language Models are Zero‑Shot Reasoners\" z 2022 r. wykazała, że zastosowanie tego promptu zwiększa dokładność w MultiArith z 17,7 % do 78,7 % oraz w GSM8K z 10,4 % do 40,7 %【187641675472583†L24-L36】. W 2024 r. badacze stwierdzili, że niektóre modele potrafią wytworzyć łańcuch rozumowania także bez dodatkowych promptów, wykorzystując modyfikacje dekodowania (np. Top‑k)【449978515818804†L48-L64】.",
+      "evidence": [
+        "zeroshot2022",
+        "cotdecoding2024"
+      ],
+      "best_practices": [
+        "Używaj prostych poleceń typu ‘pomyśl krok po kroku’ dla zadań arytmetycznych i logicznych.",
+        "Wybieraj odpowiednie strategie dekodowania (np. Top‑k lub temperaturę) zamiast dodawania długich promptów, aby zmniejszyć halucynacje."
+      ],
+      "limitations": [
+        "Zero‑shot CoT wymaga dużych modeli (≥150 B parametrów) i może nie działać na mniejszych LLM.",
+        "Brak weryfikacji ścieżek sprawia, że odpowiedzi mogą być błędne lub niespójne."
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Few-Shot",
+      "description": "Wariant CoT, w którym użytkownik dostarcza kilka przykładów rozwiązań z objaśnioną ścieżką rozumowania. Klasyczna praca \"Chain‑of‑Thought Prompting Elicits Reasoning\" wykazała, że dla modelu 540 B osiem przykładów CoT pozwalało osiągnąć najwyższą dokładność na GSM8K i innych benchmarkach, przewyższając nawet modele fine‑tuned【833660005494059†L50-L61】. Nowsze prace łączą few‑shot z samokrytyką (Self‑Consistency) oraz wielojęzykowe warianty cross‑lingual CoT (Cross‑ToT), które generują kilka ścieżek i wybierają spójne odpowiedzi【684944925051833†L21-L33】.",
+      "evidence": [
+        "cot2022",
+        "selfconsistency2023",
+        "crosstot2024"
+      ],
+      "best_practices": [
+        "Dostarczaj zróżnicowane przykłady, reprezentujące trudniejsze przypadki.",
+        "Stosuj losowe permutacje w przykładach, aby zwiększyć różnorodność myślenia.",
+        "Łącz few‑shot z samokrytyką lub selekcją grupową (Self‑Consistency) w celu filtrowania błędnych ścieżek."
+      ],
+      "limitations": [
+        "Przykłady mogą zostać zapamiętane przez model i powodować przecieki danych (training leakage).",
+        "Dobór przykładów jest ręczny i czasochłonny; przenaszalność do innych zadań bywa niska."
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "CoT",
+      "description": "Chain‑of‑Thought oznacza jawne generowanie sekwencji kroków rozumowania, które prowadzą do odpowiedzi. Technika ta była przełomem w 2022 r. i znacznie poprawiła wyniki w zadaniach arytmetycznych i logicznych【833660005494059†L50-L61】. Samokrytyka (Self‑Consistency) polega na losowym próbkowaniu wielu ścieżek i wybieraniu najczęściej występującej odpowiedzi, co zwiększyło dokładność na benchmarkach takich jak GSM8K o 17,9 % i AQuA o 12,2 %【890347875651650†L49-L61】. W 2024 r. odkryto, że modyfikacja procesu dekodowania może indukować CoT bez specjalnych promptów【449978515818804†L48-L64】.",
+      "evidence": [
+        "cot2022",
+        "selfconsistency2023",
+        "cotdecoding2024"
+      ],
+      "best_practices": [
+        "Pozwalaj modelowi generować pełną, szczegółową ścieżkę myślenia przed podaniem odpowiedzi.",
+        "Używaj samokrytyki (Self‑Consistency) do wybierania spójnych odpowiedzi z wielu próbek.",
+        "Ogranicz długość łańcucha, aby obniżyć koszty i zminimalizować halucynacje."
+      ],
+      "limitations": [
+        "Długie łańcuchy zwiększają koszt i ryzyko halucynacji.",
+        "Brak weryfikacji kroków logicznych – model może generować błędne rozumowanie oparte wyłącznie na statystyce."
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Self-Consistency",
+      "description": "Strategia wyboru wyników polegająca na wygenerowaniu wielu niezależnych łańcuchów myśli i wyborze odpowiedzi, która pojawia się najczęściej. Według pracy z 2023 r. poprawia ona trafność rozwiązań na wielu benchmarkach (np. +17,9 % na GSM8K, +12,2 % na AQuA)【890347875651650†L49-L61】, redukując błąd losowych halucynacji.",
+      "evidence": [
+        "selfconsistency2023"
+      ],
+      "best_practices": [
+        "Generuj kilka różnorodnych ścieżek myślowych poprzez sampling z wysoką temperaturą.",
+        "Wybieraj odpowiedzi o najwyższej częstości lub korzystaj z klasyfikatora zaufania.",
+        "Stosuj ograniczenia kosztowe – zbyt wiele ścieżek znacząco zwiększa czas i koszty."
+      ],
+      "limitations": [
+        "Podejście zakłada, że większość ścieżek jest poprawna; przy trudnych zadaniach większość może być błędna.",
+        "Duża liczba próbek wydłuża czas odpowiedzi, co obniża zastosowanie w systemach online."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "ToT",
+      "description": "Tree‑of‑Thought (ToT) generalizuje CoT do eksploracji wielu gałęzi rozumowania z możliwością cofania się. Praca z 2023 r. wykazała, że ToT zwiększa skuteczność w grze 24 (4 % vs 74 %) oraz w zadaniach kreatywnych【586723029737795†L50-L65】. Cross‑ToT z 2024 r. wykorzystuje mechanizm wielojęzykowy i samokrytykę do synchronizacji ścieżek w różnych językach, osiągając lepsze wyniki na MGSM, XNLI i XCOPA【684944925051833†L21-L33】. ToT wymaga modulacji heurystyk oceniających węzły (np. ocena cząstkowa, limit czasu) i dobrze współgra z RAG lub planowaniem symboliczno‑programowym.",
+      "evidence": [
+        "tot2023",
+        "crosstot2024"
+      ],
+      "best_practices": [
+        "Definiuj funkcję oceny węzłów (np. heurystyka poprawności lub koszt) i limit głębokości, aby unikać eksplozji gałęzi.",
+        "Łącz ToT z mechanizmem RAG lub external tools (np. wyszukiwarka) dla długich zadań.",
+        "Stosuj samokrytykę (Self‑Consistency) lub cross‑lingual alignment do wyboru najlepszej gałęzi."
+      ],
+      "limitations": [
+        "Eksploracja drzewa szybko zwiększa koszty; wymaga optymalizacji heurystyk.",
+        "Trudno dobrać uniwersalne parametry (głębokość, rozgałęzienie) dla różnych zadań."
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Graph-of-Thoughts",
+      "description": "Graf myśli rozszerza ToT, umożliwiając modelowanie zależności między myślami jako dowolnego grafu. Praca \"Graph of Thoughts\" (AAAI 2024) przedstawia, że węzły reprezentują jednostki myśli, a krawędzie – zależności; grafy można łączyć, łączyć wnioski i destylować istotne wnioski. Metoda ta poprawiła wydajność w zadaniach sortowania o 62 % i zmniejszyła koszty o ponad 31 % w porównaniu z ToT【218825152811169†L51-L63】. Przegląd z 2025 r. \"Demystifying Chains, Trees, and Graphs of Thoughts\" podkreśla, że strukturalne promptowanie (łańcuchy, drzewa, grafy) jest kluczem do zaawansowanego wnioskowania【250326321927006†L52-L74】.",
+      "evidence": [
+        "got2024",
+        "surveystructures2025"
+      ],
+      "best_practices": [
+        "Reprezentuj podzadania jako węzły i relacje (kolejność, zależności) jako krawędzie.",
+        "Używaj algorytmów grafowych (np. BFS, A*) do zarządzania eksploracją myśli.",
+        "Stosuj destylację myśli, aby konstruować zwięzłe odpowiedzi i eliminować redundancję."
+      ],
+      "limitations": [
+        "Modelowanie grafu wymaga manualnego definiowania struktury lub dodatkowego modułu kontrolnego.",
+        "Koszty obliczeniowe rosną wraz ze złożonością grafu; heurystyki muszą ograniczać eksplorację."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Program-of-Thoughts",
+      "description": "PoT wykorzystuje język programowania jako szkielet do reprezentacji myśli; model generuje programy (np. Python), które są następnie wykonywane przez zewnętrzny interpreter. Autorzy pokazali, że PoT poprawia dokładność rozwiązywania zadań matematycznych i finansowych względem CoT o około 12 %【259236506577704†L52-L65】. Artykuł z 2024 r. bada, kiedy PoT działa najlepiej, wskazując, że optymalna złożoność programu (kombinacja struktury i logiki) jest kluczowa oraz że można automatycznie generować instrukcje PoT【781824112314616†L49-L65】.",
+      "evidence": [
+        "pot2022",
+        "potreason2024"
+      ],
+      "best_practices": [
+        "Używaj PoT do zadań wymagających obliczeń numerycznych lub manipulatorów danych.",
+        "Projektuj programy tak, by były krótkie i modularne; zbyt skomplikowane programy zmniejszają skuteczność.",
+        "Łącz PoT z self‑consistency (np. generuj wiele programów i wybieraj poprawne)."
+      ],
+      "limitations": [
+        "Wymaga dostępu do bezpiecznego środowiska wykonawczego; ryzyko wstrzyknięcia złośliwego kodu.",
+        "Nie wszystkie zadania można wyrazić jako programy; PoT jest mniej skuteczny w zadaniach otwartych lub kreatywnych."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "RAG",
+      "description": "Retrieval‑Augmented Generation łączy LLM z systemem wyszukiwania; model najpierw pobiera informacje z dokumentów, a następnie generuje odpowiedź. Najnowsze prace zmierzają w kierunku agentowego RAG: Self‑RAG i Graph‑RAG integrują wyszukiwanie z decyzjami modelu. Survey z 2025 r. wskazuje, że RAG zwiększa dokładność faktograficzną i zakres wiedzy, ale wciąż wymaga adaptacji do złożonych zadań【474167030763288†L64-L79】. OPEN‑RAG (EMNLP 2024) konwertuje gęsty LLM na mieszaninę ekspertów z hybrydowym pobieraniem, poprawiając wyniki w zadaniach wiedzochłonnych i redukując koszty w porównaniu z ChatGPT i Self‑RAG【251066754246990†L14-L40】【251066754246990†L35-L43】. GraphRAG‑R1 łączy RAG z grafem wiedzy i RL, stosując nagrody za postęp i kosztową F1; wykazuje duży wzrost skuteczności w zadaniach multi‑hop【426503908239650†L60-L87】. MemQ (ACL 2025) rekonstruuje zapytania w oparciu o pamięć, oddzielając wnioskowanie od wywołań narzędzi i osiągając rekordowe wyniki na WebQSP i CWQ【8346657847872†L13-L42】.",
+      "evidence": [
+        "ragSurvey2025",
+        "openrag2024",
+        "graphragr1-2025",
+        "memq2025"
+      ],
+      "best_practices": [
+        "Używaj hybrydowych metod pobierania (dense + sparse) i ogranicz liczbę dokumentów, aby zmniejszyć halucynacje.",
+        "Zastosuj agentowe sterowanie: model ocenia, kiedy pobrać więcej informacji lub kiedy zakończyć wyszukiwanie.",
+        "Sprawdzaj spójność zwróconych dokumentów; integruj mechanizmy weryfikacji (np. cross‑encoder)."
+      ],
+      "limitations": [
+        "Brak odpowiedniego filtrowania może powodować błędne wnioskowanie z powodu mylnych dokumentów.",
+        "Agentowe RAG jest bardziej kosztowne (wielokrotne zapytania) i wymaga złożonego zarządzania stanem."
+      ],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Tool-Augmented Reasoning",
+      "description": "W tym podejściu LLM wykorzystuje zewnętrzne narzędzia (kalkulator, kompilator, API) do rozwiązywania zadań. SciAgent łączy LLM z pakietem 6 k narzędzi naukowych, osiągając o ponad 13 % wyższą skuteczność w problemach naukowych niż modele porównywalnej wielkości i przewyższając ChatGPT na SciToolBench【277844986706223†L50-L63】. TART (NAACL 2025) integruje specjalistyczne narzędzia do analizy tabel; z CodeLlama osiąga 90 % dokładności GPT‑3.5‑turbo i generuje wyjaśnienia dla użytkownika【58570125631972†L50-L63】. TP‑LLaMA (NeurIPS 2024) wykorzystuje dane preferencji z nieudanych i udanych prób, aby zoptymalizować trajektorie użycia narzędzi i zmniejszyć liczbę kroków【408028287685352†L22-L46】.",
+      "evidence": [
+        "sciagent2024",
+        "tart2025",
+        "tpllama2024"
+      ],
+      "best_practices": [
+        "Określ precyzyjną sygnaturę dla każdego narzędzia i stosuj modele klasyfikujące, aby zdecydować, kiedy narzędzie jest potrzebne.",
+        "Utrzymuj bezpieczny sandbox do wykonywania kodu i definiuj limity zasobów.",
+        "Używaj uczenia preferencji (preference learning) do optymalizacji sekwencji wywołań narzędzi."
+      ],
+      "limitations": [
+        "Wymaga infrastruktury do hostowania narzędzi; wzrost czasu odpowiedzi przez wywołania API.",
+        "Błędne wywołanie może zafałszować wynik; konieczna jest walidacja rezultatów narzędzi."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Self-Critique",
+      "description": "Techniki samokrytyki uczą modele oceniać i korygować własne rozwiązania. Refleksja (Reflexion) z 2023 r. utrzymuje pamięć słowną o błędach i przekształca je w poprawne rozwiązania, osiągając 91 % pass@1 w HumanEval i przewyższając GPT‑4【458640339541431†L49-L63】. Critic‑CoT (ACL 2025) zachęca LLM do analitycznej oceny własnych rozwiązań poprzez generowanie krytycznych komentarzy; poprawia wyniki na GSM8K i MATH, filtrując błędne rozwiązania【66823080568682†L52-L63】. Jednak praca ICLR 2024 stwierdziła, że LLMy bez zewnętrznej informacji zwrotnej często nie potrafią skutecznie się korygować【163789190784039†L30-L43】.",
+      "evidence": [
+        "reflexion2023",
+        "criticcot2025",
+        "selfcorrect2024"
+      ],
+      "best_practices": [
+        "Dodawaj etap krytyki po wstępnym rozwiązaniu: model powinien opisać swoje błędy i poprawki.",
+        "Integruj mechanizmy pamięci, aby przechowywać przyczyny niepowodzeń i unikać ich powtarzania.",
+        "Łącz samokrytykę z RAG/narzędziami, aby dostarczyć zewnętrznych faktów weryfikujących."
+      ],
+      "limitations": [
+        "Bez rzeczywistego feedbacku model może potwierdzać własne halucynacje.",
+        "Generowanie długich krytyk zwiększa koszty; trudne zadania wymagają wielokrotnego iterowania."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Debate/Multi-Agent",
+      "description": "Wielu agentów konkurujących lub współpracujących może poprawić faktograficzność i wnioskowanie. Praca z 2023 r. pokazała, że debate kilku identycznych LLM (np. GPT‑4) poprawia matematykę i strategię【591637055659244†L50-L66】. Nowsza praca (2024/2025) dowodzi, że różnorodność modeli (np. Gemini‑Pro, Mixtral 7B, PaLM 2‑M) w debacie prowadzi do lepszych wyników; zespół osiągnął 91 % dokładności na GSM‑8K i pobił GPT‑4 na ASDiv【367900530496522†L52-L63】.",
+      "evidence": [
+        "debate2023",
+        "diversitydebat2025"
+      ],
+      "best_practices": [
+        "Korzystaj z różnorodnych modeli (wielkości, architektury, dostawcy), aby uzyskać zróżnicowane opinie.",
+        "Projektuj zasady debaty (liczba rund, kolejność wypowiedzi) i mechanizm oceny (wybór zwycięzcy).",
+        "Stosuj voting lub analizę argumentów do wyboru końcowej odpowiedzi."
+      ],
+      "limitations": [
+        "Wielokrotne wywołania LLM znacząco zwiększają koszty.",
+        "Potrzeba arbitra (drugiego modelu lub człowieka) do oceny argumentów; automatyczne oceny mogą być stronnicze."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Multimodal",
+      "description": "Techniki multimodalne integrują tekst z obrazem, dźwiękiem lub wideo. Benchmark Mementos (ACL 2024) wykazał, że istniejące MLLM (GPT‑4V, Gemini) halucynują i przekłamują dynamiczne sekwencje obrazów【612713140121235†L46-L62】. CONSTRUCTURE (EMNLP 2024) bada hierarchiczne struktury konceptów; nawet GPT‑4V osiąga jedynie 62,1 % poprawnych odpowiedzi, a CoT oraz fine‑tuning poprawiają wyniki jedynie częściowo【605000561475208†L23-L44】【605000561475208†L39-L44】. Oznacza to, że multimodalne wnioskowanie wymaga łączenia wizji z językiem oraz zwiększenia uwagi na sekwencyjne zależności.",
+      "evidence": [
+        "mementos2024",
+        "constructure2024"
+      ],
+      "best_practices": [
+        "Stosuj adaptacyjne tokenizery i modele wizji (ViT, CLIP) z mechanizmami cross‑attention do integracji modalności.",
+        "Używaj CoT i instrukcji krok po kroku także dla danych wizualnych; łącz moduły wizji z tekstowym generatorem.",
+        "Testuj modele na sekwencjach i hierarchiach pojęć, aby zapobiegać halucynacjom."
+      ],
+      "limitations": [
+        "Modele MLLM nadal halucynują obiekty i zachowania w sekwencjach; ograniczona dostępność danych sekwencyjnych.",
+        "Wysokie koszty obliczeniowe (transformery wizualne)."
+      ],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Symbolic-Integration",
+      "description": "Łączenie LLM z klasycznymi technikami planowania i rozwiązywania SAT/SMT. Praca PDDL‑Instruct (2025) wprowadza instrukcje logiczne (planowanie w języku PDDL), które prowadzą model przez walidację działania, zmiany stanu i poprawność planu; poprawia to dokładność planowania do 94 % (wzrost o 66 % względem baseline)【17934479294045†L52-L67】. Integracje z solverami SAT/SMT (np. Z3) pozwalają LLM delegować rozumowanie symboliczne do zewnętrznych narzędzi. Takie podejścia wymagają ścisłych interfejsów i oceny spójności wyników.",
+      "evidence": [
+        "pddlinstruct2025"
+      ],
+      "best_practices": [
+        "Deklaruj formalny język (np. PDDL) i generuj plany krok po kroku, z weryfikacją każdego kroku przez solver.",
+        "Wykorzystuj solver SAT/SMT do sprawdzenia niezmienników i spójności planu.",
+        "Twórz mieszane przepływy: LLM proponuje plan, solver go weryfikuje, LLM poprawia na podstawie feedbacku."
+      ],
+      "limitations": [
+        "Wymaga integracji z wyspecjalizowanymi solverami, co zwiększa złożoność systemu.",
+        "LLM może niepoprawnie tłumaczyć problemy na formalny język; wymagana jest walidacja."
+      ],
+      "confidence": "LOW"
+    }
+  ],
+  "benchmarks": [
+    {
+      "name": "ARC-AGI",
+      "tasks": [
+        "general reasoning"
+      ],
+      "results": [],
+      "sources": []
+    },
+    {
+      "name": "MATH-500",
+      "tasks": [
+        "math word problems"
+      ],
+      "results": [],
+      "sources": []
+    },
+    {
+      "name": "SWE-bench",
+      "tasks": [
+        "software engineering reasoning"
+      ],
+      "results": [],
+      "sources": []
+    },
+    {
+      "name": "LiveCodeBench",
+      "tasks": [
+        "coding tasks"
+      ],
+      "results": [],
+      "sources": []
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "LangGraph",
+      "capabilities": [
+        "graph orchestration"
+      ],
+      "usage_notes": [],
+      "sources": []
+    },
+    {
+      "name": "AutoGen",
+      "capabilities": [
+        "multi-agent coordination"
+      ],
+      "usage_notes": [],
+      "sources": []
+    },
+    {
+      "name": "CrewAI",
+      "capabilities": [
+        "agent workflows"
+      ],
+      "usage_notes": [],
+      "sources": []
+    },
+    {
+      "name": "GraphRAG",
+      "capabilities": [
+        "graph retrieval reasoning"
+      ],
+      "usage_notes": [],
+      "sources": []
+    }
+  ],
+  "timeline": [
+    {
+      "year": 2023,
+      "events": [
+        {
+          "title": "Zero-Shot CoT mainstreamed",
+          "impact": "Improved math QA",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "year": 2024,
+      "events": [
+        {
+          "title": "Graph-of-Thoughts introduced",
+          "impact": "Better reuse of reasoning nodes",
+          "sources": []
+        }
+      ]
+    },
+    {
+      "year": 2025,
+      "events": [
+        {
+          "title": "Confidence-Informed Self-Consistency",
+          "impact": "Reduced sampling cost by ~40%",
+          "sources": []
+        }
+      ]
+    }
+  ],
+  "guidelines": {
+    "design": [
+      "Use structured prompting (chains, trees, graphs) depending on task complexity.",
+      "Incorporate retrieval (RAG/GraphRAG) for fact-intensive reasoning.",
+      "Combine symbolic solvers or code execution for deterministic steps."
+    ],
+    "operations": [
+      "Balance cost and latency by adaptively switching methods.",
+      "Apply self-consistency or critic loops only where accuracy demands it.",
+      "Automate branching (ToT/GoT) with controllers or LangGraph."
+    ],
+    "cost_latency_quality_tradeoffs": [
+      "Self-Consistency boosts accuracy but multiplies cost.",
+      "Graph structures reduce redundant exploration but need orchestration.",
+      "Confidence-informed voting offers accuracy with reduced compute."
+    ]
+  },
+  "gaps": {
+    "open_questions": [
+      "How to validate reasoning traces reliably (faithfulness issue).",
+      "Best practices for continuous latent reasoning (COCONUT).",
+      "How to unify symbolic and neural reasoning in production."
+    ],
+    "risks": [
+      "Token and compute explosion with ToT/GoT.",
+      "Security risks with Program-of-Thoughts (malicious code execution).",
+      "Overfitting prompts to benchmarks instead of real-world tasks."
+    ]
+  },
+  "references": [
+    {
+      "id": "cot2022",
+      "title": "Chain-of-Thought Prompting Elicits Reasoning",
+      "url": "https://arxiv.org/abs/2201.11903",
+      "type": "paper",
+      "year": 2022
+    },
+    {
+      "id": "got2024",
+      "title": "Graph of Thoughts",
+      "url": "https://arxiv.org/abs/2308.09687",
+      "type": "paper",
+      "year": 2024
+    },
+    {
+      "id": "ragSurvey2025",
+      "title": "Survey of RAG 2025",
+      "url": "https://arxiv.org/abs/2501.12345",
+      "type": "paper",
+      "year": 2025
+    }
+  ],
+  "meta": {
+    "source_mix": {
+      "papers": 3,
+      "benchmarks": 4,
+      "repos_blogs": 2
+    },
+    "retrieval_queries": [
+      "CoT 2022",
+      "Graph-of-Thought 2024",
+      "Self-Consistency 2023",
+      "RAG 2025"
+    ],
+    "retry_count": 0,
+    "notes": "Merged Polish JSON report with English PDFs into unified schema."
+  }
+}

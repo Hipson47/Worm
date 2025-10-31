@@ -1,0 +1,12 @@
+{"from": "agentic_rag", "to": "langgraph_durable_agents", "type": "depends_on"}
+{"from": "faiss_index_selection", "to": "agentic_rag", "type": "depends_on"}
+{"from": "data_versioning", "to": "data_governance", "type": "depends_on"}
+{"from": "model_tuning", "to": "data_versioning", "type": "depends_on"}
+{"from": "inference_optimization", "to": "model_tuning", "type": "depends_on"}
+{"from": "ux_prompting", "to": "agentic_rag", "type": "refines"}
+{"from": "mlops_ci", "to": "data_versioning", "type": "depends_on"}
+{"from": "evaluation_benchmarks", "to": "model_tuning", "type": "depends_on"}
+{"from": "evaluation_benchmarks", "to": "agentic_rag", "type": "depends_on"}
+{"from": "security_guidelines", "to": "agentic_rag", "type": "depends_on"}
+{"from": "security_guidelines", "to": "ux_prompting", "type": "depends_on"}
+{"from": "compliance", "to": "data_governance", "type": "depends_on"}

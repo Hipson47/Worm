@@ -1,0 +1,141 @@
+{
+  "questions": [
+    {
+      "qid": "q_langgraph_benefits",
+      "question": "What are the key benefits of LangGraph for long-running agents?",
+      "expected_points": [
+        "Durable execution with automatic resumption",
+        "Human-in-the-loop control",
+        "Comprehensive memory (short-term and long-term)",
+        "Debugging with LangSmith",
+        "Production-ready deployment"
+      ],
+      "citations": [
+        {
+          "source_id": "s_langgraph",
+          "locator": "L22-L25"
+        },
+        {
+          "source_id": "s_langgraph",
+          "locator": "L65-L90"
+        }
+      ]
+    },
+    {
+      "qid": "q_agentic_rag_patterns",
+      "question": "How does Agentic RAG improve upon traditional RAG, and what patterns does it employ?",
+      "expected_points": [
+        "Agentic RAG embeds autonomous agents into RAG pipelines",
+        "It handles dynamic, multi-step reasoning tasks and adaptive workflows",
+        "It employs agentic patterns such as reflection, planning, tool use, and multi-agent collaboration"
+      ],
+      "citations": [
+        {
+          "source_id": "s_agentic_rag_survey",
+          "locator": "L40-L50"
+        },
+        {
+          "source_id": "s_agentic_rag_survey",
+          "locator": "L90-L104"
+        }
+      ]
+    },
+    {
+      "qid": "q_lora_vs_fine_tuning",
+      "question": "Explain the advantages of LoRA over full fine-tuning for large models.",
+      "expected_points": [
+        "Full fine-tuning is expensive and retrains all parameters",
+        "LoRA freezes pre-trained weights and injects low-rank matrices",
+        "LoRA reduces trainable parameters by about 10,000\u00d7 and memory by 3\u00d7",
+        "LoRA achieves comparable or better performance than full fine-tuning"
+      ],
+      "citations": [
+        {
+          "source_id": "s_lora",
+          "locator": "L53-L62"
+        }
+      ]
+    },
+    {
+      "qid": "q_dynamic_batching",
+      "question": "Describe the role of dynamic batching in inference optimization.",
+      "expected_points": [
+        "Dynamic batching schedules new requests into running batches",
+        "It reduces latency and improves throughput",
+        "An example shows latency dropping from 976 ms to 126 ms for a 7B model at batch size eight",
+        "It complements paged attention and other optimizations"
+      ],
+      "citations": [
+        {
+          "source_id": "s_clarifai",
+          "locator": "L432-L441"
+        }
+      ]
+    },
+    {
+      "qid": "q_data_governance",
+      "question": "Why is data governance crucial in ML pipelines and what are Datasheets for Datasets used for?",
+      "expected_points": [
+        "Data governance should consider contributors and impacted communities",
+        "Teams must respect data licences and use only data with compatible rights",
+        "Web-scraped data may include copyrighted content",
+        "Datasheets for Datasets document the motivation, collection, composition and legal considerations of a dataset"
+      ],
+      "citations": [
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L68-L84"
+        },
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L122-L133"
+        },
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L137-L144"
+        }
+      ]
+    },
+    {
+      "qid": "q_owasp_mitigations",
+      "question": "List at least three vulnerabilities from the OWASP Top 10 for LLM applications and their corresponding mitigations.",
+      "expected_points": [
+        "Prompt injection and mitigations: context management, input validation, output constraints, adversarial testing",
+        "Sensitive information disclosure: use classification, redaction and output filtering",
+        "Supply chain vulnerabilities and model poisoning: employ SBOMs, data validation and rollback",
+        "Improper output handling: validate and sanitize outputs"
+      ],
+      "citations": [
+        {
+          "source_id": "s_owasp",
+          "locator": "L172-L190"
+        },
+        {
+          "source_id": "s_owasp",
+          "locator": "L195-L303"
+        }
+      ]
+    },
+    {
+      "qid": "q_agieval",
+      "question": "What is AGIEval and why is it useful for evaluation of foundation models?",
+      "expected_points": [
+        "AGIEval is a human-centric benchmark derived from 20 official exams like Gaokao, SAT and law school entrance tests",
+        "It evaluates general abilities of foundation models on human-relevant tasks"
+      ],
+      "citations": [
+        {
+          "source_id": "s_agieval",
+          "locator": "L59-L66"
+        }
+      ]
+    }
+  ],
+  "metrics": [
+    "coverage",
+    "consistency",
+    "latency_ms",
+    "cost_usd",
+    "hit_rate"
+  ]
+}

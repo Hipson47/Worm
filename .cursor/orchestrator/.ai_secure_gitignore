@@ -1,0 +1,7 @@
+# AI Orchestrator Configuration
+# Uncomment if you want to keep config out of git:
+# .cursor/ai_config.json
+
+# Old secure config (if exists)
+.cursor/ai_secure_config.json
+.cursor/ai_config.enc

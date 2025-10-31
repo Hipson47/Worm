@@ -1,0 +1,1332 @@
+{
+  "version": "1.0.2",
+  "pack": {
+    "name": "FullAIDev-KnowledgeBase-EN",
+    "description": "Comprehensive knowledge base for Full AI Development covering orchestration, retrieval, vector search, observability, data versioning, model tuning, inference optimization, UX, MLOps, evaluation, security, and compliance.",
+    "domains": [
+      "orchestration",
+      "retrieval",
+      "vector_search",
+      "observability",
+      "data_versioning",
+      "data_governance",
+      "model_tuning",
+      "inference_optimization",
+      "ux_prompting",
+      "mlops_ci",
+      "evaluation",
+      "security",
+      "compliance"
+    ],
+    "updated_at": "2025-10-20T00:00:00Z",
+    "language": "en",
+    "time_zone": "Europe/Warsaw",
+    "recency_window_days": 365,
+    "embedding_model_hint": "openai-embedding",
+    "chunk_tokens": 1000,
+    "ttl_days": 90
+  },
+  "entries": [
+    {
+      "id": "langgraph_durable_agents",
+      "title": "LangGraph: durable workflows and stateful agents",
+      "type": "concept",
+      "summary": "LangGraph is a low-level orchestration framework used by companies like Klarna, Replit, and Elastic to build, manage, and deploy long-running, stateful agents. Its key benefits include durable execution with automatic resumption after failure, human-in-the-loop control, comprehensive memory for short and long-term state, debugging tools via LangSmith, and production-ready deployment\u3010525475077813679\u2020L22-L25\u3011\u3010525475077813679\u2020L65-L90\u3011.",
+      "claims": [
+        {
+          "cid": "c_langgraph_durable_agents_1",
+          "statement": "LangGraph is a low-level orchestration framework that helps build, manage, and deploy long-running stateful agents.",
+          "evidence": [
+            "\u3010525475077813679\u2020L22-L25\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_langgraph_durable_agents_2",
+          "statement": "LangGraph provides durable execution, human-in-the-loop capabilities, comprehensive memory, debugging tools, and production-ready deployment.",
+          "evidence": [
+            "\u3010525475077813679\u2020L65-L90\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_langgraph_durable_agents_1",
+          "goal": "Set up a LangGraph agent",
+          "steps": [
+            "Install LangGraph via pip.",
+            "Use prebuilt components to create an agent.",
+            "Deploy with durable execution and memory features."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_langgraph_durable_agents_1",
+          "text": "LangGraph is a low-level orchestration framework used by companies like Klarna, Replit, and Elastic to build, manage, and deploy long-running, stateful agents. Its key benefits include durable execution with automatic resumption after failure, human-in-the-loop control, comprehensive memory for short and long-term state, debugging tools via LangSmith, and production-ready deployment\u3010525475077813679\u2020L22-L25\u3011\u3010525475077813679\u2020L65-L90\u3011.",
+          "summary": "LangGraph is a low-level orchestration framework used by companies like Klarna, Replit, and Elastic to build, manage, and deploy long-running, stateful agents",
+          "tags": [
+            "orchestration",
+            "agents"
+          ],
+          "citations": [
+            {
+              "source_id": "s_langgraph",
+              "locator": "L22-L25"
+            },
+            {
+              "source_id": "s_langgraph",
+              "locator": "L65-L90"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "orchestration",
+        "agents",
+        "durability",
+        "stateful"
+      ],
+      "citations": [
+        {
+          "source_id": "s_langgraph",
+          "locator": "L22-L25"
+        },
+        {
+          "source_id": "s_langgraph",
+          "locator": "L65-L90"
+        }
+      ],
+      "license": "MIT",
+      "score": 0.8,
+      "graph": []
+    },
+    {
+      "id": "agentic_rag",
+      "title": "Agentic Retrieval-Augmented Generation (Agentic RAG)",
+      "type": "concept",
+      "summary": "Agentic RAG embeds autonomous agents into RAG pipelines to overcome the limitations of traditional retrieval-augmented generation. The technique employs agentic patterns such as reflection, planning, tool use, and multi-agent collaboration to handle dynamic, multi-step reasoning tasks and adaptive workflows\u3010211515308209869\u2020L40-L50\u3011\u3010211515308209869\u2020L90-L104\u3011.",
+      "claims": [
+        {
+          "cid": "c_agentic_rag_1",
+          "statement": "Agentic RAG integrates autonomous agents into RAG pipelines, enabling reflection, planning, tool use, and multi-agent collaboration.",
+          "evidence": [
+            "\u3010211515308209869\u2020L40-L50\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_agentic_rag_2",
+          "statement": "Agentic RAG addresses limitations of traditional RAG by handling dynamic, multi-step reasoning tasks and providing adaptive workflows.",
+          "evidence": [
+            "\u3010211515308209869\u2020L90-L104\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_agentic_rag_1",
+          "goal": "Apply Agentic RAG",
+          "steps": [
+            "Identify tasks requiring dynamic reasoning and context adaptation.",
+            "Decompose queries into subqueries using agent planning and reflection patterns.",
+            "Retrieve relevant documents, execute tools, and collaborate across agents to synthesize the final answer."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_agentic_rag_1",
+          "text": "Agentic RAG embeds autonomous agents into RAG pipelines to overcome the limitations of traditional retrieval-augmented generation. The technique employs agentic patterns such as reflection, planning, tool use, and multi-agent collaboration to handle dynamic, multi-step reasoning tasks and adaptive workflows\u3010211515308209869\u2020L40-L50\u3011\u3010211515308209869\u2020L90-L104\u3011.",
+          "summary": "Agentic RAG embeds autonomous agents into RAG pipelines to overcome the limitations of traditional retrieval-augmented generation",
+          "tags": [
+            "retrieval",
+            "agentic-rag"
+          ],
+          "citations": [
+            {
+              "source_id": "s_agentic_rag_survey",
+              "locator": "L40-L50"
+            },
+            {
+              "source_id": "s_agentic_rag_survey",
+              "locator": "L90-L104"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "retrieval",
+        "agentic-rag",
+        "planning",
+        "multi-agent"
+      ],
+      "citations": [
+        {
+          "source_id": "s_agentic_rag_survey",
+          "locator": "L40-L50"
+        },
+        {
+          "source_id": "s_agentic_rag_survey",
+          "locator": "L90-L104"
+        }
+      ],
+      "license": "MIT",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "langgraph_durable_agents",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "faiss_index_selection",
+      "title": "FAISS index selection: HNSW, IVF, PQ",
+      "type": "concept",
+      "summary": "FAISS offers multiple index types for approximate nearest neighbor search. IndexHNSWFlat uses a Hierarchical Navigable Small World (HNSW) graph to provide fast approximate nearest neighbor search. IndexIVFFlat partitions vectors into inverted lists and performs exact distance computations within selected lists, trading recall for speed. Product quantization (PQ) compresses vectors using codebooks to reduce memory footprint and accelerate search\u3010248501046452647\u2020L193-L205\u3011.",
+      "claims": [
+        {
+          "cid": "c_faiss_index_selection_1",
+          "statement": "IndexHNSWFlat uses a HNSW graph to offer fast approximate nearest neighbour search in FAISS.",
+          "evidence": [
+            "\u3010248501046452647\u2020L193-L205\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_faiss_index_selection_2",
+          "statement": "IndexIVFFlat partitions vectors into inverted lists and performs exact search inside selected lists, trading recall for speed.",
+          "evidence": [
+            "\u3010248501046452647\u2020L193-L205\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_faiss_index_selection_3",
+          "statement": "Product quantization compresses vectors to reduce memory footprint and accelerate search.",
+          "evidence": [
+            "\u3010248501046452647\u2020L193-L205\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_faiss_index_selection_1",
+          "goal": "Choose a FAISS index",
+          "steps": [
+            "Select HNSW for high recall and speed when memory is sufficient.",
+            "Use IVF or IVF-PQ to balance recall and memory footprint.",
+            "Tune parameters like list size, M, and efConstruction for optimal performance."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_faiss_index_selection_1",
+          "text": "FAISS offers multiple index types for approximate nearest neighbor search. IndexHNSWFlat uses a Hierarchical Navigable Small World (HNSW) graph to provide fast approximate nearest neighbor search. IndexIVFFlat partitions vectors into inverted lists and performs exact distance computations within selected lists, trading recall for speed. Product quantization (PQ) compresses vectors using codebooks to reduce memory footprint and accelerate search\u3010248501046452647\u2020L193-L205\u3011.",
+          "summary": "FAISS offers multiple index types for approximate nearest neighbor search",
+          "tags": [
+            "vector search",
+            "faiss"
+          ],
+          "citations": [
+            {
+              "source_id": "s_faiss",
+              "locator": "L193-L205"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "vector search",
+        "faiss",
+        "hnsw",
+        "ivf",
+        "pq"
+      ],
+      "citations": [
+        {
+          "source_id": "s_faiss",
+          "locator": "L193-L205"
+        }
+      ],
+      "license": "Apache-2.0",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "agentic_rag",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "opentelemetry_signals",
+      "title": "OpenTelemetry signals and correlation",
+      "type": "concept",
+      "summary": "OpenTelemetry defines four primary signals\u2014traces, metrics, logs, and baggage. Traces represent the path of a request through an application; metrics are runtime measurements; logs record events; and baggage carries contextual information across signals\u3010825539065151992\u2020L767-L781\u3011. Correlating these signals allows developers to link logs to specific traces or metrics, providing end-to-end visibility for debugging and monitoring.",
+      "claims": [
+        {
+          "cid": "c_opentelemetry_signals_1",
+          "statement": "OpenTelemetry defines traces as the path of a request, metrics as measurements captured at runtime, and logs as event recordings.",
+          "evidence": [
+            "\u3010825539065151992\u2020L767-L777\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_opentelemetry_signals_2",
+          "statement": "Baggage in OpenTelemetry carries contextual information across signals.",
+          "evidence": [
+            "\u3010825539065151992\u2020L779-L781\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_opentelemetry_signals_1",
+          "goal": "Correlate telemetry signals",
+          "steps": [
+            "Instrument applications with the OpenTelemetry SDK to emit traces, metrics, and logs.",
+            "Use consistent resource and span identifiers to correlate logs and metrics with trace IDs.",
+            "Export correlated signals to an observability backend and analyze relationships between them."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_opentelemetry_signals_1",
+          "text": "OpenTelemetry defines four primary signals\u2014traces, metrics, logs, and baggage. Traces represent the path of a request through an application; metrics are runtime measurements; logs record events; and baggage carries contextual information across signals\u3010825539065151992\u2020L767-L781\u3011. Correlating these signals allows developers to link logs to specific traces or metrics, providing end-to-end visibility for debugging and monitoring.",
+          "summary": "OpenTelemetry defines four primary signals\u2014traces, metrics, logs, and baggage",
+          "tags": [
+            "observability",
+            "otel"
+          ],
+          "citations": [
+            {
+              "source_id": "s_opentelemetry_signals",
+              "locator": "L767-L781"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "observability",
+        "otel",
+        "traces",
+        "metrics",
+        "logs"
+      ],
+      "citations": [
+        {
+          "source_id": "s_opentelemetry_signals",
+          "locator": "L767-L781"
+        }
+      ],
+      "license": "CC-BY-4.0",
+      "score": 0.8,
+      "graph": []
+    },
+    {
+      "id": "data_versioning",
+      "title": "Data and model versioning",
+      "type": "concept",
+      "summary": "Machine-learning systems need versioning for code, training/testing datasets, model artifacts and configuration files to achieve reproducibility, traceability and compliance. Best practices include storing all artefacts and linking data versions with unique identifiers; using metadata and tests for data quality; and utilising tools like MLflow Model Registry to manage model versions, lineage and metadata tags\u3010305081854022075\u2020L18-L49\u3011\u3010608503941462639\u2020L56-L90\u3011.",
+      "claims": [
+        {
+          "cid": "c_data_versioning_1",
+          "statement": "Versioning of training/testing data, final models, and configuration files is essential for reproducibility and compliance in machine learning pipelines.",
+          "evidence": [
+            "\u3010305081854022075\u2020L18-L49\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_data_versioning_2",
+          "statement": "MLflow Model Registry provides a central repository for model versions with lineage, aliasing, and metadata tagging to support governance.",
+          "evidence": [
+            "\u3010608503941462639\u2020L56-L90\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_data_versioning_1",
+          "goal": "Implement data and model versioning",
+          "steps": [
+            "Store datasets and configuration files in a version control system or dedicated registry.",
+            "Register models in a model registry with metadata tags and track lineage.",
+            "Create tests for data quality and ensure unique identifiers link models to specific data versions."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_data_versioning_1",
+          "text": "Machine-learning systems need versioning for code, training/testing datasets, model artifacts and configuration files to achieve reproducibility, traceability and compliance. Best practices include storing all artefacts and linking data versions with unique identifiers; using metadata and tests for data quality; and utilising tools like MLflow Model Registry to manage model versions, lineage and metadata tags\u3010305081854022075\u2020L18-L49\u3011\u3010608503941462639\u2020L56-L90\u3011.",
+          "summary": "Machine-learning systems need versioning for code, training/testing datasets, model artifacts and configuration files to achieve reproducibility, traceability and compliance",
+          "tags": [
+            "data",
+            "versioning"
+          ],
+          "citations": [
+            {
+              "source_id": "s_seml_data",
+              "locator": "L18-L49"
+            },
+            {
+              "source_id": "s_mlflow_registry",
+              "locator": "L56-L90"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "data",
+        "versioning",
+        "model registry",
+        "reproducibility"
+      ],
+      "citations": [
+        {
+          "source_id": "s_seml_data",
+          "locator": "L18-L49"
+        },
+        {
+          "source_id": "s_mlflow_registry",
+          "locator": "L56-L90"
+        }
+      ],
+      "license": "CC-BY-4.0",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "data_governance",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "data_governance",
+      "title": "Data governance and compliance",
+      "type": "concept",
+      "summary": "Data governance should involve not only developers but also data contributors and affected communities and must be considered throughout the machine-learning pipeline. When using web-scraped or third-party data, teams should respect copyright and licensing requirements and ensure consent; only use data with compatible licences\u3010196347673918349\u2020L68-L84\u3011\u3010196347673918349\u2020L122-L133\u3011. Datasheets for Datasets provide a structured way to document the motivation, collection methods, composition and legal considerations of a dataset\u3010196347673918349\u2020L137-L144\u3011.",
+      "claims": [
+        {
+          "cid": "c_data_governance_1",
+          "statement": "Governance of data in ML pipelines should consider the broader community of data contributors and impacted groups.",
+          "evidence": [
+            "\u3010196347673918349\u2020L68-L84\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_data_governance_2",
+          "statement": "Web-scraped datasets may include copyrighted content; teams must respect data licences and use data only when the licence is compatible.",
+          "evidence": [
+            "\u3010196347673918349\u2020L122-L133\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_data_governance_3",
+          "statement": "Datasheets for Datasets help document dataset motivation, collection, composition and legal considerations.",
+          "evidence": [
+            "\u3010196347673918349\u2020L137-L144\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_data_governance_1",
+          "goal": "Establish data governance",
+          "steps": [
+            "Identify stakeholders including data contributors and impacted communities and include them in governance decisions.",
+            "Verify data licences and rights before using external datasets; avoid data with incompatible licences.",
+            "Create a datasheet for each dataset documenting its motivation, collection methods, composition, and legal considerations."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_data_governance_1",
+          "text": "Data governance should involve not only developers but also data contributors and affected communities and must be considered throughout the machine-learning pipeline. When using web-scraped or third-party data, teams should respect copyright and licensing requirements and ensure consent; only use data with compatible licences\u3010196347673918349\u2020L68-L84\u3011\u3010196347673918349\u2020L122-L133\u3011. Datasheets for Datasets provide a structured way to document the motivation, collection methods, composition and legal considerations of a dataset\u3010196347673918349\u2020L137-L144\u3011.",
+          "summary": "Data governance should involve not only developers but also data contributors and affected communities and must be considered throughout the machine-learning pipeline",
+          "tags": [
+            "data governance",
+            "compliance"
+          ],
+          "citations": [
+            {
+              "source_id": "s_turing_governance",
+              "locator": "L68-L84"
+            },
+            {
+              "source_id": "s_turing_governance",
+              "locator": "L122-L133"
+            },
+            {
+              "source_id": "s_turing_governance",
+              "locator": "L137-L144"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "data governance",
+        "compliance",
+        "licenses"
+      ],
+      "citations": [
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L68-L84"
+        },
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L122-L133"
+        },
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L137-L144"
+        }
+      ],
+      "license": "CC-BY-4.0",
+      "score": 0.8,
+      "graph": []
+    },
+    {
+      "id": "model_tuning",
+      "title": "Model tuning: LoRA and parameter-efficient fine-tuning",
+      "type": "concept",
+      "summary": "As large language models grow, full fine-tuning becomes expensive. Low-Rank Adaptation (LoRA) freezes pre-trained weights and injects trainable low-rank matrices into each Transformer layer, reducing trainable parameters by up to 10,000\u00d7 and memory usage by 3\u00d7 while achieving comparable or better performance than full fine-tuning\u3010372047554543751\u2020L53-L62\u3011.",
+      "claims": [
+        {
+          "cid": "c_model_tuning_1",
+          "statement": "Full fine-tuning of large models is prohibitively expensive in terms of parameters and memory.",
+          "evidence": [
+            "\u3010372047554543751\u2020L53-L59\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_model_tuning_2",
+          "statement": "LoRA reduces trainable parameters by ten thousand times and memory by three times while maintaining or improving performance.",
+          "evidence": [
+            "\u3010372047554543751\u2020L53-L62\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_model_tuning_1",
+          "goal": "Fine-tune models with LoRA",
+          "steps": [
+            "Freeze all pre-trained model weights.",
+            "Insert low-rank trainable matrices into attention and feed-forward layers.",
+            "Fine-tune only the LoRA parameters, evaluate performance, and integrate into downstream pipelines."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_model_tuning_1",
+          "text": "As large language models grow, full fine-tuning becomes expensive. Low-Rank Adaptation (LoRA) freezes pre-trained weights and injects trainable low-rank matrices into each Transformer layer, reducing trainable parameters by up to 10,000\u00d7 and memory usage by 3\u00d7 while achieving comparable or better performance than full fine-tuning\u3010372047554543751\u2020L53-L62\u3011.",
+          "summary": "As large language models grow, full fine-tuning becomes expensive",
+          "tags": [
+            "fine-tuning",
+            "LoRA"
+          ],
+          "citations": [
+            {
+              "source_id": "s_lora",
+              "locator": "L53-L62"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "fine-tuning",
+        "LoRA",
+        "parameter-efficient",
+        "LLMs"
+      ],
+      "citations": [
+        {
+          "source_id": "s_lora",
+          "locator": "L53-L62"
+        }
+      ],
+      "license": "CC-BY-4.0",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "data_versioning",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "inference_optimization",
+      "title": "Inference optimization: dynamic batching and efficient attention",
+      "type": "concept",
+      "summary": "Efficient inference for large language models can be significantly improved by dynamic batching, micro-batching and attention optimizations. Dynamic batching continuously schedules new requests into running batches, reducing latency and improving throughput; for example, dynamic batching reduced latency from 976 ms to 126 ms on a 7B model at batch size eight\u3010190212981021054\u2020L432-L441\u3011. Techniques such as paged attention and continuous batching further enhance throughput by reusing key-value caches.",
+      "claims": [
+        {
+          "cid": "c_inference_optimization_1",
+          "statement": "Dynamic batching can dramatically reduce inference latency and increase throughput, as shown by latency dropping from 976 ms to 126 ms for a 7B model.",
+          "evidence": [
+            "\u3010190212981021054\u2020L432-L441\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_inference_optimization_2",
+          "statement": "Modern inference frameworks implement paged attention and continuous batching to maximize GPU utilisation and support high-throughput serving.",
+          "evidence": [],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_inference_optimization_1",
+          "goal": "Optimize LLM inference",
+          "steps": [
+            "Configure dynamic batching in the inference server to schedule multiple requests into one compute pass.",
+            "Implement paged or flash attention to improve memory efficiency.",
+            "Monitor latency and throughput metrics to tune batch sizes and micro-batching strategies."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_inference_optimization_1",
+          "text": "Efficient inference for large language models can be significantly improved by dynamic batching, micro-batching and attention optimizations. Dynamic batching continuously schedules new requests into running batches, reducing latency and improving throughput; for example, dynamic batching reduced latency from 976 ms to 126 ms on a 7B model at batch size eight\u3010190212981021054\u2020L432-L441\u3011. Techniques such as paged attention and continuous batching further enhance throughput by reusing key-value caches.",
+          "summary": "Efficient inference for large language models can be significantly improved by dynamic batching, micro-batching and attention optimizations",
+          "tags": [
+            "inference",
+            "dynamic batching"
+          ],
+          "citations": [
+            {
+              "source_id": "s_clarifai",
+              "locator": "L432-L441"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "inference",
+        "dynamic batching",
+        "paged attention",
+        "performance"
+      ],
+      "citations": [
+        {
+          "source_id": "s_clarifai",
+          "locator": "L432-L441"
+        }
+      ],
+      "license": "Proprietary-permitted",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "model_tuning",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "ux_prompting",
+      "title": "Prompt design and user experience",
+      "type": "concept",
+      "summary": "Prompting is both a creative brief and a conversation script. Effective prompt design requires guiding the AI like a \u2018smart, eager intern\u2019 rather than expecting it to act autonomously; designers should coach the model, set tone and scope, and verify outputs\u3010256666701899297\u2020L89-L96\u3011\u3010256666701899297\u2020L99-L104\u3011. Prompts should be tailored to your goals and style instead of relying on generic templates, and should never include sensitive or private information\u3010256666701899297\u2020L112-L130\u3011.",
+      "claims": [
+        {
+          "cid": "c_ux_prompting_1",
+          "statement": "AI models behave like smart, eager interns that require guidance and verification from users.",
+          "evidence": [
+            "\u3010256666701899297\u2020L89-L96\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_ux_prompting_2",
+          "statement": "Prompting is akin to designing a creative brief and conversation; one must set tone and scope and tailor prompts to specific goals.",
+          "evidence": [
+            "\u3010256666701899297\u2020L99-L104\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_ux_prompting_3",
+          "statement": "Prompts should not contain sensitive or private information.",
+          "evidence": [
+            "\u3010256666701899297\u2020L112-L130\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_ux_prompting_1",
+          "goal": "Design effective prompts",
+          "steps": [
+            "Identify the user goal and craft a concise initial prompt with context, tone and desired style.",
+            "Use iterative prompting to refine the model output; verify responses and adjust instructions.",
+            "Avoid including personal or confidential data in prompts and inform users about privacy considerations."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_ux_prompting_1",
+          "text": "Prompting is both a creative brief and a conversation script. Effective prompt design requires guiding the AI like a \u2018smart, eager intern\u2019 rather than expecting it to act autonomously; designers should coach the model, set tone and scope, and verify outputs\u3010256666701899297\u2020L89-L96\u3011\u3010256666701899297\u2020L99-L104\u3011. Prompts should be tailored to your goals and style instead of relying on generic templates, and should never include sensitive or private information\u3010256666701899297\u2020L112-L130\u3011.",
+          "summary": "Prompting is both a creative brief and a conversation script",
+          "tags": [
+            "prompting",
+            "UX"
+          ],
+          "citations": [
+            {
+              "source_id": "s_smashing",
+              "locator": "L89-L96"
+            },
+            {
+              "source_id": "s_smashing",
+              "locator": "L99-L104"
+            },
+            {
+              "source_id": "s_smashing",
+              "locator": "L112-L130"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "prompting",
+        "UX",
+        "design",
+        "privacy"
+      ],
+      "citations": [
+        {
+          "source_id": "s_smashing",
+          "locator": "L89-L96"
+        },
+        {
+          "source_id": "s_smashing",
+          "locator": "L99-L104"
+        },
+        {
+          "source_id": "s_smashing",
+          "locator": "L112-L130"
+        }
+      ],
+      "license": "Proprietary-permitted",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "agentic_rag",
+          "type": "refines"
+        }
+      ]
+    },
+    {
+      "id": "mlops_ci",
+      "title": "MLOps and CI/CD best practices",
+      "type": "concept",
+      "summary": "MLOps combines machine-learning development with DevOps to automate and streamline the ML lifecycle. Good practices include version control and reproducibility for data and models, continuous integration and delivery (CI/CD) with automated testing, scalability, resource efficiency, cross-team collaboration, compliance and governance, and continuous monitoring for concept drift\u3010727963589186650\u2020L113-L200\u3011.",
+      "claims": [
+        {
+          "cid": "c_mlops_ci_1",
+          "statement": "MLOps aims to streamline and automate the machine-learning lifecycle, enabling faster time to market and better collaboration.",
+          "evidence": [
+            "\u3010727963589186650\u2020L113-L200\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_mlops_ci_2",
+          "statement": "Benefits include reproducibility and traceability via version control, quality and reliability via CI/CD testing, scalability and efficient resource utilization, compliance and governance, and continuous monitoring.",
+          "evidence": [
+            "\u3010727963589186650\u2020L113-L200\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_mlops_ci_1",
+          "goal": "Implement MLOps practices",
+          "steps": [
+            "Set up version control for data, code, and models.",
+            "Implement a CI/CD pipeline with unit tests, integration tests, and automated deployment.",
+            "Monitor deployed models for performance drift and update regularly."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_mlops_ci_1",
+          "text": "MLOps combines machine-learning development with DevOps to automate and streamline the ML lifecycle. Good practices include version control and reproducibility for data and models, continuous integration and delivery (CI/CD) with automated testing, scalability, resource efficiency, cross-team collaboration, compliance and governance, and continuous monitoring for concept drift\u3010727963589186650\u2020L113-L200\u3011.",
+          "summary": "MLOps combines machine-learning development with DevOps to automate and streamline the ML lifecycle",
+          "tags": [
+            "mlops",
+            "ci/cd"
+          ],
+          "citations": [
+            {
+              "source_id": "s_harness",
+              "locator": "L113-L200"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "mlops",
+        "ci/cd",
+        "governance",
+        "monitoring"
+      ],
+      "citations": [
+        {
+          "source_id": "s_harness",
+          "locator": "L113-L200"
+        }
+      ],
+      "license": "Proprietary-permitted",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "data_versioning",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "evaluation_benchmarks",
+      "title": "Evaluation and benchmarks",
+      "type": "concept",
+      "summary": "Evaluating AI systems requires both offline benchmarks and online experiments. AGIEval is a human-centric benchmark derived from 20 official exams (such as the Gaokao, SAT and law school entrance tests) that tests foundation models on tasks relevant to human cognition and problem solving\u3010806806079254338\u2020L59-L66\u3011. Evaluation criteria include accuracy, latency, cost and hit rate.",
+      "claims": [
+        {
+          "cid": "c_evaluation_benchmarks_1",
+          "statement": "AGIEval is a human-centric benchmark derived from 20 official exams and used to evaluate general abilities of foundation models.",
+          "evidence": [
+            "\u3010806806079254338\u2020L59-L66\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_evaluation_benchmarks_2",
+          "statement": "Evaluation should consider multiple metrics such as accuracy, latency, cost, and hit rate.",
+          "evidence": [],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_evaluation_benchmarks_1",
+          "goal": "Evaluate models",
+          "steps": [
+            "Construct a golden dataset or adopt benchmarks like AGIEval.",
+            "Define evaluation metrics (accuracy, latency, cost, hit rate).",
+            "Run offline evaluations and online A/B tests to validate model performance and update models based on results."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_evaluation_benchmarks_1",
+          "text": "Evaluating AI systems requires both offline benchmarks and online experiments. AGIEval is a human-centric benchmark derived from 20 official exams (such as the Gaokao, SAT and law school entrance tests) that tests foundation models on tasks relevant to human cognition and problem solving\u3010806806079254338\u2020L59-L66\u3011. Evaluation criteria include accuracy, latency, cost and hit rate.",
+          "summary": "Evaluating AI systems requires both offline benchmarks and online experiments",
+          "tags": [
+            "evaluation",
+            "benchmark"
+          ],
+          "citations": [
+            {
+              "source_id": "s_agieval",
+              "locator": "L59-L66"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "evaluation",
+        "benchmark",
+        "metrics",
+        "AGIEval"
+      ],
+      "citations": [
+        {
+          "source_id": "s_agieval",
+          "locator": "L59-L66"
+        }
+      ],
+      "license": "MIT",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "model_tuning",
+          "type": "depends_on"
+        },
+        {
+          "to": "agentic_rag",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "security_guidelines",
+      "title": "Security guidelines for LLM systems",
+      "type": "concept",
+      "summary": "Secure LLM applications require defending against prompt injection, model poisoning, data leakage, and other vulnerabilities. The OWASP Top 10 for LLM applications recommends mitigation strategies such as strict context management, input validation, output filtering, adversarial testing, sensitive information redaction, supply-chain security, permission gating for tools, and isolating system prompts\u3010326855334241198\u2020L172-L190\u3011\u3010326855334241198\u2020L195-L303\u3011.",
+      "claims": [
+        {
+          "cid": "c_security_guidelines_1",
+          "statement": "Prompt injection occurs when untrusted user inputs manipulate an LLM\u2019s behaviour; mitigation involves context management, input validation, output constraints, and adversarial testing.",
+          "evidence": [
+            "\u3010326855334241198\u2020L172-L190\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_security_guidelines_2",
+          "statement": "Other vulnerabilities include sensitive information disclosure, supply chain issues, training data poisoning, improper output handling, excessive agency, and system prompt leakage.",
+          "evidence": [
+            "\u3010326855334241198\u2020L195-L303\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_security_guidelines_3",
+          "statement": "Mitigations include redacting sensitive data, verifying outputs, controlling tool permissions, isolating prompts, and maintaining secure supply chains.",
+          "evidence": [
+            "\u3010326855334241198\u2020L195-L303\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_security_guidelines_1",
+          "goal": "Secure LLM applications",
+          "steps": [
+            "Classify and sanitize inputs to prevent prompt injection; apply allowlists/denylists for tool calls.",
+            "Filter and validate outputs to avoid data leakage and ensure format compliance.",
+            "Implement monitoring and red-teaming to detect and respond to new attack patterns."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_security_guidelines_1",
+          "text": "Secure LLM applications require defending against prompt injection, model poisoning, data leakage, and other vulnerabilities. The OWASP Top 10 for LLM applications recommends mitigation strategies such as strict context management, input validation, output filtering, adversarial testing, sensitive information redaction, supply-chain security, permission gating for tools, and isolating system prompts\u3010326855334241198\u2020L172-L190\u3011\u3010326855334241198\u2020L195-L303\u3011.",
+          "summary": "Secure LLM applications require defending against prompt injection, model poisoning, data leakage, and other vulnerabilities",
+          "tags": [
+            "security",
+            "OWASP"
+          ],
+          "citations": [
+            {
+              "source_id": "s_owasp",
+              "locator": "L172-L190"
+            },
+            {
+              "source_id": "s_owasp",
+              "locator": "L195-L303"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "security",
+        "OWASP",
+        "prompt injection",
+        "mitigation"
+      ],
+      "citations": [
+        {
+          "source_id": "s_owasp",
+          "locator": "L172-L190"
+        },
+        {
+          "source_id": "s_owasp",
+          "locator": "L195-L303"
+        }
+      ],
+      "license": "Proprietary-permitted",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "agentic_rag",
+          "type": "depends_on"
+        },
+        {
+          "to": "ux_prompting",
+          "type": "depends_on"
+        }
+      ]
+    },
+    {
+      "id": "compliance",
+      "title": "Compliance and legal considerations",
+      "type": "concept",
+      "summary": "AI development must align with legal frameworks and ethical guidelines. Developers should respect data privacy regulations (such as GDPR) and intellectual property rights; maintain auditable records of data and model provenance; and adopt risk management frameworks for responsible AI. Tools like data sheets and model cards improve transparency by documenting dataset and model motivation, composition and limitations\u3010196347673918349\u2020L122-L133\u3011\u3010196347673918349\u2020L137-L144\u3011.",
+      "claims": [
+        {
+          "cid": "c_compliance_1",
+          "statement": "Compliance requires adhering to data privacy regulations and respecting intellectual property rights, including auditing data provenance and using only datasets with compatible licences.",
+          "evidence": [
+            "\u3010196347673918349\u2020L122-L133\u3011"
+          ],
+          "confidence": 0.8
+        },
+        {
+          "cid": "c_compliance_2",
+          "statement": "Documentation tools such as data sheets and model cards improve transparency and support ethical AI decision-making.",
+          "evidence": [
+            "\u3010196347673918349\u2020L137-L144\u3011"
+          ],
+          "confidence": 0.8
+        }
+      ],
+      "procedures": [
+        {
+          "pid": "p_compliance_1",
+          "goal": "Ensure compliance",
+          "steps": [
+            "Identify applicable regulations (e.g., GDPR) and ensure data processing complies.",
+            "Maintain audit logs linking models to data sources, licences, and consents.",
+            "Publish data cards and model cards detailing dataset and model characteristics, limitations, and ethical considerations."
+          ]
+        }
+      ],
+      "chunks": [
+        {
+          "chunk_id": "k_compliance_1",
+          "text": "AI development must align with legal frameworks and ethical guidelines. Developers should respect data privacy regulations (such as GDPR) and intellectual property rights; maintain auditable records of data and model provenance; and adopt risk management frameworks for responsible AI. Tools like data sheets and model cards improve transparency by documenting dataset and model motivation, composition and limitations\u3010196347673918349\u2020L122-L133\u3011\u3010196347673918349\u2020L137-L144\u3011.",
+          "summary": "AI development must align with legal frameworks and ethical guidelines",
+          "tags": [
+            "compliance",
+            "privacy"
+          ],
+          "citations": [
+            {
+              "source_id": "s_turing_governance",
+              "locator": "L122-L133"
+            },
+            {
+              "source_id": "s_turing_governance",
+              "locator": "L137-L144"
+            }
+          ]
+        }
+      ],
+      "tags": [
+        "compliance",
+        "privacy",
+        "documentation",
+        "ethics"
+      ],
+      "citations": [
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L122-L133"
+        },
+        {
+          "source_id": "s_turing_governance",
+          "locator": "L137-L144"
+        }
+      ],
+      "license": "CC-BY-4.0",
+      "score": 0.8,
+      "graph": [
+        {
+          "to": "data_governance",
+          "type": "depends_on"
+        }
+      ]
+    }
+  ],
+  "eval": {
+    "questions": [
+      {
+        "qid": "q_langgraph_benefits",
+        "question": "What are the key benefits of LangGraph for long-running agents?",
+        "expected_points": [
+          "Durable execution with automatic resumption",
+          "Human-in-the-loop control",
+          "Comprehensive memory (short-term and long-term)",
+          "Debugging with LangSmith",
+          "Production-ready deployment"
+        ],
+        "citations": [
+          {
+            "source_id": "s_langgraph",
+            "locator": "L22-L25"
+          },
+          {
+            "source_id": "s_langgraph",
+            "locator": "L65-L90"
+          }
+        ]
+      },
+      {
+        "qid": "q_agentic_rag_patterns",
+        "question": "How does Agentic RAG improve upon traditional RAG, and what patterns does it employ?",
+        "expected_points": [
+          "Agentic RAG embeds autonomous agents into RAG pipelines",
+          "It handles dynamic, multi-step reasoning tasks and adaptive workflows",
+          "It employs agentic patterns such as reflection, planning, tool use, and multi-agent collaboration"
+        ],
+        "citations": [
+          {
+            "source_id": "s_agentic_rag_survey",
+            "locator": "L40-L50"
+          },
+          {
+            "source_id": "s_agentic_rag_survey",
+            "locator": "L90-L104"
+          }
+        ]
+      },
+      {
+        "qid": "q_lora_vs_fine_tuning",
+        "question": "Explain the advantages of LoRA over full fine-tuning for large models.",
+        "expected_points": [
+          "Full fine-tuning is expensive and retrains all parameters",
+          "LoRA freezes pre-trained weights and injects low-rank matrices",
+          "LoRA reduces trainable parameters by about 10,000\u00d7 and memory by 3\u00d7",
+          "LoRA achieves comparable or better performance than full fine-tuning"
+        ],
+        "citations": [
+          {
+            "source_id": "s_lora",
+            "locator": "L53-L62"
+          }
+        ]
+      },
+      {
+        "qid": "q_dynamic_batching",
+        "question": "Describe the role of dynamic batching in inference optimization.",
+        "expected_points": [
+          "Dynamic batching schedules new requests into running batches",
+          "It reduces latency and improves throughput",
+          "An example shows latency dropping from 976 ms to 126 ms for a 7B model at batch size eight",
+          "It complements paged attention and other optimizations"
+        ],
+        "citations": [
+          {
+            "source_id": "s_clarifai",
+            "locator": "L432-L441"
+          }
+        ]
+      },
+      {
+        "qid": "q_data_governance",
+        "question": "Why is data governance crucial in ML pipelines and what are Datasheets for Datasets used for?",
+        "expected_points": [
+          "Data governance should consider contributors and impacted communities",
+          "Teams must respect data licences and use only data with compatible rights",
+          "Web-scraped data may include copyrighted content",
+          "Datasheets for Datasets document the motivation, collection, composition and legal considerations of a dataset"
+        ],
+        "citations": [
+          {
+            "source_id": "s_turing_governance",
+            "locator": "L68-L84"
+          },
+          {
+            "source_id": "s_turing_governance",
+            "locator": "L122-L133"
+          },
+          {
+            "source_id": "s_turing_governance",
+            "locator": "L137-L144"
+          }
+        ]
+      },
+      {
+        "qid": "q_owasp_mitigations",
+        "question": "List at least three vulnerabilities from the OWASP Top 10 for LLM applications and their corresponding mitigations.",
+        "expected_points": [
+          "Prompt injection and mitigations: context management, input validation, output constraints, adversarial testing",
+          "Sensitive information disclosure: use classification, redaction and output filtering",
+          "Supply chain vulnerabilities and model poisoning: employ SBOMs, data validation and rollback",
+          "Improper output handling: validate and sanitize outputs"
+        ],
+        "citations": [
+          {
+            "source_id": "s_owasp",
+            "locator": "L172-L190"
+          },
+          {
+            "source_id": "s_owasp",
+            "locator": "L195-L303"
+          }
+        ]
+      },
+      {
+        "qid": "q_agieval",
+        "question": "What is AGIEval and why is it useful for evaluation of foundation models?",
+        "expected_points": [
+          "AGIEval is a human-centric benchmark derived from 20 official exams like Gaokao, SAT and law school entrance tests",
+          "It evaluates general abilities of foundation models on human-relevant tasks"
+        ],
+        "citations": [
+          {
+            "source_id": "s_agieval",
+            "locator": "L59-L66"
+          }
+        ]
+      }
+    ],
+    "metrics": [
+      "coverage",
+      "consistency",
+      "latency_ms",
+      "cost_usd",
+      "hit_rate"
+    ]
+  },
+  "provenance": [
+    {
+      "source_id": "s_langgraph",
+      "title": "LangGraph README - LangGraph Orchestration Framework",
+      "url": "https://raw.githubusercontent.com/langchain-ai/langgraph/main/README.md",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "MIT",
+      "hash": "c808007e0e849b6edb89ecfa3334a6a32ad21a742f6c669e838f9a0ce61fad1b"
+    },
+    {
+      "source_id": "s_agentic_rag_survey",
+      "title": "Agentic Retrieval-Augmented Generation: A Survey On Agentic RAG (README)",
+      "url": "https://raw.githubusercontent.com/asinghcsu/AgenticRAG-Survey/main/README.md",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "MIT",
+      "hash": "bc4d4a6290b8705293b8075cf637ffcb7ec6dd1d18670eb76bdcc48a197bfc61"
+    },
+    {
+      "source_id": "s_lora",
+      "title": "LoRA: Low-Rank Adaptation of Large Language Models",
+      "url": "https://arxiv.org/abs/2106.09685",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "CC-BY-4.0",
+      "hash": "cae140a2c5e76d6806842c1619035dd4e340190c47a52487dbe4f7275dc16ad2"
+    },
+    {
+      "source_id": "s_clarifai",
+      "title": "LLM Inference Optimization Techniques \u2014 Clarifai Blog",
+      "url": "https://clarifai.com/blog/llm-inference-optimization-techniques",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Proprietary-permitted",
+      "hash": "bd314d1510b26c28d9a5a00fb00a8c877fbf76ce3f30df0a92c0ce55496a2702"
+    },
+    {
+      "source_id": "s_harness",
+      "title": "MLOps Best Practices \u2014 Harness Developer Hub",
+      "url": "https://developer.harness.io/docs/mlops/mlops-best-practices",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Proprietary-permitted",
+      "hash": "e150199249e39296c79942e8a00491fa1fb2bfa6677bd626a10d0025be18cd9a"
+    },
+    {
+      "source_id": "s_smashing",
+      "title": "Prompting Is A Design Act \u2014 Smashing Magazine",
+      "url": "https://www.smashingmagazine.com/article/prompting-design-act-ai/",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Proprietary-permitted",
+      "hash": "e3fb930010166adf48af90fdbc5f68b999276a3ff693ff1a6b082c4888767404"
+    },
+    {
+      "source_id": "s_seml_data",
+      "title": "Data Versioning \u2014 Software Engineering for Machine Learning (SE-ML)",
+      "url": "https://www.se-ml.org/data_versioning",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "CC-BY-4.0",
+      "hash": "5e158eb218ee29c0a1bc33d7bd591be34761d8547cd341942f48b14fa6fcd6d8"
+    },
+    {
+      "source_id": "s_mlflow_registry",
+      "title": "Model Registry \u2014 MLflow Documentation",
+      "url": "https://mlflow.org/docs/latest/model-registry.html",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Apache-2.0",
+      "hash": "cc40732b49e7b3f8a81cfc34a92cf2d312037dedf439440d1bb8139625758330"
+    },
+    {
+      "source_id": "s_turing_governance",
+      "title": "Data Governance in the Machine Learning Pipeline \u2014 The Turing Way",
+      "url": "https://the-turing-way.netlify.app/research_compendium/data-gov.html",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "CC-BY-4.0",
+      "hash": "152cd28f73a0a8f96e85728fcba1db6baee6e15b2eec33151842a856d7bee662"
+    },
+    {
+      "source_id": "s_owasp",
+      "title": "Breaking Down the OWASP Top 10 for LLM Applications \u2014 Checkmarx",
+      "url": "https://checkmarx.com/blog/breaking-down-the-owasp-top-10-for-llm-applications/",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Proprietary-permitted",
+      "hash": "54b69af3ce0fdaefea25c08c708bafd7b6e59d34d7361f87b2c05a105f1359b7"
+    },
+    {
+      "source_id": "s_faiss",
+      "title": "FAISS Indexes \u2014 Facebook Research Wiki",
+      "url": "https://github.com/facebookresearch/faiss/wiki/Faiss-indexes",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "Apache-2.0",
+      "hash": "7bd29c2504e64c0e933ba06986daa2e71c449ba228cb2b9ac7d903e1bba1eed4"
+    },
+    {
+      "source_id": "s_agieval",
+      "title": "AGIEval Dataset Card \u2014 HuggingFace",
+      "url": "https://huggingface.co/datasets/AGIEval",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "MIT",
+      "hash": "e24b473d72408443312649780d5dfdc9068e12cbb8e227ce65c869fa3cb12725"
+    },
+    {
+      "source_id": "s_opentelemetry_signals",
+      "title": "Signals \u2014 OpenTelemetry",
+      "url": "https://opentelemetry.io/docs/concepts/signals/",
+      "retrieved_at": "2025-10-20T00:00:00Z",
+      "license": "CC-BY-4.0",
+      "hash": "d2e6da6b56bae3df70ff26fd15ef91c9e7e3d7164b19bf2d5b9824da38858a31"
+    }
+  ],
+  "policy": {
+    "licenses_allow": [
+      "CC-BY-4.0",
+      "MIT",
+      "Apache-2.0",
+      "Proprietary-permitted"
+    ],
+    "licenses_deny": [
+      "Unknown-reject"
+    ],
+    "source_threshold": 0.6,
+    "pii": false
+  },
+  "index_mapping": {
+    "index_name": "fullaidv_kb_en_index",
+    "text_field": "text",
+    "metadata_keys": [
+      "entry_id",
+      "chunk_id",
+      "tags",
+      "source_ids",
+      "license"
+    ]
+  }
+}

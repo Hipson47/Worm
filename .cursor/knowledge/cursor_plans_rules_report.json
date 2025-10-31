@@ -1,0 +1,104 @@
+{
+  "plans": {
+    "purpose": "The `.cursor/plans` directory stores plan files generated from **Plan Mode** in Cursor.  When you trigger Plan Mode, the agent researches your codebase, asks clarifying questions about your goals and then produces a *markdown plan* with file paths and code references.  You can edit this plan and save it in `.cursor/plans` to keep a version‑controlled record for yourself or your team【282798810440702†L41-L45】.  Saving plans makes them persistent and sharable across future sessions and allows the agent to build from them.",
+    "workflow": [
+      "Trigger Plan Mode with **Shift + Tab** or by typing `plan` in the agent input【282798810440702†L48-L52】.",
+      "Answer any **clarifying questions** the agent asks.  The model researches your codebase and may ask targeted questions to resolve ambiguities, ensuring the plan reflects your intent【282798810440702†L41-L45】.",
+      "Review and **edit the plan**.  Plans are markdown documents listing tasks (e.g., file edits, new functions) with file paths.  You can add or remove items or reorganize them.  Each step should include success criteria or acceptance tests as checkpoints.",
+      "When satisfied, click **Build** in the plan editor.  This runs the agent to execute the plan sequentially.  Optionally, click “Save to workspace” so the plan is persisted in the `.cursor/plans` folder for future reference【282798810440702†L41-L55】.",
+      "Plans are **editable Markdown files**.  You can open them later, modify to‑dos, and re‑run them on new branches or share them with teammates."
+    ],
+    "writing_guidelines": [
+      "Break complex requests into **small, ordered tasks**.  Each bullet should reference specific file paths, functions or modules so the agent knows where to work.",
+      "Include **research tasks** (e.g., ‘read existing `auth.ts` file’ or ‘open docs for library X’) so the agent gathers context before modifying code.",
+      "Add **acceptance criteria** or tests after each task (e.g., ‘tests pass’, ‘UI looks correct in dark mode’) to signal when it’s safe to move on【341851870703724†L60-L68】.",
+      "Make the plan **modular**—use nested lists or sections for subtasks.  Keep the plan concise (ideally under 500 lines) and split very large plans into multiple files that can be built sequentially.",
+      "Write in clear, actionable language (imperative verbs).  Avoid vague instructions; specify what to change and where to change it.",
+      "Use the plan to **ask clarifying questions** yourself—include questions or assumptions so that the agent can confirm before execution.",
+      "When reusing a plan, update it to reflect changes; treat it as a living document and commit it alongside code so teammates understand design decisions.",
+      "Use comments or metadata (YAML front‑matter) if needed to describe the plan’s goals, prerequisites and context."
+    ],
+    "automation_tips": [
+      "Incorporate Plan Mode into your workflow: always ask the agent to generate a plan **before making major code changes**.  This ensures the plan can be reviewed and approved, satisfying the plan‑then‑execute policy【579173724773021†L430-L456】.",
+      "Use the **/Generate Cursor Rules** command (described in the rules section) to auto‑generate rules that inform future plans.  Good rules help Plan Mode produce more accurate plans.",
+      "Write scripts or editor commands that **create a new plan file** automatically whenever a task is started.  For instance, after opening a new branch, run a CLI script that calls Plan Mode and saves the resulting markdown to `.cursor/plans`.",
+      "Leverage **version control hooks**.  For example, require that every pull request includes an updated plan file from `.cursor/plans` outlining the changes.  This enforces planning discipline and gives reviewers context.",
+      "Because plans are Markdown, you can parse them programmatically.  Use a parser to read tasks and drive continuous integration (CI) pipelines—for example, run different test suites based on to‑do items or automatically create GitHub issues for each task.",
+      "After executing a plan, write a routine that **compares the completed work against the plan** and marks tasks as done.  This can help the agent learn which tasks remain and adjust follow‑up plans accordingly.",
+      "Integrate plans with project management tools.  Many teams link tasks in the plan to Jira or Linear tickets, enabling automatic status updates and ensuring accountability.",
+      "For long projects, periodically review saved plans in `.cursor/plans` to identify reusable patterns or templates.  Convert repeatable sequences into rules or plan templates for faster future automation."
+    ]
+  },
+  "rules": {
+    "types": {
+      "global_rules": "Global or user rules are set in Cursor’s Settings (General → Rules for AI) and apply across all projects【513847848586994†L260-L273】.  Use them for universal coding standards and language‑agnostic guidelines (e.g., always write TypeScript, prefer async/await).",
+      "project_rules": "Project rules live in `.cursor/rules` and are version‑controlled with your codebase【916066485450000†L233-L235】.  They tailor the agent to your project’s architecture, frameworks and conventions.  Create them via the New Cursor Rule command or Cursor Settings → Rules【513847848586994†L274-L279】.",
+      "team_rules": "For enterprise teams, team rules are managed in the team dashboard.  They enforce organization‑wide policies and are automatically applied when team members work on a repository【78324726175710†screenshot】.",
+      "legacy_rules": "The legacy `.cursorrules` file (a single YAML/JSON config) is still supported but **deprecated**.  Modern usage splits rules into individual `.mdc` files inside `.cursor/rules` for better organization【916066485450000†L233-L235】.",
+      "attachment_modes": {
+        "always": "Rules with `alwaysApply: true` (or Always rules) are always included in the model context and loaded into every request【769463400459573†screenshot】.",
+        "auto_attached": "Rules with matching `globs` are automatically attached when you reference files or directories that match those patterns.  This allows contextual rules for different parts of a monorepo【769463400459573†screenshot】.",
+        "manual": "Manual rules (with `alwaysApply: false` and no matching globs) are only included when explicitly referenced (e.g., by `!load rule-name` or by referencing the rule file in conversation)【769463400459573†screenshot】."
+      }
+    },
+    "file_format": {
+      "extension": ".mdc",
+      "structure": "Each rule file starts with YAML front matter delineated by `---` lines.  The front matter includes a `description` describing what the rule does and when to apply it, one or more `globs` specifying file patterns (using minimatch) to which the rule applies, and an `alwaysApply` boolean controlling whether the rule is always attached【916066485450000†L247-L257】.  After the front matter, the file contains the rule’s instructions—actionable guidance, examples and prohibitions for the AI to follow【769463400459573†screenshot】.",
+      "example": {
+        "description": "Example rule for a React/TypeScript project specifying naming conventions and data‑fetching patterns.",
+        "globs": ["**/*.tsx", "src/components/**"],
+        "alwaysApply": false,
+        "instructions": [
+          "Use functional components and hooks for all React components.",
+          "Name components in PascalCase and functions in camelCase.",
+          "Use React Query for server state and Zustand for client state.",
+          "Avoid prop drilling beyond two levels; use context or custom hooks instead.",
+          "Implement proper error boundaries and handle loading states explicitly."
+        ]
+      }
+    },
+    "management": [
+      "Create new rule files using the **New Cursor Rule** command or Cursor Settings → Rules.  This opens an editor with YAML front matter and rule content and automatically saves the file into `.cursor/rules`【513847848586994†L274-L279】.",
+      "Use the command `/Generate Cursor Rules` in chat to have Cursor analyze your code and generate initial rule files tailored to your project【916066485450000†L267-L268】.",
+      "Organize rules hierarchically in monorepos.  Place a `.cursor/rules` directory in subfolders such as `backend/` or `frontend/` to scope rules to those sections; these nested rules will auto‑attach when files in that subdirectory are referenced【934817706906466†screenshot】.",
+      "Version‑control your rules: because they live in `.cursor/rules`, rules are committed with your code.  This allows teammates to review changes and ensures consistent AI behavior across branches【513847848586994†L420-L429】.",
+      "Use community resources for inspiration—sites like cursor.directory, dotcursorrules.com and awesomereviewers.com host high‑quality rule examples you can adapt to your projects【916066485450000†L272-L277】.",
+      "Maintain a **notepad** file for transient context (e.g., API tokens, library usage); reference it with `@Notepad` in rules or prompts【916066485450000†L279-L284】.  Use `.cursorignore` to tell the AI what files it should ignore【916066485450000†L285-L289】.",
+      "In team settings, define **team rules** to enforce organization‑wide guidelines (e.g., no direct commits to main, mandatory code review)【425948274733725†L501-L508】.",
+      "For large rule sets, consider splitting by concern (naming, patterns, testing).  This allows you to enable or disable specific guidance on demand and keeps each file under the recommended 500‑line limit【866425117115978†screenshot】.",
+      "Use explicit glob patterns to control when a rule attaches.  Patterns can include exclusions (e.g., `!**/*.test.ts`) to avoid applying rules to test files【916066485450000†L253-L255】."
+    ],
+    "best_practices": [
+      "**One concern per rule**: Each rule file should address a single aspect (naming, error handling, API design) to maximize reuse and clarity【866425117115978†screenshot】.",
+      "**Be specific and actionable**: Avoid vague instructions like ‘write good code’.  Instead, specify concrete requirements (e.g., ‘limit functions to 20 lines’, ‘use camelCase for variables’)【513847848586994†L386-L397】.",
+      "**Include context and examples**: Provide sample code snippets or describe your project’s architecture so the AI understands how to apply the rule【513847848586994†L405-L417】.",
+      "**Anchor rules to file patterns**: Use the `globs` field to limit rules to relevant files or directories; this prevents unnecessary context load and keeps prompts concise【916066485450000†L253-L255】.",
+      "**Use hierarchical organization**: In monorepos, place `.cursor/rules` in subfolders to scope rules to specific packages or services【934817706906466†screenshot】.",
+      "**Version control and review**: Treat rules like code—commit them, review changes through pull requests and enforce them in CI.  This ensures transparency and prevents drift【513847848586994†L420-L429】.",
+      "**Split large specifications**: Keep rules under 500 lines; split large documents into modular, composable rules that can be combined as needed【866425117115978†screenshot】.",
+      "**Reuse and promote**: When you find yourself giving the same instructions in chat, convert them into a rule so they persist across sessions【866425117115978†screenshot】.",
+      "**Regularly update rules**: As your project evolves, revise rules to reflect new architectures, dependencies or style guides.  Outdated rules can mislead the agent.",
+      "**Avoid contradictions**: Ensure that different rule files do not conflict (e.g., two naming conventions).  Consolidate or clarify precedence if needed.",
+      "**Specify what not to do**: In addition to positive instructions, include prohibitions (e.g., ‘do not write comments unless asked’, ‘do not commit secrets’) so the agent avoids undesired behavior【18844222813954†L166-L170】.",
+      "**Monitor token budget**: Rules count toward your context window; write them concisely and remove fluff.  Use terse, instructive language (martial‑arts style) for always‑applied rules【18844222813954†L80-L83】."
+    ],
+    "automation_tips": [
+      "Use `/Generate Cursor Rules` to bootstrap rules automatically based on your project’s files and chat context【916066485450000†L267-L268】.",
+      "Set up scripts that regenerate rule files whenever you add new modules or frameworks (e.g., a post‑install hook that scans dependencies and updates globs).",
+      "Implement a **rule reinforcement routine**: After long conversations, ask the agent to ‘read the rules again’ or instruct it to mention which rules it is applying【18844222813954†L115-L134】.  This mitigates context‑window forgetting and ensures adherence.",
+      "Instrument the agent to log which rule files were loaded for each request.  This helps identify missing or conflicting rules and supports debugging.",
+      "Combine rules with **Plan Mode**: Write rules that guide plan generation (e.g., instruct the agent to research existing code first, to break tasks into small steps).  Good rules produce better plans and reduce clarifying questions.",
+      "Create CI checks that validate rule syntax (YAML front matter) and ensure `globs` patterns match at least one file in the repository.  Fail the build if the rules are invalid.",
+      "Incorporate metadata such as rule version or last updated date in the file name or front matter.  Automate reminders when rules become stale.",
+      "Expose rules to your team via documentation; encourage feedback and contributions.  Annotations in code comments can reference rule IDs, making it easier to locate and edit them.",
+      "For enterprise setups, integrate rules with **task managers** (Jira, Linear) so that new rule requirements are tracked and planned."
+    ],
+    "advanced_tips": [
+      "Understand the three‑layer prompt stack: the model layer (LLM), Cursor’s internal system prompts, and your custom rules layer.  Adjusting your rules is your main lever to influence the agent’s behavior【18844222813954†L147-L152】.",
+      "Remember that Cursor may drop rules from the context as the conversation grows.  Periodically ask the agent to re‑read the rules or explicitly reference them again【18844222813954†L107-L120】.",
+      "Ask the agent to **list the rules it applied** in its response.  This provides transparency and helps you catch when rules are ignored【18844222813954†L124-L134】.",
+      "Write rules that balance **what not to do** and **how to do things right**.  For example, forbid large code rewrites unless necessary and instruct the agent to make minimal, incremental changes【18844222813954†L166-L176】.",
+      "When writing always‑applied rules, use a short, direct tone to conserve tokens.  You can draft rules yourself and then ask the agent to compress or rephrase them for brevity【18844222813954†L86-L105】."
+    ]
+  }
+}

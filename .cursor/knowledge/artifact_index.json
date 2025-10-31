@@ -1,0 +1,46 @@
+{
+  "artifacts": [
+    {
+      "path": "report.md",
+      "desc": "Analiza luk w dokumentacji Cursor IDE i agenta wraz z cytowaniami z oficjalnych źródeł.",
+      "schema_ref": "N/A",
+      "status": "ready"
+    },
+    {
+      "path": "cursor_best_practices_2025-10-01_2025-10-30.json",
+      "desc": "Najnowsze best practices dla Cursor 2.0 z października 2025 - Plan Mode, context scoping, rules engine, security",
+      "schema_ref": "cursor_practices_v2025",
+      "status": "ready"
+    },
+    {
+      "path": "cursor_2_0_best_practices.json",
+      "desc": "Kompletny przewodnik najlepszych praktyk dla Cursor 2.0 - 13 kluczowych praktyk z przykładami implementacji",
+      "schema_ref": "cursor_2_0_practices",
+      "status": "ready"
+    },
+    {
+      "path": "main_research_report.json",
+      "desc": "Kompleksowy research report o emerging technologies 2025-2026 - React 19, Next.js 15, AI-native development, security trends",
+      "schema_ref": "emerging_tech_research_2025",
+      "status": "ready"
+    },
+    {
+      "path": "Emerging Dev Technologies 2025.pdf",
+      "desc": "Główny dokument PDF z analizą emerging technologies w development - AI, Web3, Edge computing, DevOps 2026",
+      "schema_ref": "emerging_tech_pdf_main",
+      "status": "ready"
+    },
+    {
+      "path": "Emerging Dev Technologies 2025 (1).pdf",
+      "desc": "Część 1 analizy emerging technologies - Frontend revolution, AI-native development, new frameworks",
+      "schema_ref": "emerging_tech_pdf_part1",
+      "status": "ready"
+    },
+    {
+      "path": "Emerging Dev Technologies 2025 (2).pdf",
+      "desc": "Część 2 analizy emerging technologies - Backend innovations, DevOps evolution, security paradigms",
+      "schema_ref": "emerging_tech_pdf_part2",
+      "status": "ready"
+    }
+  ]
+}

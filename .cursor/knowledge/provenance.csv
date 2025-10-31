@@ -1,0 +1,15 @@
+
+source_id,title,url,retrieved_at,license,hash,etag,last_modified
+s_langgraph,LangGraph README - LangGraph Orchestration Framework,https://raw.githubusercontent.com/langchain-ai/langgraph/main/README.md,2025-10-20T00:00:00Z,MIT,c808007e0e849b6edb89ecfa3334a6a32ad21a742f6c669e838f9a0ce61fad1b,,
+s_agentic_rag_survey,Agentic Retrieval-Augmented Generation: A Survey On Agentic RAG (README),https://raw.githubusercontent.com/asinghcsu/AgenticRAG-Survey/main/README.md,2025-10-20T00:00:00Z,MIT,bc4d4a6290b8705293b8075cf637ffcb7ec6dd1d18670eb76bdcc48a197bfc61,,
+s_lora,LoRA: Low-Rank Adaptation of Large Language Models,https://arxiv.org/abs/2106.09685,2025-10-20T00:00:00Z,CC-BY-4.0,cae140a2c5e76d6806842c1619035dd4e340190c47a52487dbe4f7275dc16ad2,,
+s_clarifai,LLM Inference Optimization Techniques — Clarifai Blog,https://clarifai.com/blog/llm-inference-optimization-techniques,2025-10-20T00:00:00Z,Proprietary-permitted,bd314d1510b26c28d9a5a00fb00a8c877fbf76ce3f30df0a92c0ce55496a2702,,
+s_harness,MLOps Best Practices — Harness Developer Hub,https://developer.harness.io/docs/mlops/mlops-best-practices,2025-10-20T00:00:00Z,Proprietary-permitted,e150199249e39296c79942e8a00491fa1fb2bfa6677bd626a10d0025be18cd9a,,
+s_smashing,Prompting Is A Design Act — Smashing Magazine,https://www.smashingmagazine.com/article/prompting-design-act-ai/,2025-10-20T00:00:00Z,Proprietary-permitted,e3fb930010166adf48af90fdbc5f68b999276a3ff693ff1a6b082c4888767404,,
+s_seml_data,Data Versioning — Software Engineering for Machine Learning (SE-ML),https://www.se-ml.org/data_versioning,2025-10-20T00:00:00Z,CC-BY-4.0,5e158eb218ee29c0a1bc33d7bd591be34761d8547cd341942f48b14fa6fcd6d8,,
+s_mlflow_registry,Model Registry — MLflow Documentation,https://mlflow.org/docs/latest/model-registry.html,2025-10-20T00:00:00Z,Apache-2.0,cc40732b49e7b3f8a81cfc34a92cf2d312037dedf439440d1bb8139625758330,,
+s_turing_governance,Data Governance in the Machine Learning Pipeline — The Turing Way,https://the-turing-way.netlify.app/research_compendium/data-gov.html,2025-10-20T00:00:00Z,CC-BY-4.0,152cd28f73a0a8f96e85728fcba1db6baee6e15b2eec33151842a856d7bee662,,
+s_owasp,Breaking Down the OWASP Top 10 for LLM Applications — Checkmarx,https://checkmarx.com/blog/breaking-down-the-owasp-top-10-for-llm-applications/,2025-10-20T00:00:00Z,Proprietary-permitted,54b69af3ce0fdaefea25c08c708bafd7b6e59d34d7361f87b2c05a105f1359b7,,
+s_faiss,FAISS Indexes — Facebook Research Wiki,https://github.com/facebookresearch/faiss/wiki/Faiss-indexes,2025-10-20T00:00:00Z,Apache-2.0,7bd29c2504e64c0e933ba06986daa2e71c449ba228cb2b9ac7d903e1bba1eed4,,
+s_agieval,AGIEval Dataset Card — HuggingFace,https://huggingface.co/datasets/AGIEval,2025-10-20T00:00:00Z,MIT,e24b473d72408443312649780d5dfdc9068e12cbb8e227ce65c869fa3cb12725,,
+s_opentelemetry_signals,Signals — OpenTelemetry,https://opentelemetry.io/docs/concepts/signals/,2025-10-20T00:00:00Z,CC-BY-4.0,d2e6da6b56bae3df70ff26fd15ef91c9e7e3d7164b19bf2d5b9824da38858a31,,

@@ -1,0 +1,20 @@
+# AI-Powered Cursor Orchestrator Requirements
+# Install with: pip install -r requirements.txt
+
+# Core dependencies
+aiohttp>=3.9.0          # Async HTTP client for AI API
+pyyaml>=6.0            # YAML parsing for .mdc files
+pathlib>=1.0.1         # Path handling (usually built-in)
+
+# Security dependencies (wymagane dla bezpiecznej konfiguracji)
+cryptography>=41.0.0   # Fernet encryption for API keys
+jsonschema>=4.17.0     # JSON schema validation for config
+
+# Optional but recommended
+python-dotenv>=1.0.0   # Environment variable management (fallback)
+requests>=2.31.0      # HTTP client fallback (if needed)
+
+# Development dependencies (optional)
+# pytest>=7.4.0         # Testing framework
+# black>=23.0.0        # Code formatting
+# flake8>=6.0.0        # Linting

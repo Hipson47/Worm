@@ -1,0 +1,850 @@
+---
+alwaysApply: true
+description: "Code quality assurance with AI-powered testing and review"
+---
+
+# Code Quality Assurance
+
+## 🎯 **Purpose**
+
+This rule implements comprehensive code quality assurance practices based on Cursor 2.0 best practices from October 2025. It enables AI-powered test-driven development and automated code review to ensure high-quality, maintainable code.
+
+## 📋 **Implemented Practices**
+
+### **bp-ai-tdd**: AI-Powered Test-Driven Development
+**Source:** cursor_2_0_best_practices.json (bp-ai-tdd)
+
+**Implementation:** AI-assisted test-first development approach
+
+### **bp-code-review-diff**: Real-time Code Review
+**Source:** cursor_2_0_best_practices.json (bp-code-review-diff)
+
+**Implementation:** Automated code review and diff analysis
+
+## 🧪 **AI-Powered Test-Driven Development**
+
+### Test Generation Engine
+```python
+class AITestGenerator:
+    """AI-powered test generation and TDD workflow management"""
+
+    def __init__(self, ai_client, code_analyzer):
+        self.ai_client = ai_client
+        self.code_analyzer = code_analyzer
+        self.test_runner = TestRunner()
+        self.coverage_analyzer = CoverageAnalyzer()
+
+    async def execute_tdd_workflow(self, requirement: Requirement) -> TDDResult:
+        """
+        Execute complete TDD workflow: tests first, then implementation
+        """
+        # Phase 1: Generate comprehensive tests
+        test_suite = await self.generate_test_suite(requirement)
+
+        # Phase 2: Run tests (should fail initially)
+        initial_results = await self.test_runner.run_tests(test_suite)
+        assert all(not result.passed for result in initial_results), "TDD: Tests should fail before implementation"
+
+        # Phase 3: Generate implementation to satisfy tests
+        implementation = await self.generate_implementation_for_tests(test_suite, requirement)
+
+        # Phase 4: Iteratively improve until all tests pass
+        final_results = await self.iterative_test_driven_improvement(
+            implementation, test_suite, requirement
+        )
+
+        # Phase 5: Analyze coverage and quality
+        coverage_report = await self.coverage_analyzer.analyze_coverage(test_suite, implementation)
+        quality_metrics = await self.analyze_test_quality(test_suite)
+
+        return TDDResult(
+            requirement=requirement,
+            test_suite=test_suite,
+            implementation=implementation,
+            test_results=final_results,
+            coverage_report=coverage_report,
+            quality_metrics=quality_metrics,
+            iterations_taken=len(final_results) - 1,
+            success=all(result.passed for result in final_results)
+        )
+
+    async def generate_test_suite(self, requirement: Requirement) -> TestSuite:
+        """
+        Generate comprehensive test suite for the requirement
+        """
+        # Analyze requirement for test scenarios
+        test_scenarios = await self.analyze_requirement_for_tests(requirement)
+
+        # Generate test cases for each scenario
+        test_cases = []
+        for scenario in test_scenarios:
+            test_case = await self.generate_test_case(scenario, requirement)
+            test_cases.append(test_case)
+
+        # Organize into test suite
+        test_suite = TestSuite(
+            name=f"TestSuite_{requirement.name}",
+            test_cases=test_cases,
+            setup_code=await self.generate_test_setup(requirement),
+            teardown_code=await self.generate_test_teardown(requirement),
+            metadata={
+                'requirement_id': requirement.id,
+                'generated_by': 'ai_tdd_engine',
+                'generation_time': datetime.utcnow().isoformat()
+            }
+        )
+
+        return test_suite
+
+    async def analyze_requirement_for_tests(self, requirement: Requirement) -> List[TestScenario]:
+        """
+        Analyze requirement to identify all test scenarios - Enhanced with AI-native approaches 2025
+        """
+        # NEW 2025: Check for AI-native testing capabilities
+        if self._is_ai_native_requirement(requirement):
+            return await self._analyze_ai_native_scenarios(requirement)
+
+        analysis_prompt = f"""
+        Analyze this requirement and identify all test scenarios that should be covered.
+        Consider modern testing approaches including AI-generated tests, property-based testing, and autonomous testing frameworks.
+
+        Requirement: {requirement.description}
+        Context: {requirement.context}
+        Constraints: {requirement.constraints}
+
+        Identify with 2025 testing perspectives:
+        1. Happy path scenarios + AI-generated edge cases
+        2. Traditional edge cases + ML-discovered scenarios
+        3. Error conditions + chaos engineering scenarios
+        4. Boundary conditions + property-based testing
+        5. Integration points + contract testing
+        6. AI-specific scenarios (hallucination testing, bias detection)
+        7. Performance scenarios with AI model serving
+        8. Security scenarios with post-quantum considerations
+
+        For each scenario, specify:
+        - Input conditions
+        - Expected output/behavior
+        - Preconditions (including AI model states)
+        - Postconditions (including cleanup of AI resources)
+        - Testing approach: [traditional|ai_generated|property_based|chaos|contract]
+        """
+
+        analysis_result = await self.ai_client.generate_structured_output(analysis_prompt)
+
+        # Parse and validate scenarios with 2025 testing metadata
+        scenarios = []
+        for scenario_data in analysis_result.get('scenarios', []):
+            scenario = TestScenario(
+                name=scenario_data['name'],
+                description=scenario_data['description'],
+                input_conditions=scenario_data['inputs'],
+                expected_behavior=scenario_data['expected'],
+                preconditions=scenario_data.get('preconditions', []),
+                postconditions=scenario_data.get('postconditions', []),
+                category=scenario_data.get('category', 'functional'),
+                testing_approach=scenario_data.get('testing_approach', 'traditional'),  # NEW 2025
+                ai_generated=scenario_data.get('ai_generated', False),  # NEW 2025
+                autonomous_execution=scenario_data.get('autonomous_execution', False)  # NEW 2025
+            )
+            scenarios.append(scenario)
+
+        return scenarios
+
+    def _is_ai_native_requirement(self, requirement: Requirement) -> bool:
+        """Check if requirement involves AI/ML components - NEW 2025"""
+        ai_keywords = [
+            'machine learning', 'ml', 'ai', 'neural network', 'llm', 'gpt', 'claude',
+            'model serving', 'inference', 'prediction', 'classification', 'nlp',
+            'computer vision', 'autonomous', 'intelligent', 'adaptive'
+        ]
+
+        text_to_check = f"{requirement.description} {requirement.context}".lower()
+        return any(keyword in text_to_check for keyword in ai_keywords)
+
+    async def _analyze_ai_native_scenarios(self, requirement: Requirement) -> List[TestScenario]:
+        """Specialized analysis for AI/ML requirements - NEW 2025"""
+        ai_analysis_prompt = f"""
+        Analyze this AI/ML requirement for specialized testing scenarios:
+
+        Requirement: {requirement.description}
+        Context: {requirement.context}
+        Tech Stack: {getattr(requirement, 'tech_stack', 'unspecified')}
+
+        Generate comprehensive AI-native test scenarios covering:
+
+        1. MODEL BEHAVIOR TESTS:
+        - Hallucination detection and mitigation
+        - Bias and fairness testing
+        - Edge case handling in ML models
+        - Model drift detection
+
+        2. INFRASTRUCTURE TESTS:
+        - VLLM/Ray Serve deployment testing
+        - Model loading and caching performance
+        - GPU/TPU resource utilization
+        - Autoscaling under load
+
+        3. DATA QUALITY TESTS:
+        - Input validation and sanitization
+        - Data drift detection
+        - Outlier handling
+        - Missing data scenarios
+
+        4. SECURITY TESTS:
+        - Prompt injection prevention
+        - Model inversion attacks
+        - Data poisoning detection
+        - Post-quantum cryptography validation
+
+        5. PERFORMANCE TESTS:
+        - Inference latency benchmarks
+        - Throughput testing
+        - Memory usage monitoring
+        - Cold start performance
+
+        For each scenario, include:
+        - AI-specific preconditions (model loaded, training data available)
+        - Expected behaviors with confidence intervals
+        - Autonomous test generation flags
+        - Chaos engineering scenarios for ML systems
+        """
+
+        ai_result = await self.ai_client.generate_structured_output(ai_analysis_prompt)
+
+        scenarios = []
+        for scenario_data in ai_result.get('scenarios', []):
+            scenario = TestScenario(
+                name=f"ai_{scenario_data['name'].lower().replace(' ', '_')}",
+                description=scenario_data['description'],
+                input_conditions=scenario_data['inputs'],
+                expected_behavior=scenario_data['expected'],
+                preconditions=scenario_data.get('preconditions', []),
+                postconditions=scenario_data.get('postconditions', []),
+                category='ai_ml',
+                testing_approach='ai_native',
+                ai_generated=True,
+                autonomous_execution=True
+            )
+            scenarios.append(scenario)
+
+        return scenarios
+
+    async def generate_test_case(self, scenario: TestScenario, requirement: Requirement) -> TestCase:
+        """
+        Generate executable test case for a scenario
+        """
+        # Determine appropriate test framework
+        framework = self.detect_test_framework(requirement.language, requirement.framework)
+
+        # Generate test code
+        test_code = await self.generate_test_code(scenario, framework, requirement)
+
+        # Generate assertions
+        assertions = await self.generate_assertions(scenario, requirement)
+
+        # Create test case object
+        test_case = TestCase(
+            name=f"test_{scenario.name.lower().replace(' ', '_')}",
+            scenario=scenario,
+            framework=framework,
+            code=test_code,
+            assertions=assertions,
+            metadata={
+                'scenario_id': scenario.name,
+                'framework': framework,
+                'generated_by': 'ai_test_generator'
+            }
+        )
+
+        return test_case
+
+    async def generate_implementation_for_tests(self, test_suite: TestSuite,
+                                               requirement: Requirement) -> Implementation:
+        """
+        Generate implementation code that satisfies the test suite
+        """
+        implementation_prompt = f"""
+        Generate implementation code that will make all these tests pass:
+
+        Requirement: {requirement.description}
+        Language: {requirement.language}
+        Framework: {requirement.framework}
+
+        Test Cases:
+        {self.format_test_cases_for_implementation(test_suite.test_cases)}
+
+        Generate clean, maintainable code that:
+        1. Passes all test cases
+        2. Handles edge cases properly
+        3. Follows best practices for {requirement.language}
+        4. Includes appropriate error handling
+        5. Is well-documented
+        """
+
+        implementation_code = await self.ai_client.generate_code(implementation_prompt)
+
+        # Validate that implementation compiles/runs
+        validation_result = await self.validate_implementation(
+            implementation_code, requirement.language
+        )
+
+        if not validation_result.valid:
+            # Attempt to fix compilation errors
+            implementation_code = await self.fix_implementation_errors(
+                implementation_code, validation_result.errors, requirement
+            )
+
+        return Implementation(
+            code=implementation_code,
+            language=requirement.language,
+            framework=requirement.framework,
+            test_suite=test_suite,
+            validation_result=validation_result
+        )
+```
+
+### Iterative Test-Driven Improvement
+```python
+class IterativeTestImprover:
+    """Iteratively improve code until all tests pass"""
+
+    def __init__(self, ai_client, test_runner, max_iterations=10):
+        self.ai_client = ai_client
+        self.test_runner = test_runner
+        self.max_iterations = max_iterations
+
+    async def iterative_improvement(self, implementation: Implementation,
+                                  test_suite: TestSuite, requirement: Requirement) -> List[TestRunResult]:
+        """
+        Iteratively improve implementation until all tests pass
+        """
+        results_history = []
+        current_implementation = implementation
+
+        for iteration in range(self.max_iterations):
+            # Run current tests
+            test_results = await self.test_runner.run_tests(test_suite, current_implementation)
+            results_history.append(test_results)
+
+            # Check if all tests pass
+            if all(result.passed for result in test_results):
+                break
+
+            # Identify failing tests
+            failing_tests = [result for result in test_results if not result.passed]
+
+            # Generate improvements
+            improvement = await self.generate_improvement(
+                current_implementation, failing_tests, requirement
+            )
+
+            # Apply improvement
+            current_implementation = await self.apply_improvement(
+                current_implementation, improvement
+            )
+
+            # Validate improved implementation
+            validation = await self.validate_implementation(current_implementation)
+            if not validation.valid:
+                # Attempt to fix validation errors
+                current_implementation = await self.fix_validation_errors(
+                    current_implementation, validation.errors
+                )
+
+        return results_history
+
+    async def generate_improvement(self, implementation: Implementation,
+                                 failing_tests: List[TestResult],
+                                 requirement: Requirement) -> Improvement:
+        """
+        Generate code improvement to fix failing tests
+        """
+        improvement_prompt = f"""
+        The following implementation has failing tests. Generate improvements to fix them:
+
+        Current Implementation:
+        {implementation.code}
+
+        Failing Tests:
+        {self.format_failing_tests(failing_tests)}
+
+        Requirement: {requirement.description}
+
+        Generate specific code changes that will:
+        1. Fix the failing test cases
+        2. Maintain existing functionality
+        3. Improve code quality
+        4. Handle edge cases properly
+
+        Focus on the root causes of the test failures.
+        """
+
+        improvement_suggestion = await self.ai_client.generate_code_improvement(improvement_prompt)
+
+        return Improvement(
+            description=improvement_suggestion['description'],
+            code_changes=improvement_suggestion['changes'],
+            rationale=improvement_suggestion['rationale'],
+            expected_impact=improvement_suggestion['impact']
+        )
+
+    async def apply_improvement(self, implementation: Implementation,
+                              improvement: Improvement) -> Implementation:
+        """
+        Apply improvement to implementation
+        """
+        # Apply code changes
+        updated_code = self.apply_code_changes(
+            implementation.code, improvement.code_changes
+        )
+
+        # Update implementation
+        updated_implementation = Implementation(
+            code=updated_code,
+            language=implementation.language,
+            framework=implementation.framework,
+            test_suite=implementation.test_suite,
+            improvements_applied=implementation.improvements_applied + [improvement],
+            validation_result=await self.validate_implementation(updated_code, implementation.language)
+        )
+
+        return updated_implementation
+```
+
+## 🔍 **Real-time Code Review & Diff Analysis**
+
+### Automated Code Review Engine
+```python
+class AutomatedCodeReviewer:
+    """AI-powered automated code review and diff analysis"""
+
+    def __init__(self, ai_client, code_analyzer, quality_rules):
+        self.ai_client = ai_client
+        self.code_analyzer = code_analyzer
+        self.quality_rules = quality_rules
+        self.review_history = ReviewHistory()
+
+    async def review_code_changes(self, diff: CodeDiff, context: ReviewContext) -> ReviewReport:
+        """
+        Perform comprehensive code review of changes
+        """
+        # Analyze diff structure
+        diff_analysis = await self.analyze_diff_structure(diff)
+
+        # Check code quality rules
+        quality_issues = await self.check_quality_rules(diff, context)
+
+        # Analyze potential bugs and issues
+        bug_analysis = await self.analyze_potential_bugs(diff, context)
+
+        # Review security implications
+        security_review = await self.review_security_implications(diff, context)
+
+        # Assess maintainability impact
+        maintainability_assessment = await self.assess_maintainability_impact(diff, context)
+
+        # Generate AI-powered insights
+        ai_insights = await self.generate_ai_insights(diff, context)
+
+        # Calculate overall score
+        overall_score = self.calculate_review_score(
+            quality_issues, bug_analysis, security_review, maintainability_assessment
+        )
+
+        # Generate recommendations
+        recommendations = await self.generate_review_recommendations(
+            diff_analysis, quality_issues, bug_analysis, security_review, ai_insights
+        )
+
+        review_report = ReviewReport(
+            diff_summary=diff_analysis,
+            quality_issues=quality_issues,
+            potential_bugs=bug_analysis,
+            security_concerns=security_review,
+            maintainability_impact=maintainability_assessment,
+            ai_insights=ai_insights,
+            overall_score=overall_score,
+            recommendations=recommendations,
+            review_metadata={
+                'reviewed_by': 'ai_code_reviewer',
+                'review_timestamp': datetime.utcnow().isoformat(),
+                'diff_size': len(diff.changed_lines),
+                'files_changed': len(diff.changed_files)
+            }
+        )
+
+        # Store review for learning
+        await self.review_history.store_review(review_report)
+
+        return review_report
+
+    async def analyze_diff_structure(self, diff: CodeDiff) -> DiffAnalysis:
+        """
+        Analyze the structure and scope of code changes
+        """
+        analysis = {
+            'files_changed': len(diff.changed_files),
+            'lines_added': sum(len(additions) for additions in diff.additions.values()),
+            'lines_deleted': sum(len(deletions) for deletions in diff.deletions.values()),
+            'files_by_type': self.categorize_changed_files(diff.changed_files),
+            'change_patterns': self.identify_change_patterns(diff),
+            'risk_assessment': self.assess_change_risk(diff)
+        }
+
+        return DiffAnalysis(**analysis)
+
+    async def check_quality_rules(self, diff: CodeDiff, context: ReviewContext) -> List[QualityIssue]:
+        """
+        Check code against quality rules and standards
+        """
+        issues = []
+
+        for file_path, changes in diff.changes.items():
+            file_issues = await self.check_file_quality_rules(
+                file_path, changes, context
+            )
+            issues.extend(file_issues)
+
+        # Check for cross-file consistency
+        consistency_issues = await self.check_cross_file_consistency(diff, context)
+        issues.extend(consistency_issues)
+
+        return issues
+
+    async def check_file_quality_rules(self, file_path: str, changes: FileChanges,
+                                     context: ReviewContext) -> List[QualityIssue]:
+        """
+        Check individual file against quality rules
+        """
+        issues = []
+
+        # Apply each relevant quality rule
+        for rule in self.get_applicable_rules(file_path, context):
+            rule_issues = await rule.check_changes(file_path, changes, context)
+            issues.extend(rule_issues)
+
+        return issues
+
+    def get_applicable_rules(self, file_path: str, context: ReviewContext) -> List[QualityRule]:
+        """
+        Get quality rules applicable to the file and context
+        """
+        applicable_rules = []
+
+        file_extension = Path(file_path).suffix
+        language = self.detect_language(file_path)
+
+        for rule in self.quality_rules:
+            if rule.applies_to_language(language) and rule.applies_to_context(context):
+                applicable_rules.append(rule)
+
+        return applicable_rules
+
+    async def analyze_potential_bugs(self, diff: CodeDiff, context: ReviewContext) -> BugAnalysis:
+        """
+        Analyze code changes for potential bugs and issues
+        """
+        bug_patterns = {
+            'null_pointer': r'\.(\w+)\s*\.\s*',  # Potential null dereference
+            'array_bounds': r'\[.*\]',  # Array access without bounds check
+            'resource_leak': r'(open|connect|allocate).*\n.*return',  # Resource not closed
+            'race_condition': r'(async|thread|concurrent).*shared',  # Potential race conditions
+            'sql_injection': r'(SELECT|INSERT|UPDATE|DELETE).*\+\s*.*',  # SQL injection risk
+        }
+
+        potential_bugs = []
+
+        for file_path, changes in diff.changes.items():
+            for change in changes.modified_lines:
+                for bug_type, pattern in bug_patterns.items():
+                    if re.search(pattern, change.content, re.IGNORECASE):
+                        potential_bugs.append(PotentialBug(
+                            type=bug_type,
+                            file=file_path,
+                            line=change.line_number,
+                            content=change.content,
+                            severity=self.assess_bug_severity(bug_type, change.content),
+                            suggestion=self.generate_bug_fix_suggestion(bug_type, change.content)
+                        ))
+
+        # AI-powered bug detection
+        ai_bug_analysis = await self.ai_client.analyze_code_for_bugs(diff)
+
+        return BugAnalysis(
+            pattern_based_bugs=potential_bugs,
+            ai_detected_bugs=ai_bug_analysis,
+            overall_risk_assessment=self.assess_overall_bug_risk(potential_bugs, ai_bug_analysis)
+        )
+
+    async def review_security_implications(self, diff: CodeDiff,
+                                         context: ReviewContext) -> SecurityReview:
+        """
+        Review code changes for security implications
+        """
+        security_analyzer = SecurityAnalyzer()
+
+        # Analyze each changed file for security issues
+        security_issues = []
+        for file_path, changes in diff.changes.items():
+            file_security = await security_analyzer.analyze_file_security(
+                file_path, changes, context
+            )
+            security_issues.extend(file_security)
+
+        # Check for authentication/authorization changes
+        auth_changes = await self.analyze_authentication_changes(diff, context)
+
+        # Check for data handling changes
+        data_handling = await self.analyze_data_handling_changes(diff, context)
+
+        # Assess overall security posture change
+        overall_assessment = self.assess_security_posture_change(
+            security_issues, auth_changes, data_handling
+        )
+
+        return SecurityReview(
+            security_issues=security_issues,
+            authentication_changes=auth_changes,
+            data_handling_changes=data_handling,
+            overall_security_assessment=overall_assessment
+        )
+```
+
+### Review Feedback Integration
+```python
+class ReviewFeedbackIntegrator:
+    """Integrate review feedback into development workflow"""
+
+    def __init__(self, review_engine, feedback_processor):
+        self.review_engine = review_engine
+        self.feedback_processor = feedback_processor
+
+    async def process_review_feedback(self, review_report: ReviewReport,
+                                    developer_feedback: Dict) -> IntegratedFeedback:
+        """
+        Process and integrate review feedback with developer input
+        """
+        # Analyze developer feedback on AI review
+        feedback_analysis = await self.analyze_developer_feedback(
+            review_report, developer_feedback
+        )
+
+        # Update review recommendations based on feedback
+        updated_recommendations = await self.update_recommendations_with_feedback(
+            review_report.recommendations, feedback_analysis
+        )
+
+        # Generate learning insights for future reviews
+        learning_insights = await self.generate_learning_insights(
+            review_report, developer_feedback, feedback_analysis
+        )
+
+        # Update review engine with insights
+        await self.review_engine.update_with_learning_insights(learning_insights)
+
+        return IntegratedFeedback(
+            original_review=review_report,
+            developer_feedback=developer_feedback,
+            feedback_analysis=feedback_analysis,
+            updated_recommendations=updated_recommendations,
+            learning_insights=learning_insights
+        )
+
+    async def analyze_developer_feedback(self, review_report: ReviewReport,
+                                       developer_feedback: Dict) -> FeedbackAnalysis:
+        """
+        Analyze how developer responds to AI review suggestions
+        """
+        analysis = {
+            'agreed_suggestions': [],
+            'disagreed_suggestions': [],
+            'clarification_requests': [],
+            'accuracy_assessment': 0.0,
+            'helpfulness_rating': developer_feedback.get('helpfulness', 5)
+        }
+
+        for suggestion in review_report.recommendations:
+            feedback = developer_feedback.get(suggestion.id, {})
+
+            if feedback.get('agreed', False):
+                analysis['agreed_suggestions'].append(suggestion)
+            elif feedback.get('disagreed', False):
+                analysis['disagreed_suggestions'].append({
+                    'suggestion': suggestion,
+                    'reason': feedback.get('disagreement_reason', 'No reason provided')
+                })
+
+            if feedback.get('needs_clarification', False):
+                analysis['clarification_requests'].append({
+                    'suggestion': suggestion,
+                    'question': feedback.get('clarification_question', '')
+                })
+
+        # Calculate accuracy based on agreements
+        total_suggestions = len(review_report.recommendations)
+        agreed_count = len(analysis['agreed_suggestions'])
+        analysis['accuracy_assessment'] = agreed_count / total_suggestions if total_suggestions > 0 else 0.0
+
+        return FeedbackAnalysis(**analysis)
+```
+
+## 📊 **Quality Metrics & Reporting**
+
+### Comprehensive Quality Dashboard
+```python
+class QualityMetricsDashboard:
+    """Dashboard for tracking code quality metrics"""
+
+    def __init__(self, tdd_engine, review_engine, metrics_collector):
+        self.tdd_engine = tdd_engine
+        self.review_engine = review_engine
+        self.metrics_collector = metrics_collector
+
+    async def generate_quality_report(self, project_context: Dict,
+                                    time_period: str = 'weekly') -> QualityReport:
+        """
+        Generate comprehensive quality report
+        """
+        # Collect TDD metrics
+        tdd_metrics = await self.collect_tdd_metrics(project_context, time_period)
+
+        # Collect review metrics
+        review_metrics = await self.collect_review_metrics(project_context, time_period)
+
+        # Calculate quality trends
+        quality_trends = await self.calculate_quality_trends(tdd_metrics, review_metrics)
+
+        # Generate recommendations
+        recommendations = await self.generate_quality_recommendations(
+            tdd_metrics, review_metrics, quality_trends
+        )
+
+        return QualityReport(
+            time_period=time_period,
+            tdd_metrics=tdd_metrics,
+            review_metrics=review_metrics,
+            quality_trends=quality_trends,
+            recommendations=recommendations,
+            overall_quality_score=self.calculate_overall_score(tdd_metrics, review_metrics),
+            generated_at=datetime.utcnow()
+        )
+
+    async def collect_tdd_metrics(self, project_context: Dict, time_period: str) -> TDDMetrics:
+        """
+        Collect metrics from TDD activities
+        """
+        # Query test execution history
+        test_history = await self.tdd_engine.get_test_history(project_context, time_period)
+
+        # Calculate metrics
+        total_tests = len(test_history)
+        passed_tests = len([t for t in test_history if t.passed])
+        failed_tests = total_tests - passed_tests
+
+        # Coverage metrics
+        coverage_data = await self.metrics_collector.get_coverage_data(project_context, time_period)
+
+        # TDD compliance metrics
+        tdd_compliance = await self.calculate_tdd_compliance(test_history)
+
+        return TDDMetrics(
+            total_tests=total_tests,
+            test_pass_rate=passed_tests / total_tests if total_tests > 0 else 0,
+            average_test_iterations=sum(t.iterations for t in test_history) / total_tests if total_tests > 0 else 0,
+            coverage_percentage=coverage_data.get('percentage', 0),
+            tdd_compliance_score=tdd_compliance,
+            failing_test_categories=self.categorize_failing_tests(test_history)
+        )
+
+    async def collect_review_metrics(self, project_context: Dict, time_period: str) -> ReviewMetrics:
+        """
+        Collect metrics from code review activities
+        """
+        # Query review history
+        review_history = await self.review_engine.get_review_history(project_context, time_period)
+
+        # Calculate metrics
+        total_reviews = len(review_history)
+        average_review_score = sum(r.overall_score for r in review_history) / total_reviews if total_reviews > 0 else 0
+
+        # Issue categorization
+        issue_breakdown = self.categorize_review_issues(review_history)
+
+        # Developer feedback analysis
+        feedback_analysis = await self.analyze_developer_feedback(review_history)
+
+        return ReviewMetrics(
+            total_reviews=total_reviews,
+            average_review_score=average_review_score,
+            issue_breakdown=issue_breakdown,
+            review_acceptance_rate=self.calculate_acceptance_rate(review_history),
+            feedback_analysis=feedback_analysis,
+            most_common_issues=self.identify_common_issues(review_history)
+        )
+```
+
+## 🔗 **Integration Points**
+
+### **With Existing Rules**
+- **20_security_basics.mdc**: Quality assurance enhances security compliance
+- **30_hybrid_moe_tot_reasoning.mdc**: TDD provides structured reasoning validation
+- **31_advanced_agent_steering.mdc**: Code review integrates with agent workflows
+- **34_performance_optimization.mdc**: Quality metrics drive performance optimization
+
+### **CI/CD Integration**
+```yaml
+# GitHub Actions workflow for automated quality assurance
+name: Code Quality Assurance
+
+on: [push, pull_request]
+
+jobs:
+  quality-assurance:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Run AI-Powered Tests
+      uses: cursor-ai/tdd-action@v1
+      with:
+        test-framework: pytest
+        coverage-threshold: 85
+
+    - name: Automated Code Review
+      uses: cursor-ai/review-action@v1
+      with:
+        review-threshold: 7.5
+        fail-on-blocking-issues: true
+
+    - name: Quality Metrics Report
+      uses: cursor-ai/quality-report-action@v1
+      with:
+        report-format: markdown
+        upload-artifact: true
+```
+
+## 📈 **Success Metrics**
+
+### **TDD Metrics**
+- **Test Coverage**: >85% maintained
+- **Test Pass Rate**: >95% on first implementation
+- **TDD Compliance**: >80% of features developed test-first
+- **Defect Density**: <0.5 defects per 1000 lines
+
+### **Code Review Metrics**
+- **Review Coverage**: 100% of changes reviewed
+- **Issue Detection Rate**: >90% of issues caught pre-merge
+- **Review Acceptance Rate**: >75% of suggestions implemented
+- **Time to Review**: <30 minutes per 100 lines
+
+### **Overall Quality Score**
+- **Maintainability Index**: >75
+- **Technical Debt Ratio**: <5%
+- **Code Quality Grade**: A or B
+- **Security Compliance**: 100%
+
+---
+
+**This rule implements comprehensive code quality assurance with AI-powered TDD and automated code review based on Cursor 2.0 best practices from October 2025, ensuring high-quality, well-tested, and maintainable code.**

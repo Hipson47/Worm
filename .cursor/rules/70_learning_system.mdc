@@ -1,0 +1,148 @@
+---
+description: >
+  Adaptive Learning System — automatically learns from project experience,
+  recognizes success/failure patterns, and continuously optimizes strategies.
+  The system evolves with every project to become more effective.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Adaptive Learning System
+
+## Learning System Architecture
+
+The learning system automatically collects experience from all projects and uses it to optimize future decisions.
+
+### Core: Experience Engine
+```python
+class LearningSystem:
+    def __init__(self):
+        self.experience_collector = ExperienceCollector()
+        self.pattern_recognizer = PatternRecognizer()
+        self.strategy_optimizer = StrategyOptimizer()
+        self.feedback_processor = FeedbackProcessor()
+        self.knowledge_distiller = KnowledgeDistiller()
+
+    async def learn_from_project(self, project_data: ProjectData) -> LearningInsights:
+        # 1. Gather experiences
+        experiences = await self.experience_collector.collect_experiences(project_data)
+
+        # 2. Recognize patterns
+        patterns = await self.pattern_recognizer.identify_patterns(experiences)
+
+        # 3. Generate insights
+        insights = await self.knowledge_distiller.distill_insights(patterns)
+
+        # 4. Optimize strategy
+        optimizations = await self.strategy_optimizer.generate_optimizations(insights)
+
+        # 5. Apply learnings
+        await self.apply_learnings(optimizations)
+
+        return LearningInsights(
+            patterns_discovered=len(patterns),
+            insights_generated=len(insights),
+            optimizations_applied=len(optimizations)
+        )
+```
+
+## Experience Collection
+
+### Multi-Level Data Collection
+```python
+class ExperienceCollector:
+    def __init__(self):
+        self.metrics_collector = MetricsCollector()
+        self.outcome_analyzer = OutcomeAnalyzer()
+        self.context_recorder = ContextRecorder()
+        self.feedback_aggregator = FeedbackAggregator()
+
+    async def collect_experiences(self, project_data: ProjectData) -> List[Experience]:
+        experiences = []
+
+        # Execution metrics
+        execution_metrics = await self.metrics_collector.collect_execution_metrics(project_data)
+
+        # Outcome analysis
+        outcome_analysis = await self.outcome_analyzer.analyze_outcomes(project_data)
+
+        # Project context
+        context_data = await self.context_recorder.record_context(project_data)
+
+        # User feedback
+        user_feedback = await self.feedback_aggregator.aggregate_feedback(project_data)
+
+        # Build experiences
+        experiences.extend(await self._create_execution_experiences(execution_metrics))
+        experiences.extend(await self._create_outcome_experiences(outcome_analysis))
+        experiences.extend(await self._create_context_experiences(context_data))
+        experiences.extend(await self._create_feedback_experiences(user_feedback))
+
+        return experiences
+```
+
+## Pattern Recognition
+```python
+class PatternRecognizer:
+    async def identify_patterns(self, experiences: List[Experience]) -> List[Pattern]:
+        # Correlations → Clustering → Trends → Anomalies → Validation
+        pass
+```
+
+## Knowledge Distillation
+```python
+class KnowledgeDistiller:
+    async def distill_insights(self, patterns: List[Pattern]) -> List[Insight]:
+        # Generate insights → Analyze causality → Generalize → Prioritize
+        pass
+```
+
+## Strategy Optimization
+```python
+class StrategyOptimizer:
+    async def generate_optimizations(self, insights: List[Insight]) -> List[Optimization]:
+        # Evaluate recommendations → Tune parameters → Select rollout strategy → Monitor
+        pass
+```
+
+## Feedback Loop
+```python
+class FeedbackProcessor:
+    async def process_feedback_loop(self, project_data: ProjectData) -> FeedbackResult:
+        # Collect feedback → Analyze sentiment → Assess impact → Generate adjustments
+        pass
+```
+
+## Learning Metrics
+```python
+@dataclass
+class LearningMetrics:
+    pattern_recognition_accuracy: float
+    insight_quality_score: float
+    optimization_success_rate: float
+    strategy_adaptation_speed: float
+    context_awareness_score: float
+    feedback_processing_efficiency: float
+    project_outcome_improvement: float
+    user_satisfaction_trend: float
+    resource_efficiency_gain: float
+    false_positive_rate: float
+    learning_stability: float
+    knowledge_retention: float
+```
+
+## Safe Learning Constraints
+```python
+class SafeLearningGuard:
+    async def validate_learning_application(self, optimization: Optimization) -> SafetyResult:
+        # Safety validation → Impact prediction → Rollback plan (if needed)
+        pass
+```
+
+## Dashboard & Reporting
+```python
+class LearningDashboard:
+    async def generate_learning_report(self, time_period: str) -> LearningReport:
+        # Collect metrics → Visualize → Summarize insights → Track progress
+        pass
+```

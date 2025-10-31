@@ -1,0 +1,563 @@
+---
+description: >
+  Universal Project Orchestrator — central coordinator of all agents
+  with dynamic resource allocation, project context awareness, and cross-domain integration.
+  Automatically identifies project type and optimizes execution strategy.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Universal Project Orchestrator
+
+## Orchestrator Architecture
+
+The Orchestrator is an **intelligent coordinator** of all agents that:
+- **Automatically detects project context** (web app, API, ML, mobile, etc.)
+- **Dynamically allocates experts** based on task requirements
+- **Optimizes cost and time** via adaptive strategies
+- **Integrates cross-domain concerns** (security, docker, reasoning, implementation)
+- **Learns from experience** to improve effectiveness
+
+### Core: Project Context Engine
+```python
+class UniversalProjectOrchestrator:
+    def __init__(self):
+        self.context_engine = ProjectContextEngine()
+        self.agent_pool = AgentPool()
+        self.cost_optimizer = CostOptimizer()
+        self.learning_engine = LearningEngine()
+        self.integration_bus = IntegrationBus()
+
+    async def orchestrate_task(self, task: Task, context: ProjectContext) -> OrchestrationResult:
+        # 1. Analyze project context
+        project_type = await self.context_engine.analyze_project_type(context)
+        complexity = self.context_engine.assess_complexity(task)
+
+        # 2. Dynamic agent allocation
+        agent_team = await self.agent_pool.allocate_agents(
+            project_type=project_type,
+            complexity=complexity,
+            task_requirements=task
+        )
+
+        # 3. Strategy & cost optimization
+        strategy = await self.cost_optimizer.optimize_strategy(
+            agent_team=agent_team,
+            project_context=context,
+            task_complexity=complexity
+        )
+
+        # 4. Execute with monitoring
+        result = await self.execute_with_monitoring(agent_team, strategy, task)
+
+        # 5. Learn from execution
+        await self.learning_engine.learn_from_execution(result)
+
+        return result
+```
+
+## Project Context Recognition
+
+### Automatic Project Classification
+```python
+@dataclass
+class ProjectContext:
+    tech_stack: List[str]           # ['python', 'fastapi', 'postgresql']
+    architecture: str               # 'microservices', 'monolith', 'serverless'
+    domain: str                     # 'web', 'api', 'ml', 'mobile', 'iot'
+    scale: str                      # 'small', 'medium', 'large', 'enterprise'
+    compliance: List[str]           # ['gdpr', 'soc2', 'hipaa']
+    deployment: str                 # 'docker', 'k8s', 'serverless', 'bare_metal'
+    team_size: int                  # number of developers
+    timeline: str                   # 'prototype', 'mvp', 'production', 'maintenance'
+```
+
+### Recognition Algorithm
+```python
+class ProjectContextEngine:
+    async def analyze_project_type(self, context: ProjectContext) -> ProjectType:
+        primary_tech = self._identify_primary_technology(context.tech_stack)
+        architecture_pattern = self._detect_architecture_pattern(context)
+        security_level = self._assess_security_requirements(context.compliance)
+        complexity_profile = self._calculate_complexity_profile(context)
+
+        return ProjectType(
+            primary_tech=primary_tech,
+            architecture=architecture_pattern,
+            security_level=security_level,
+            complexity=complexity_profile,
+            optimization_vector=self._create_optimization_vector(context)
+        )
+```
+
+## Dynamic Agent Allocation
+
+### Intelligent Team Composition
+```python
+class AgentPool:
+    def __init__(self):
+        self.available_agents = {
+            'security_expert': SecurityExpert(),
+            'architecture_expert': ArchitectureExpert(),
+            'implementation_expert': ImplementationExpert(),
+            'testing_expert': TestingExpert(),
+            'devops_expert': DevOpsExpert(),
+            'performance_expert': PerformanceExpert(),
+            'documentation_expert': DocumentationExpert(),
+            'domain_expert': DomainExpert()
+        }
+
+    async def allocate_agents(self, project_type: ProjectType, complexity: Complexity,
+                              task: Task) -> AgentTeam:
+        base_team = self._get_base_team_for_project_type(project_type)
+        adjusted_team = self._adjust_for_complexity(base_team, complexity)
+        specialized_team = self._add_specialized_agents(adjusted_team, task)
+        optimized_team = self._optimize_for_cost(specialized_team, project_type.budget)
+        return optimized_team
+```
+
+### Allocation Strategies by Project Type
+
+| Project Type | Base Team | Complex Tasks | Critical Aspects |
+|----|---|-----|----|
+| **Web App** | Security, Implementation, Testing | Architecture, Performance | UX, Security |
+| **API/Microservices** | Architecture, Implementation, Testing | DevOps, Security | Reliability, Monitoring |
+| **ML/AI** | Domain Expert, Implementation, Testing | Performance, Architecture | Data Governance, Ethics |
+| **Mobile App** | Implementation, Testing, Performance | DevOps, Security | Platform Compatibility |
+| **IoT/Embedded** | Domain Expert, Implementation, Security | Performance, Architecture | Resource Constraints |
+
+## Cross-Domain Integrity
+```python
+class CrossDomainConstraints:
+    SECURITY_CONSTRAINTS = {
+        'docker': ['must_use_non_root', 'must_scan_images', 'must_limit_capabilities'],
+        'code': ['must_validate_input', 'must_handle_errors', 'must_log_security_events'],
+        'infrastructure': ['must_use_encryption', 'must_implement_monitoring']
+    }
+
+    PERFORMANCE_CONSTRAINTS = {
+        'database': ['must_use_connection_pooling', 'must_optimize_queries'],
+        'api': ['must_implement_caching', 'must_use_async_patterns'],
+        'frontend': ['must_optimize_assets', 'must_implement_lazy_loading']
+    }
+```
+
+## Learning & Adaptation
+```python
+class LearningEngine:
+    async def learn_from_execution(self, result: OrchestrationResult):
+        # Store experience → analyze patterns → optimize strategies
+        pass
+```
+
+## Quality & Monitoring
+```python
+class QualityAssuranceMonitor:
+    async def monitor_execution(self, agent_team: AgentTeam,
+                                execution_context: ExecutionContext) -> MonitoringResult:
+        # Calculate quality scores → detect anomalies → generate corrections
+        pass
+```
+
+## CI/CD & Deployment Integration
+- Works with container best practices (non-root, SBOM, scanning)
+- Integrates with CI pipelines for automated validation
+- Supports health checks, structured logging, and metrics
+
+## Outputs
+- **Orchestration Plan** (phases, tasks, agents, ETA)
+- **Agent Allocation** (budget distribution, specialized needs)
+- **Risk Assessment** (threats, mitigations)
+- **Optimization Opportunities** (cost/performance/quality)
+
+## Team Rules & Governance (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-team-rules)
+**Implementation:** Enterprise-grade team rule management and governance
+
+### Team Rules Architecture
+
+#### Centralized Rule Management
+```python
+class TeamRulesManager:
+    """Centralized management of team-wide rules and policies"""
+
+    def __init__(self, team_config: TeamConfig):
+        self.team_config = team_config
+        self.rule_repository = RuleRepository()
+        self.enforcement_engine = RuleEnforcementEngine()
+        self.audit_logger = AuditLogger()
+
+    async def load_team_rules(self, team_id: str) -> TeamRules:
+        """
+        Load and validate team-specific rules from central repository
+        """
+        # Load rules from dashboard/repository
+        rules = await self.rule_repository.load_team_rules(team_id)
+
+        # Validate rule compatibility
+        validation_result = await self.validate_rules_compatibility(rules)
+
+        if not validation_result.is_valid:
+            raise RuleValidationError(f"Invalid rules: {validation_result.errors}")
+
+        # Initialize enforcement engine
+        await self.enforcement_engine.initialize_rules(rules)
+
+        return TeamRules(
+            rules=rules,
+            validation_status=validation_result,
+            enforcement_engine=self.enforcement_engine,
+            audit_trail=self.audit_logger
+        )
+
+    async def enforce_team_rule(self, agent_action: AgentAction,
+                               context: ExecutionContext) -> EnforcementResult:
+        """
+        Enforce team rules on agent actions
+        """
+        # Check rule applicability
+        applicable_rules = await self.identify_applicable_rules(
+            agent_action, context
+        )
+
+        # Evaluate rule compliance
+        compliance_results = []
+        for rule in applicable_rules:
+            result = await self.enforcement_engine.evaluate_rule(
+                rule, agent_action, context
+            )
+            compliance_results.append(result)
+
+            # Log rule evaluation
+            await self.audit_logger.log_rule_evaluation(
+                rule=rule,
+                action=agent_action,
+                result=result,
+                context=context
+            )
+
+        # Determine overall compliance
+        overall_compliance = self.calculate_overall_compliance(compliance_results)
+
+        return EnforcementResult(
+            compliant=overall_compliance.is_compliant,
+            rule_results=compliance_results,
+            actions_taken=overall_compliance.required_actions,
+            audit_entries=await self.audit_logger.get_recent_entries()
+        )
+```
+
+#### Rule Definition Framework
+```python
+class TeamRule:
+    """Enterprise team rule definition"""
+
+    def __init__(self, rule_id: str, name: str, category: str,
+                 conditions: List[RuleCondition], actions: List[RuleAction],
+                 priority: int = 5, scope: str = "team"):
+        self.rule_id = rule_id
+        self.name = name
+        self.category = category  # "coding_standards", "security", "performance", etc.
+        self.conditions = conditions
+        self.actions = actions
+        self.priority = priority  # 1-10, higher = more important
+        self.scope = scope  # "team", "project", "individual"
+
+    async def evaluate(self, context: RuleEvaluationContext) -> RuleEvaluationResult:
+        """
+        Evaluate rule against given context
+        """
+        # Check all conditions
+        condition_results = []
+        for condition in self.conditions:
+            result = await condition.evaluate(context)
+            condition_results.append(result)
+
+            if not result.met and condition.blocking:
+                # Blocking condition failed
+                return RuleEvaluationResult(
+                    rule_id=self.rule_id,
+                    passed=False,
+                    blocking_failure=True,
+                    failed_condition=condition,
+                    suggested_actions=self.actions
+                )
+
+        # All conditions met or non-blocking failures
+        all_conditions_met = all(result.met for result in condition_results)
+
+        return RuleEvaluationResult(
+            rule_id=self.rule_id,
+            passed=all_conditions_met,
+            blocking_failure=False,
+            condition_results=condition_results,
+            suggested_actions=self.actions if not all_conditions_met else []
+        )
+
+class RuleCondition:
+    """Rule condition definition"""
+
+    def __init__(self, condition_type: str, parameters: dict,
+                 blocking: bool = False, description: str = ""):
+        self.condition_type = condition_type  # "file_pattern", "code_pattern", "action_type"
+        self.parameters = parameters
+        self.blocking = blocking
+        self.description = description
+
+    async def evaluate(self, context: RuleEvaluationContext) -> ConditionResult:
+        """
+        Evaluate this condition
+        """
+        evaluator = self._get_condition_evaluator(self.condition_type)
+        return await evaluator.evaluate(self.parameters, context)
+
+    def _get_condition_evaluator(self, condition_type: str) -> ConditionEvaluator:
+        """Get appropriate evaluator for condition type"""
+        evaluators = {
+            "file_pattern": FilePatternEvaluator(),
+            "code_pattern": CodePatternEvaluator(),
+            "action_type": ActionTypeEvaluator(),
+            "time_window": TimeWindowEvaluator(),
+            "resource_limit": ResourceLimitEvaluator()
+        }
+        return evaluators.get(condition_type, DefaultEvaluator())
+```
+
+### Enterprise Rule Dashboard
+
+#### Rule Creation & Management
+```python
+class EnterpriseRuleDashboard:
+    """Web-based dashboard for team rule management"""
+
+    def __init__(self, rule_manager: TeamRulesManager):
+        self.rule_manager = rule_manager
+        self.api_endpoints = self._setup_api_endpoints()
+
+    def _setup_api_endpoints(self) -> dict:
+        """Setup REST API endpoints for rule management"""
+        return {
+            "GET /api/rules": self.list_team_rules,
+            "POST /api/rules": self.create_rule,
+            "PUT /api/rules/{id}": self.update_rule,
+            "DELETE /api/rules/{id}": self.delete_rule,
+            "GET /api/rules/{id}/compliance": self.get_rule_compliance,
+            "POST /api/rules/validate": self.validate_rules,
+            "GET /api/audit": self.get_audit_log
+        }
+
+    async def create_rule(self, request: dict) -> APIResponse:
+        """
+        Create new team rule via dashboard
+        """
+        rule_data = request.get('rule', {})
+
+        # Validate rule structure
+        validation = await self.validate_rule_structure(rule_data)
+        if not validation.valid:
+            return APIResponse.error(f"Invalid rule: {validation.errors}")
+
+        # Create rule object
+        rule = TeamRule.from_dict(rule_data)
+
+        # Store in repository
+        rule_id = await self.rule_manager.rule_repository.store_rule(rule)
+
+        # Update enforcement engine
+        await self.rule_manager.enforcement_engine.add_rule(rule)
+
+        # Log creation
+        await self.rule_manager.audit_logger.log_rule_creation(rule, request.get('user'))
+
+        return APIResponse.success({"rule_id": rule_id, "status": "created"})
+
+    async def get_rule_compliance(self, rule_id: str) -> APIResponse:
+        """
+        Get compliance statistics for specific rule
+        """
+        # Get rule
+        rule = await self.rule_manager.rule_repository.get_rule(rule_id)
+        if not rule:
+            return APIResponse.error("Rule not found")
+
+        # Get compliance data
+        compliance_data = await self.calculate_rule_compliance(rule)
+
+        return APIResponse.success({
+            "rule_id": rule_id,
+            "compliance_rate": compliance_data.overall_rate,
+            "violations": compliance_data.violations,
+            "trends": compliance_data.trends,
+            "recommendations": compliance_data.improvements
+        })
+```
+
+### Rule Templates & Best Practices
+
+#### Pre-built Rule Templates
+```python
+RULE_TEMPLATES = {
+    "coding_standards": {
+        "python_style": TeamRule(
+            rule_id="python_style_guide",
+            name="Python PEP 8 Compliance",
+            category="coding_standards",
+            conditions=[
+                RuleCondition(
+                    condition_type="code_pattern",
+                    parameters={"pattern": r"^\s{,3}[^#]", "language": "python"},
+                    description="Maximum 79 characters per line"
+                ),
+                RuleCondition(
+                    condition_type="code_pattern",
+                    parameters={"pattern": r"class\s+\w+", "language": "python"},
+                    description="Class names use CamelCase"
+                )
+            ],
+            actions=[
+                RuleAction("warn", "Style violation detected"),
+                RuleAction("suggest", "Apply black formatter"),
+                RuleAction("reject", "Block commit if severity > medium")
+            ]
+        )
+    },
+
+    "security": {
+        "secrets_detection": TeamRule(
+            rule_id="no_hardcoded_secrets",
+            name="No Hardcoded Secrets",
+            category="security",
+            conditions=[
+                RuleCondition(
+                    condition_type="code_pattern",
+                    parameters={
+                        "pattern": r"(api_key|password|secret|token)\s*[:=]\s*[\"'][^\"\s]{10,}[\"']",
+                        "languages": ["python", "javascript", "java"]
+                    },
+                    blocking=True,
+                    description="Hardcoded secrets detected"
+                )
+            ],
+            actions=[
+                RuleAction("block", "Hardcoded secrets not allowed"),
+                RuleAction("alert", "Security team notified"),
+                RuleAction("suggest", "Use environment variables or secret manager")
+            ],
+            priority=10  # Highest priority
+        )
+    },
+
+    "performance": {
+        "query_optimization": TeamRule(
+            rule_id="optimize_db_queries",
+            name="Database Query Optimization",
+            category="performance",
+            conditions=[
+                RuleCondition(
+                    condition_type="code_pattern",
+                    parameters={
+                        "pattern": r"SELECT\s+\*\s+FROM",
+                        "language": "sql",
+                        "exclude_comments": True
+                    },
+                    description="Avoid SELECT * in production code"
+                ),
+                RuleCondition(
+                    condition_type="action_type",
+                    parameters={"action": "database_query", "duration_threshold": 1000},
+                    description="Queries should complete within 1 second"
+                )
+            ],
+            actions=[
+                RuleAction("warn", "Potential N+1 query detected"),
+                RuleAction("suggest", "Add database indexes"),
+                RuleAction("flag", "Performance review required")
+            ]
+        )
+    }
+}
+```
+
+### Governance & Compliance
+
+#### Audit & Compliance Reporting
+```python
+class GovernanceReporter:
+    """Generate compliance reports and governance metrics"""
+
+    def __init__(self, rule_manager: TeamRulesManager):
+        self.rule_manager = rule_manager
+        self.report_generator = ReportGenerator()
+
+    async def generate_compliance_report(self, time_period: str = "monthly") -> ComplianceReport:
+        """
+        Generate comprehensive compliance report
+        """
+        # Gather audit data
+        audit_data = await self.rule_manager.audit_logger.get_audit_data(time_period)
+
+        # Calculate compliance metrics
+        compliance_metrics = await self.calculate_compliance_metrics(audit_data)
+
+        # Identify trends and issues
+        trends = await self.analyze_compliance_trends(audit_data)
+
+        # Generate recommendations
+        recommendations = await self.generate_governance_recommendations(
+            compliance_metrics, trends
+        )
+
+        return ComplianceReport(
+            time_period=time_period,
+            overall_compliance=compliance_metrics.overall_rate,
+            rule_compliance=compliance_metrics.by_rule,
+            trends=trends,
+            recommendations=recommendations,
+            generated_at=datetime.utcnow()
+        )
+
+    async def calculate_compliance_metrics(self, audit_data: List[AuditEntry]) -> ComplianceMetrics:
+        """
+        Calculate detailed compliance metrics
+        """
+        total_evaluations = len(audit_data)
+        compliant_evaluations = len([e for e in audit_data if e.compliant])
+
+        # Group by rule
+        by_rule = {}
+        for entry in audit_data:
+            rule_id = entry.rule_id
+            if rule_id not in by_rule:
+                by_rule[rule_id] = {'total': 0, 'compliant': 0}
+            by_rule[rule_id]['total'] += 1
+            if entry.compliant:
+                by_rule[rule_id]['compliant'] += 1
+
+        # Calculate rates
+        overall_rate = compliant_evaluations / total_evaluations if total_evaluations > 0 else 0
+
+        rule_rates = {}
+        for rule_id, counts in by_rule.items():
+            rule_rates[rule_id] = counts['compliant'] / counts['total'] if counts['total'] > 0 else 0
+
+        return ComplianceMetrics(
+            overall_rate=overall_rate,
+            by_rule=rule_rates,
+            total_evaluations=total_evaluations,
+            improvement_trend=self.calculate_improvement_trend(audit_data)
+        )
+```
+
+**Benefits:**
+- Centralized team rule management
+- Automated compliance enforcement
+- Enterprise-grade governance
+- Audit trails and reporting
+- Consistent development standards
+
+---
+
+**Updated:** November 2025
+**New section added based on Cursor 2.0 best practices from October 2025**
+- Team Rules & Governance (bp-team-rules)

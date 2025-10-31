@@ -1,0 +1,171 @@
+---
+description: >
+  Universal Project Patterns — domain-agnostic templates and best practices
+  for all project types. Automatically detects context and applies suitable
+  patterns regardless of technology or business domain.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Universal Project Patterns
+
+## Meta-Pattern Architecture
+
+The pattern system automatically recognizes project context and applies the right patterns without manual configuration.
+
+### Project & Pattern Classification
+```python
+class UniversalPatternEngine:
+    def __init__(self):
+        self.pattern_registry = PatternRegistry()
+        self.context_analyzer = ContextAnalyzer()
+        self.pattern_adapter = PatternAdapter()
+
+    async def apply_universal_patterns(self, project_context: ProjectContext) -> AppliedPatterns:
+        # 1. Context analysis
+        project_classification = await self.context_analyzer.classify_project(project_context)
+
+        # 2. Select appropriate patterns
+        applicable_patterns = await self.pattern_registry.get_patterns_for_classification(
+            project_classification
+        )
+
+        # 3. Adapt to context
+        adapted_patterns = await self.pattern_adapter.adapt_patterns(
+            applicable_patterns, project_context
+        )
+
+        return AppliedPatterns(
+            classification=project_classification,
+            patterns=adapted_patterns,
+            rationale=self._generate_rationale(applicable_patterns, project_context)
+        )
+```
+
+## Core Universal Patterns
+
+### 1) Separation of Concerns
+**Applies to**: All projects — always required
+```python
+# Universal directory structure
+project_root/
+├── src/                    # Source code
+│   ├── core/              # Business logic
+│   ├── infrastructure/    # Infrastructure layer
+│   ├── interfaces/        # Interfaces & APIs
+│   └── shared/            # Shared components
+├── tests/                 # Tests (unit/integration/e2e)
+├── docs/                  # Documentation
+├── scripts/               # Tools & automation
+└── config/                # Configuration
+```
+**Principles**:
+- Single Responsibility, Dependency Inversion, Interface Segregation
+
+### 2) State Management
+**Applies to**: Any system with state
+```python
+class UniversalStateManager:
+    async def manage_state(self, operation: StateOperation) -> StateResult:
+        # Validate → execute atomically → notify observers
+        pass
+```
+**Platform mappings**: Web (Redux/Zustand), Mobile (Provider/Bloc), Backend (DB+Cache), ML (model versioning)
+
+### 3) Error Handling
+**Applies to**: All projects
+```python
+class UniversalErrorHandler:
+    async def handle_error(self, error: Exception, context: ErrorContext) -> ErrorResponse:
+        # Classify → recover → report → fallback
+        pass
+```
+**Levels**: UI (friendly, graceful), App (retries/circuit-breakers), Infra (monitoring/alerts)
+
+### 4) Observability
+**Applies to**: Production systems
+```python
+class UniversalObservability:
+    async def observe_system(self, component: str, operation: str) -> ObservationContext:
+        # Trace + Metrics + Logs + Alerts
+        pass
+```
+
+## Web Application Pattern
+```python
+class WebApplicationPattern:
+    def apply_pattern(self, project_context: ProjectContext) -> WebApplicationStructure:
+        # Creates default structure for React/Vue/Angular + Node/Go/Python backends
+        pass
+```
+
+## API/Microservices Pattern
+```python
+class APIPattern:
+    async def apply_api_pattern(self, services: List[ServiceDefinition]) -> APIStructure:
+        # Service dependencies → Gateway → Discovery → Load Balancing
+        pass
+```
+
+## Data/ML Pattern
+```python
+class DataMLPattern:
+    async def apply_data_pattern(self, data_context: DataContext) -> DataStructure:
+        # Pipeline → Model management → Experiment tracking → Monitoring
+        pass
+```
+
+## Security Patterns (Universal)
+```python
+class DefenseInDepthPattern:
+    async def apply_security_layers(self, project_context: ProjectContext) -> SecurityLayers:
+        # Network, Application, Data layers + Monitoring
+        pass
+```
+
+## Performance & Scalability
+```python
+class PerformanceOptimizationPattern:
+    async def optimize_performance(self, perf: PerformanceRequirements) -> PerformanceOptimizations:
+        # Caching, DB optimization, async processing
+        pass
+
+class ScalabilityPattern:
+    async def design_scalability(self, scale: ScaleRequirements) -> ScalabilityDesign:
+        # Horizontal scaling, load balancing, auto-scaling
+        pass
+```
+
+## Testing & Quality
+```python
+class TestingPattern:
+    async def design_testing_strategy(self, ctx: ProjectContext) -> TestingStrategy:
+        # Unit, Integration, E2E, Performance + CI integration
+        pass
+
+class CodeQualityPattern:
+    async def enforce_code_quality(self, qs: QualityStandards) -> CodeQualityEnforcement:
+        # Static analysis, formatting, docs, reviews
+        pass
+```
+
+## DevOps & Deployment
+```python
+class CICDPipelinePattern:
+    async def design_pipeline(self, deploy: DeploymentContext) -> CICDPipeline:
+        # Build → Test → Deploy → Monitor
+        pass
+
+class InfrastructureAsCodePattern:
+    async def design_infrastructure(self, infra: InfraRequirements) -> InfrastructureDesign:
+        # IaC tools → Config mgmt → Secrets → Compliance
+        pass
+```
+
+## Practical Guidance
+- Prefer modular monolith before microservices
+- Define SLOs/SLIs early; instrument from day one
+- Enforce security baselines (OWASP Top 10, secrets mgmt)
+- Own your migrations; ensure zero-downtime patterns
+- Automate tests and checks in CI; block on red
+- Document decisions (ADR), APIs (OpenAPI), and runbooks

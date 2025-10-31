@@ -1,0 +1,123 @@
+{
+  "summary": "Podsumowanie zbiorcze opisuje best practices tworzenia agentów Cursor w latach 2025‑06 do 2025‑09. Wskazówki wywodzą się z oficjalnych dokumentacji, changelogów v1.4 i repozytoriów oraz z niezależnych benchmarków i studiów przypadków. Agent powinien planować zadania, wykonywać kod i testować go iteracyjnie, korzystając z plan‑then‑execute. Należy ograniczać kontekst za pomocą @file/@folder/@symbol i reguł .cursorignore, stosować RAG na dokumentacji (MCP) i repozytorium zgodnie z najlepszymi praktykami. Refaktoryzacje repozytoryjne wymagają komponowania kroków w Composerze oraz kontroli punktów kontrolnych z komitami, aby zapobiegać dryfowi. W praktyce Cursor został oceniony w 2025 r. jako najszybszy w tworzeniu kompletnych aplikacji Next.js w testach Render, ale wymagał trzech dodatkowych promptów i poprawiania Dockerfile oraz SSL【836427137069367†screenshot】. Changelog 1.4 wprowadził większą sterowalność agentów, lepsze narzędzia (Read file usuwa limit 2 MB, List i Grep zwracają pełne drzewa i mniej szumu, Codebase search z lepszym rankingiem, a Web search jest lżejszy)【667937577672388†screenshot】, oddzielne modele na zakładkę, widoczność zużycia oraz szybsze uruchamianie background agents (redukcja p90 o >70 %)【948489517275383†screenshot】. W recenzji Skywork AI podkreślono, że Cursor oferuje agent‑first workflow z wieloetapowym planem, repo‑wide refactors z selektywnymi diffami, opcjami prywatności SOC 2 i zero‑retention, ale ostrzeżono przed dryfem przy dużych repozytoriach oraz zmiennością cennika【869758627962795†screenshot】. Studium Render dowodzi, że Cursor wypada najlepiej w produkcji, lecz Cloud Code był lepszy w prototypowaniu; liczba promptów i jakość UX różniły się, co pokazuje kompromis między jakością a kosztami i latencją【332339570726257†screenshot】.\n",
+  "playbooks": {
+    "plan_then_execute": "### Planowanie i wykonanie\n1. **Zbierz wymagania i kontekst** – w pierwszym promptcie poproś użytkownika o cele, ograniczenia i oczekiwania co do testów. Dodaj @file/@folder lub @Docs, aby zawęzić kontekst i ograniczyć tokeny.\n2. **Stwórz plan** – poproś agenta o wygenerowanie listy zadań (todo), podzielonej na kroki z zależnościami; przejrzyj plan i popraw. Utrzymuj zadania w skali 5–10 minut.\n3. **Wykonanie iteracyjne** – zatwierdzaj każdy krok: edycje plików, komendy `run` w sandboxie, testy. Używaj `Auto-run` w sandboxie, aby zmniejszyć liczbę potwierdzeń, ale trzymaj `Run everything` wyłączone.\n4. **Ocena i poprawki** – po każdej iteracji uruchamiaj testy jednostkowe. Jeżeli testy nie przechodzą, poproś agenta o poprawki, zachowując plan.\n5. **Komit i przegląd diffów** – po ukończeniu zadań przeglądaj diffy, akceptuj/odrzucaj linie selektywnie. Korzystaj z gałęzi feature i commituj po każdym zaakceptowanym pliku, aby utrzymać historię.\n6. **Retrospekcja** – dodaj pamięć (memory) o napotkanych problemach, aby AI pamiętała kontekst w przyszłych sesjach.\n\nNajczęstsze pułapki: niejasne plany, brak podziału na zadania, nadmierne użycie `Run everything`. Unikaj dużych jednorazowych zmian i zawsze testuj po każdej iteracji.",
+    "context_scoping": "### Skopowanie kontekstu\n1. **Używaj @file/@folder/@symbol** – kieruj agenta do konkretnych plików lub folderów, aby zmniejszyć liczbę tokenów i uniknąć halucynacji.\n2. **Reguły i `.cursorignore`** – definiuj reguły w `.cursor/rules` dla struktury projektu; w pliku `.cursorignore` wyklucz wrażliwe pliki (np. `.env`, klucze API) i duże katalogi buildów. Hierarchiczne ignorowanie pomaga w monorepo, ale negacja nie przywraca plików wewnątrz wykluczonego katalogu【98701479988172†screenshot】.\n3. **Indeksowanie i multi‑root** – monitoruj status indeksowania (`Cmd+Shift+J`) i unikaj pracy przed zakończeniem procesu. Dla multi‑repo importów stosuj odrębne foldery i reguły.\n4. **Memories i user rules** – korzystaj z Memories do zapisywania wniosków z czatów; user rules pozwalają ustawić preferencje globalne (np. styl kodu, język)【607395373747232†screenshot】.\n5. **MCP i RAG** – gdy potrzebujesz dokumentacji zewnętrznej, aktywuj odpowiedni MCP server i korzystaj z @Docs; konfiguruj `mcp.json` (stdio/SSE) oraz klucze API w `envFile`【289243532246901†screenshot】, aby unikać ręcznego wprowadzania tajnych kluczy.\n\nPułapki: zbyt szeroki kontekst prowadzi do wyczerpania tokenów; ignorowanie `.cursorignore` może wyciec tajne dane; brak reguł utrudnia AI zrozumienie architektury.",
+    "tdd_as_spec": "### Test Driven Development jako specyfikacja\n1. **Red** – utwórz testy przed implementacją (np. w Jest/Pytest). W promptcie wstaw @file z testem i poproś agenta o spełnienie specyfikacji.\n2. **Green** – uruchom testy (`npm test`, `pytest`) w sandboxie. Jeżeli nie przechodzą, pozwól agentowi naprawić kod w małych krokach, ale bez zmiany testów.\n3. **Refactor** – po przejściu testów poproś agenta o refaktoryzację bez łamania testów; korzystaj z diff review by kontrolować zmiany.\n4. **Automatyczne generatory testów** – wykorzystuj narzędzia generujące testy (np. `pytest --cov` i AI do generowania testów krańcowych).\n5. **Metryki TDD** – monitoruj czas od napisania testu do przejścia (`time‑to‑green`), liczbę iteracji oraz wielkość diffa.\n\nPułapki: brak testów uniemożliwia określenie sukcesu, zbyt szerokie testy powodują dryf; zawsze zachowuj minimalny zestaw testów krytycznych.",
+    "safe_edit_protocol": "### Protokół bezpiecznych edycji\n1. **Zasada minimalnego diffa** – formułuj instrukcje tak, aby wprowadzały tylko konieczne zmiany. Używaj selekcji (Inline Edit) dla lokalnych poprawek i Composer dla zmian wieloplikiowych; przeglądaj kolorowe diffs przed akceptacją【251654085219548†screenshot】.\n2. **Check‑points** – zachowuj historię w systemie kontroli wersji; commituj po każdej akceptacji pliku. Nie polegaj na domniemanym rollbacku; Cursor nie posiada oddzielnego mechanizmu przywracania【869758627962795†screenshot】.\n3. **Edycje warunkowe** – poproś agenta, aby wyjaśnił, dlaczego zmienia kod; wstrzymaj zmiany, jeśli nie są zgodne z planem.\n4. **Auto‑run vs manual** – korzystaj z Auto‑run w sandboxie, aby uruchamiać testy i polecenia bez ciągłego potwierdzania; jednak dla poleceń wykraczających poza allowlist (np. instalacja pakietów, dostępy sieciowe) zawsze wymagaj manualnej zgody【798778316945635†screenshot】.\n5. **Kontrola narzędzi** – blokuj użycie MCP i zewnętrznych serwerów w `.cursorignore` lub regułach, jeśli nie chcesz, aby agent sięgał po zewnętrzne API.\n6. **Zarządzanie background agent** – w razie długich operacji używaj background agent; monitoruj postęp w bocznym panelu i ustaw pre‑run commands (np. `npm install`, `pytest`) w konfiguracji środowiska【643296940678189†screenshot】.\n\nPraktyczne wskazówki: zawsze odczytuj diff, zanim zaakceptujesz zmiany; odrzuć każdą niepożądaną linię, a potem kliknij “Accept all” dla pozostałych【376795779671752†screenshot】; utrzymuj allowlistę poleceń; nie uruchamiaj `Run everything` dla bezpieczeństwa.",
+    "context": ""
+  },
+  "rules": [
+    {
+      "stack": "react-ts",
+      "filename": "react-typescript.mdc",
+      "content": "---\ndescription: >\n  Zasady dla projektów React/TypeScript. Zapewniają stosowanie komponentów\n  funkcyjnych, silnego typowania i spójnej struktury folderów.\nglobs: ['src/**/*.{ts,tsx}']\nalwaysApply: true\n---\n# Komponenty funkcyjne\nUżywaj wyłącznie komponentów funkcyjnych z hookami React.\nUnikaj klas.\n\n# Typowanie\nUżywaj typów i interfejsów TypeScript do wszystkich propsów i stanów.\nDeklaruj typy generics w `useState` i `useRef`.\n\n# Architektura\nKażdy komponent ma własny folder z plikiem `index.ts` eksportującym domyślnie komponent.\nPliki testów umieszczaj obok komponentów w `__tests__`.\n\n# API i React Query\nDo zapytań HTTP używaj biblioteki React Query. Funkcje fetch umieszczaj w `src/api`.\n\n# Przykład\n```tsx\ntype ButtonProps = {\n  label: string;\n  onClick: () => void;\n};\nexport function Button({ label, onClick }: ButtonProps) {\n  return <button onClick={onClick}>{label}</button>;\n}\n```\n"
+    },
+    {
+      "stack": "fastapi",
+      "filename": "fastapi.mdc",
+      "content": "---\ndescription: >\n  Reguły dla projektów FastAPI. Wymuszają stosowanie Pydantic, asynchronicznych\n  endpointów i warstw usług.\nglobs: ['app/**/*.py']\nalwaysApply: true\n---\n# Pydantic\nTwórz modele Pydantic do walidacji wszystkich danych wejściowych i wyjściowych.\nNie używaj czystych dictów do przekazywania danych między warstwami.\n\n# Endpointy\nDefiniuj asynchroniczne funkcje (`async def`). Zwracaj `Response` lub modele Pydantic.\n\n# Warstwy\nLogika biznesowa powinna być wydzielona do modułu `services/`. Endpointy tylko\nwywołują funkcje serwisów i mapują modele.\n\n# Testy\nUżywaj `pytest` i `httpx.AsyncClient` do testowania endpointów.\nTwórz fixture bazy danych w `conftest.py`.\n\n# Przykład\n```python\nfrom fastapi import FastAPI\nfrom pydantic import BaseModel\napp = FastAPI()\nclass Item(BaseModel):\n    name: str\n    price: float\n@app.post('/items')\nasync def create_item(item: Item) -> Item:\n    return item\n```\n"
+    },
+    {
+      "stack": "node-express",
+      "filename": "node-express.mdc",
+      "content": "---\ndescription: >\n  Zasady dla projektów Node/Express. Koncentrują się na TypeScript,\n  strukturze warstwowej i obsłudze błędów.\nglobs: ['src/**/*.ts']\nalwaysApply: true\n---\n# TypeScript\nUżywaj `ts-node` i konfiguracji `strict: true`. Nie deklaruj zmiennych typu `any`.\n\n# Architektura\nStosuj wzorzec MVC: kontrolery w `controllers/`, logika w `services/`, dostęp\n do danych w `repositories/`.\n\n# Walidacja\nUżywaj biblioteki `zod` lub `joi` do walidacji wejścia; nie przyjmuj danych\nbez walidacji.\n\n# Obsługa błędów\nZaimplementuj globalny middleware obsługi błędów, który zwraca JSON\nz kodem statusu i komunikatem.\n\n# Przykład\n```ts\nimport express, { Request, Response, NextFunction } from 'express';\nconst app = express();\napp.use(express.json());\napp.get('/ping', (req: Request, res: Response) => {\n  res.json({ message: 'pong' });\n});\napp.use((err: Error, req: Request, res: Response, next: NextFunction) => {\n  res.status(500).json({ error: err.message });\n});\n```\n"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "multi-file-refactor",
+      "mode": "composer",
+      "content": "{\n  \"task\": \"Refaktoruj API i UI\",\n  \"goal\": \"Dodaj paginację do /api/items z parametrami limit/offset; dostosuj tabelę React, aby obsługiwała stronicowanie; dodaj testy w `tests/items.test.ts`; nie zmieniaj autoryzacji.\",\n  \"context\": [\"@file:app/api/items.py\", \"@file:src/components/ItemTable.tsx\", \"@file:tests/items.test.ts\"],\n  \"constraints\": {\"small_diff\": true, \"review_before_apply\": true}\n}"
+    },
+    {
+      "name": "inline-bug-fix",
+      "mode": "inline",
+      "content": "Twoim zadaniem jest naprawić błąd w zaznaczonym fragmencie kodu. Najpierw opisz, co jest przyczyną błędu, a następnie zaproponuj minimalną zmianę kodu. Zwróć odpowiedź w formacie JSON z kluczami `reason` i `patch`. Użyj kontekstu z zaznaczenia i najbliższych linii."
+    }
+  ],
+  "model_matrix": [
+    {
+      "task": "Mała edycja pliku (Inline Edit)",
+      "model": "seedream_v4_edit",
+      "params": {"temperature": 0.1, "max_tokens": 1024},
+      "expected_cost_latency": "~0,01 USD za edycję; latencja 1–2 s"
+    },
+    {
+      "task": "Refaktoryzacja wieloplikowa (Composer)",
+      "model": "seedream_v4_edit",
+      "params": {"temperature": 0.2, "max_tokens": 4096},
+      "expected_cost_latency": "~0,05 USD; latencja 5–8 s w zależności od liczby plików"
+    },
+    {
+      "task": "Generowanie testów i analizy (Chat)",
+      "model": "gemini_25_flash_image_edit",
+      "params": {"temperature": 0.3, "max_tokens": 8192},
+      "expected_cost_latency": "~0,10 USD; latencja 8–12 s, wyższy koszt ze względu na dłuższą odpowiedź"
+    },
+    {
+      "task": "Background Agent (duże refaktoryzacje)",
+      "model": "seedream_v4_edit",
+      "params": {"temperature": 0.2, "max_tokens": 8192},
+      "expected_cost_latency": "Użycie zależy od czasu działania; start jest dwukrotnie szybszy od poprzednich wersji dzięki optymalizacjom w v1.4【948489517275383†screenshot】"
+    }
+  ],
+  "kpis": {
+    "definitions": [
+      "Green‑test % – udział iteracji, w których wszystkie testy przeszły bez błędów.",
+      "Time‑to‑green – czas od rozpoczęcia zadania do przejścia wszystkich testów.",
+      "Średnia wielkość diffa – liczba dodanych i usuniętych linii na iterację.",
+      "Liczba iteracji – liczba cykli plan→code→test, zanim zadanie zostanie ukończone.",
+      "Koszt/zmiana – szacowany koszt (USD) na zadanie, obliczany z zestawienia zużycia tokenów i modelu."
+    ],
+    "collection": "Zintegruj skrypty CI uruchamiające testy (pytest/Jest) po każdej akcji agenta. Zbieraj logi z terminala i API Cursor z informacjami o zużyciu tokenów oraz czasach startu/agenta. Przetwarzaj logi w Prometheusie lub narzędziu analitycznym; generuj dashboard w Grafanie."
+  },
+  "security": {
+    "secrets_handling": "Umieszczaj tajne dane w plikach .env i dodaj `**/.env*`, `**/*.key`, `**/*.pem`, `**/credentials.json` do `.cursorignore` oraz `.gitignore`【285117945683401†screenshot】. Używaj zmiennych środowiskowych w `mcp.json` (`env` lub `envFile`)【289243532246901†screenshot】. Nigdy nie udostępniaj kluczy API w promptach. Dla MCP korzystaj z transportu SSE z OAuth, aby ograniczyć ekspozycję kluczy.\nW projektach Node/Express stosuj `dotenv` i ustaw uprawnienia plików (600). W FastAPI korzystaj z `python-dotenv` oraz ustaw `autoescape` w jinja2, by unikać XSS.\nW React/TS nie przechowuj sekretów w kodzie frontendu.\n\nDodatkowo włącz `security.workspace.trust` w ustawieniach, aby wymusić tryb zaufania; w trybie Privacy Mode wyłączane są Memories i background agent, co chroni dane【570120741120227†screenshot】.",
+    "cwe_checklist": [
+      "CWE‑79: Cross‑Site Scripting – unikaj wstrzykiwania danych do HTML bez sanityzacji.",
+      "CWE‑89: SQL Injection – stosuj ORM/parametryzowane zapytania (SQLAlchemy, Prisma).",
+      "CWE‑306: Brak uwierzytelnienia – zabezpieczaj endpointy JWT/Session.",
+      "CWE‑327: Używanie przestarzałych algorytmów kryptograficznych – stosuj bcrypt/scrypt do haszowania.",
+      "CWE‑732: Niewłaściwe uprawnienia do plików – ogranicz prawa do plików z tajnymi danymi (chmod 600)."
+    ],
+    "pot_sandbox": "Cursor uruchamia polecenia w piaskownicy na macOS; sandbox ogranicza dostęp do sieci i plików poza folderem projektu【55769357211269†screenshot】. W Windows korzysta z WSL/dev container. Sandbox blokuje dostęp do plików konfiguracyjnych `.cursor` i sieci; dostęp można rozszerzyć poprzez allowlistę, ale zaleca się minimalny zakres i ręczne potwierdzenie【714643088742754†screenshot】. Jeżeli sandbox napotka błąd, użytkownik może pominąć, uruchomić bez sandboxa lub dodać do allowlisty; nigdy nie używaj trybu \"Run everything\" w środowiskach produkcyjnych."
+  },
+  "failures": [
+    {
+      "name": "Dryf kontekstu podczas dużej refaktoryzacji",
+      "symptoms": ["Agent wprowadza niepowiązane zmiany w innych plikach", "Testy niespodziewanie zaczynają padać"],
+      "fix_prompts": ["Podziel zadanie na mniejsze części i ponownie wygeneruj plan", "Dodaj @file/@folder, aby zawęzić zakres", "Poproś agenta o przywrócenie poprzedniej wersji i wykonanie tylko określonych zmian"]
+    },
+    {
+      "name": "Nieskończona pętla testów/napraw",
+      "symptoms": ["Agent powtarza te same zmiany po każdym nieudanym teście", "Czas wykonania przekracza oczekiwany"],
+      "fix_prompts": ["Zatrzymaj agenta i przeanalizuj logi błędów", "Napisz konkretny test dla problematycznej funkcji", "Poproś agenta o alternatywne podejście (np. inny algorytm)"]
+    },
+    {
+      "name": "Błąd połączenia z narzędziem MCP",
+      "symptoms": ["Agent zwraca błędy autoryzacji MCP", "Nie pobiera dokumentacji"],
+      "fix_prompts": ["Sprawdź plik `mcp.json` i uzupełnij zmienne środowiskowe w `envFile`", "Wygeneruj nowy token OAuth i spróbuj ponownie", "Przetestuj serwer MCP lokalnie za pomocą `npm run test_client` w repo cursor-agent-mcp"]
+    },
+    {
+      "name": "Nieudane indeksowanie kodu",
+      "symptoms": ["Status indexing wisi na 0%", "Zapytania @file nie znajdują plików"],
+      "fix_prompts": ["Sprawdź, czy projekt nie jest zbyt duży i czy `.cursorignore` nie blokuje ważnych plików", "Zrestartuj edytor i poczekaj na zakończenie indeksowania", "Usuń indeks z ustawień i ponownie zainicjuj projekt"]
+    }
+  ],
+  "references": [
+    {"id": "R1", "title": "Large Codebases – Cursor Docs", "url": "https://cursor.com/docs/configuration/tools/large-codebases", "type": "doc", "year": 2025},
+    {"id": "R2", "title": "Ignore files and hierarchical cursorignore", "url": "https://cursor.com/docs/context/ignore-files", "type": "doc", "year": 2025},
+    {"id": "R3", "title": "Model Context Protocol (MCP) – STIO server configuration", "url": "https://cursor.com/docs/context/mcp#stdio-server-configuration", "type": "doc", "year": 2025},
+    {"id": "R4", "title": "Improved Agent tools, steerability and usage visibility (Cursor changelog 1.4)", "url": "https://cursor.com/changelog/1-4", "type": "doc", "year": 2025},
+    {"id": "R5", "title": "Testing AI coding agents (2025): Cursor vs. Claude, OpenAI, and Gemini", "url": "https://render.com/blog/ai-coding-agents-benchmark", "type": "benchmark", "year": 2025},
+    {"id": "R6", "title": "Cursor AI Review (2025): How Good Is the Agent‑First IDE?", "url": "https://skywork.ai/blog/cursor-ai-review-2025-agent-refactors-privacy/", "type": "post", "year": 2025},
+    {"id": "R7", "title": "Cursor Agent MCP Server", "url": "https://github.com/sailay1996/cursor-agent-mcp", "type": "repo", "year": 2025},
+    {"id": "R8", "title": "Rules: AGENTS.md and user rules", "url": "https://cursor.com/docs/configuration/rules", "type": "doc", "year": 2025}
+  ],
+  "meta": {
+    "time_window": "2025-06-01 to 2025-09-30",
+    "source_mix": {"docs": 4, "repos": 1, "case_studies": 2, "benchmarks": 1},
+    "confidence_notes": "Zalecenia powstały na podstawie oficjalnych dokumentów Cursor (v1.4 i regulaminów), recenzji Skywork AI i benchmarku Render. Dane liczbowe (np. koszty, czasy) są orientacyjne, gdyż pełne metryki nie są publicznie dostępne; przyjęto wartości z testów Render (3 prompty dla pełnej aplikacji Next.js) oraz z changelogu (redukcja czasu startu >70 %). Pełne weryfikacje przeprowadzono na publicznych repozytoriach."
+  }
+}

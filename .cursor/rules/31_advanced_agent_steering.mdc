@@ -1,0 +1,912 @@
+---
+description: >
+  Advanced agent steering techniques with tactical prompting,
+  9 trigger patterns, real-time cost/quality control,
+  MCP integration, and adaptive orchestration strategies.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Advanced Agent Steering
+
+## Tactical Prompting Techniques
+
+### 9 Trigger Patterns for Expert Activation
+
+#### 1. Direct Expert Activation
+```
+Pattern: "@EXPERT_NAME: [task]"
+Examples:
+- "@PLANNER: write an API implementation plan"
+- "@TESTER: add tests for this function"
+- "@REFACTORER: optimize this function"
+
+Use: Immediate activation of a specific expert
+Cost: Minimal overhead
+```
+
+#### 2. Contextual Task Framing
+```
+Pattern: "[Context] + [Goal] + [Constraints] + [Success criteria]"
+Example:
+"E-commerce backend API:
+- Add pagination to /products endpoint
+- Use limit/offset (no cursor)
+- Maintain backward compatibility
+- Test coverage >95%"
+
+Use: Structured tasks with clear requirements
+Cost: Moderate, but high-quality outcomes
+```
+
+#### 3. Progressive Disclosure
+```
+Pattern: "Start with [basic], then expand to [advanced]"
+Example:
+"Start with a basic implementation, then add error handling, validation, and optimization"
+
+Use: Avoid context overload
+Cost: Efficient for complex tasks
+```
+
+#### 4. Constraint-Based Optimization
+```
+Pattern: "[Task] with constraints: [technical] [time] [quality]"
+Example:
+"Implement Redis cache with constraints:
+- Max 500 LoC
+- Execution time < 2h
+- Test coverage >85%"
+
+Use: Control cost and time
+Cost: Low overhead, high efficiency
+```
+
+#### 5. Quality Gates Integration
+```
+Pattern: "[Task] with gates: [criteria] [checkpoint]"
+Example:
+"Add JWT authentication with gates:
+- Gate 1: Build passes
+- Gate 2: Unit tests pass
+- Gate 3: Integration tests OK"
+
+Use: Iterative quality assurance
+Cost: Controlled, early error detection
+```
+
+#### 6. Risk-Aware Planning
+```
+Pattern: "Analyze risk [threat], then [action]"
+Example:
+"Analyze SQL injection risk, then implement ORM protections"
+
+Use: Proactive risk management
+Cost: Moderate, prevents costly failures
+```
+
+#### 7. Collaborative Synthesis
+```
+Pattern: "[Task] with synthesis: [experts] + [consensus]"
+Example:
+"Design microservice architecture with synthesis:
+- PLANNER for decomposition
+- REASONER for trade-offs
+- Consensus via vote"
+
+Use: Complex architectural decisions
+Cost: High, but best quality
+```
+
+#### 8. Feedback Loop Integration
+```
+Pattern: "[Task] with feedback: [metric] [adjustment]"
+Example:
+"Optimize API performance with feedback:
+- Metric: response time < 100ms
+- Adjustment: increase cache hit ratio"
+
+Use: Continuous optimization
+Cost: Adaptive, metrics-driven
+```
+
+#### 9. Meta-Cognitive Override
+```
+Pattern: "Override [default strategy]: [reason] [alternative]"
+Example:
+"Override default testing strategy: reason - legacy code without tests, alternative - integration tests first"
+
+Use: Fit specific contexts
+Cost: Only when necessary, with justification
+```
+
+## Real-Time Control Signals (Cost–Quality–Speed)
+
+### Cost Signals
+```
+🟢 COST_LOW:    < 0.10 USD per task (standard implementation)
+🟡 COST_MEDIUM: 0.10-0.50 USD per task (complex reasoning needed)
+🔴 COST_HIGH:   > 0.50 USD per task (full MoE activation required)
+⚫ COST_BLOCK:  > 2.00 USD per task (require user approval)
+
+Auto-actions:
+- COST_HIGH → Switch to FAST strategy
+- COST_BLOCK → Pause and request justification
+```
+
+### Quality Signals
+```
+🟢 QUALITY_HIGH:   Confidence > 95% (direct implementation)
+🟡 QUALITY_MEDIUM: Confidence 80-95% (standard validation)
+🔴 QUALITY_LOW:    Confidence < 80% (additional review required)
+⚫ QUALITY_FAIL:   Confidence < 50% (reject solution, replan)
+
+Auto-actions:
+- QUALITY_LOW → Activate REASONER for validation
+- QUALITY_FAIL → Full MoE review with PLANNER
+```
+
+### Speed Signals
+```
+🟢 SPEED_FAST:   < 5 min per task (simple implementation)
+🟡 SPEED_NORMAL: 5-15 min per task (standard development)
+🔴 SPEED_SLOW:   15-60 min per task (complex problem solving)
+⚫ SPEED_BLOCK:  > 60 min per task (background processing)
+
+Auto-actions:
+- SPEED_SLOW → Suggest background agent
+- SPEED_BLOCK → Split into subtasks
+```
+
+## Dynamic Strategy Switching
+
+### Strategy Matrix (Urgency × Complexity)
+```
+HIGH URGENCY:
+  LOW COMPLEXITY:  FAST + IMPLEMENTER only
+  MEDIUM COMPLEXITY: FAST + minimal validation
+  HIGH COMPLEXITY:  QUALITY + parallel processing
+
+NORMAL URGENCY:
+  LOW COMPLEXITY:  STANDARD workflow
+  MEDIUM COMPLEXITY: QUALITY + full validation
+  HIGH COMPLEXITY:  DEEP + all experts
+
+LOW URGENCY:
+  ANY COMPLEXITY: BACKGROUND + cost optimization
+```
+
+## MCP Integration Patterns
+
+### Server Management
+```
+Connection Pooling:
+- Max 3 concurrent MCP connections per agent
+- Automatic failover to local tools
+- Token refresh every 55 minutes
+
+Security Context:
+- OAuth2 for external APIs
+- API keys in secure environment variables
+- No sensitive data in logs
+
+Fallback Strategy:
+1. Primary MCP server
+2. Secondary MCP server (different provider)
+3. Local tool execution
+4. User-assisted resolution
+```
+
+### Tool Selection Algorithm
+```python
+def select_tools(task_context):
+    tools = []
+
+    # Semantic matching
+    if "documentation" in task_context:
+        tools.append("web_search")
+
+    if "code_analysis" in task_context:
+        tools.append("static_analysis")
+
+    if "testing" in task_context:
+        tools.append("test_runner")
+
+    return tools
+```
+
+## Adaptive Responses and Behaviors
+
+### Project Phase Adaptation
+```
+PHASE_DISCOVERY:
+  - Focus: Exploration and planning
+  - Strategy: PLANNER + REASONER heavy
+  - Cost Control: Medium budget
+
+PHASE_IMPLEMENTATION:
+  - Focus: Code generation and testing
+  - Strategy: IMPLEMENTER + TESTER primary
+  - Cost Control: Optimized for speed
+
+PHASE_MAINTENANCE:
+  - Focus: Refactoring and optimization
+  - Strategy: REFACTORER + DOCUMENTER
+  - Cost Control: Quality over speed
+```
+
+### User Expertise Adaptation
+```
+EXPERT_USER:
+  - Minimal explanations
+  - Direct code generation
+  - Advanced patterns assumed
+
+INTERMEDIATE_USER:
+  - Step-by-step explanations
+  - Best practices highlighted
+  - Code comments included
+
+BEGINNER_USER:
+  - Detailed tutorials
+  - Educational context provided
+  - Simplified examples
+```
+
+## Structured Reasoning Output
+
+### Standard Response Structure
+```
+## 🎯 Task Summary
+[Brief description of what will be accomplished]
+
+## 🔍 Analysis
+[Key insights and decision rationale]
+
+## 📋 Implementation Plan
+1. [Step 1 with time estimate]
+2. [Step 2 with dependencies]
+3. [Step 3 with validation]
+
+## ⚡ Execution
+[Actual code changes and commands]
+
+## ✅ Validation
+[Test results and quality checks]
+
+## 📚 Documentation
+[Updated docs and comments]
+```
+
+### Progress Tracking Format
+```
+🔄 PROGRESS: [40%] Task decomposition complete
+⏱️  TIME: [12m remaining] Implementation phase
+💰 COST: [$0.15] Within budget
+🎯 QUALITY: [92%] High confidence
+```
+
+### Error Reporting Format
+```
+❌ ERROR: [Brief description]
+🔍 CAUSE: [Root cause analysis]
+🔧 FIX: [Proposed solution]
+⚡ IMPACT: [Affected components]
+🛡️  PREVENTION: [Future safeguards]
+```
+
+## Multi-Model Agent Orchestration (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-multi-model)
+**Implementation:** Parallel agent coordination with different AI models
+
+### Parallel Agent Architecture
+
+#### Agent Pool Management
+```python
+class MultiModelAgentPool:
+    """Manages parallel execution of agents with different models"""
+
+    def __init__(self, max_agents: int = 8):
+        self.max_agents = max_agents
+        self.available_models = {
+            'composer': {'speed': 'fast', 'cost': 'low', 'quality': 'medium'},
+            'gpt-4': {'speed': 'medium', 'cost': 'high', 'quality': 'high'},
+            'claude-3': {'speed': 'medium', 'cost': 'high', 'quality': 'high'},
+            'gpt-5': {'speed': 'slow', 'cost': 'very_high', 'quality': 'excellent'}
+        }
+        self.active_agents = {}
+
+    async def orchestrate_parallel_task(self, task: Task, strategy: str = 'diverse') -> OrchestrationResult:
+        """
+        Execute task with multiple models in parallel
+        """
+        # Select optimal model combination based on strategy
+        model_selection = self._select_models_for_strategy(task, strategy)
+
+        # Launch parallel agents
+        agent_tasks = []
+        for model_config in model_selection:
+            agent = self._create_agent_for_model(model_config)
+            task_future = agent.execute_task(task)
+            agent_tasks.append(task_future)
+
+        # Wait for completion and collect results
+        results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+
+        # Evaluate and merge results
+        best_result = self._evaluate_and_merge_results(results, task)
+
+        return best_result
+
+    def _select_models_for_strategy(self, task: Task, strategy: str) -> List[dict]:
+        """
+        Select appropriate models based on task complexity and strategy
+        """
+        if strategy == 'speed':
+            return [self.available_models['composer']]
+        elif strategy == 'quality':
+            return [self.available_models['gpt-5'], self.available_models['claude-3']]
+        elif strategy == 'balanced':
+            return [self.available_models['composer'], self.available_models['gpt-4']]
+        elif strategy == 'diverse':
+            return [
+                self.available_models['composer'],
+                self.available_models['gpt-4'],
+                self.available_models['claude-3']
+            ]
+        else:
+            return [self.available_models['composer']]  # Default fallback
+```
+
+#### Result Evaluation & Merging
+```python
+class ResultEvaluator:
+    """Evaluates and merges results from parallel agents"""
+
+    def __init__(self):
+        self.quality_metrics = {
+            'correctness': 0.4,
+            'completeness': 0.3,
+            'efficiency': 0.2,
+            'maintainability': 0.1
+        }
+
+    def evaluate_results(self, results: List[AgentResult], task: Task) -> EvaluationReport:
+        """
+        Evaluate quality of each agent's result
+        """
+        evaluations = []
+
+        for result in results:
+            if isinstance(result, Exception):
+                # Handle agent failures
+                evaluations.append({
+                    'agent': result.agent_id,
+                    'success': False,
+                    'error': str(result),
+                    'score': 0.0
+                })
+            else:
+                # Evaluate successful results
+                score = self._calculate_quality_score(result, task)
+                evaluations.append({
+                    'agent': result.agent_id,
+                    'success': True,
+                    'score': score,
+                    'result': result
+                })
+
+        return EvaluationReport(
+            evaluations=evaluations,
+            best_result=self._select_best_result(evaluations),
+            diversity_score=self._calculate_diversity_score(results)
+        )
+
+    def merge_results(self, evaluations: List[dict], strategy: str = 'best') -> MergedResult:
+        """
+        Merge multiple results into final output
+        """
+        if strategy == 'best':
+            return evaluations[0]['result']  # Already sorted by score
+        elif strategy == 'consensus':
+            return self._merge_by_consensus(evaluations)
+        elif strategy == 'hybrid':
+            return self._create_hybrid_solution(evaluations)
+        else:
+            return evaluations[0]['result']
+```
+
+### Enterprise Multi-Agent Configuration
+```yaml
+# Multi-agent orchestration settings
+multi_agent_config:
+  max_parallel_agents: 8
+  default_strategy: "balanced"
+
+  strategies:
+    speed:
+      models: ["composer"]
+      timeout: 30
+      evaluation: "fastest"
+
+    quality:
+      models: ["gpt-5", "claude-3"]
+      timeout: 120
+      evaluation: "best_score"
+
+    balanced:
+      models: ["composer", "gpt-4"]
+      timeout: 60
+      evaluation: "weighted_score"
+
+    diverse:
+      models: ["composer", "gpt-4", "claude-3"]
+      timeout: 90
+      evaluation: "diversity_bonus"
+
+  quality_weights:
+    correctness: 0.4
+    completeness: 0.3
+    efficiency: 0.2
+    maintainability: 0.1
+
+  cost_limits:
+    max_tokens_per_task: 10000
+    max_cost_per_task: 0.50
+```
+
+**Benefits:**
+- Diverse solution approaches
+- Improved solution quality through ensemble methods
+- Automatic model selection based on task requirements
+- Cost optimization through strategic model usage
+
+## Real-time Documentation Integration (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-docs-context)
+**Implementation:** Dynamic documentation injection and API knowledge
+
+### Documentation Context Engine
+
+#### Context7 Integration
+```python
+class DocumentationIntegrator:
+    """Integrates real-time documentation into AI context"""
+
+    def __init__(self):
+        self.doc_cache = {}
+        self.api_providers = {
+            'context7': Context7Provider(),
+            'web_search': WebSearchProvider(),
+            'local_docs': LocalDocsProvider()
+        }
+
+    async def enrich_context_with_docs(self, query: str, context: dict) -> dict:
+        """
+        Enrich AI context with relevant documentation
+        """
+        # Analyze query for documentation needs
+        doc_needs = self._analyze_documentation_requirements(query)
+
+        if not doc_needs:
+            return context
+
+        # Fetch relevant documentation
+        docs = await self._fetch_relevant_docs(doc_needs)
+
+        # Inject into context
+        enriched_context = self._inject_docs_into_context(context, docs)
+
+        return enriched_context
+
+    def _analyze_documentation_requirements(self, query: str) -> List[DocRequest]:
+        """
+        Analyze what documentation might be needed for the query
+        """
+        requirements = []
+
+        # Detect library/framework mentions
+        libraries = self._extract_library_mentions(query)
+        for lib in libraries:
+            requirements.append({
+                'type': 'api_docs',
+                'library': lib,
+                'priority': 'high'
+            })
+
+        # Detect version-specific queries
+        versions = self._extract_version_requirements(query)
+        for version_req in versions:
+            requirements.append({
+                'type': 'version_docs',
+                'library': version_req['library'],
+                'version': version_req['version'],
+                'priority': 'high'
+            })
+
+        return requirements
+
+    async def _fetch_relevant_docs(self, requirements: List[DocRequest]) -> List[DocSnippet]:
+        """
+        Fetch documentation from various providers
+        """
+        docs = []
+
+        for req in requirements:
+            if req['type'] == 'api_docs':
+                # Try Context7 first
+                context7_docs = await self.api_providers['context7'].fetch_docs(req)
+                if context7_docs:
+                    docs.extend(context7_docs)
+                else:
+                    # Fallback to web search
+                    web_docs = await self.api_providers['web_search'].fetch_docs(req)
+                    docs.extend(web_docs)
+
+        return docs
+```
+
+#### Real-time Documentation Injection
+```python
+class ContextEnricher:
+    """Enriches AI prompts with documentation context"""
+
+    def __init__(self, doc_integrator: DocumentationIntegrator):
+        self.doc_integrator = doc_integrator
+
+    async def enhance_prompt(self, original_prompt: str, context: dict) -> str:
+        """
+        Enhance prompt with relevant documentation
+        """
+        # Enrich context with docs
+        enriched_context = await self.doc_integrator.enrich_context_with_docs(
+            original_prompt, context
+        )
+
+        # Build enhanced prompt
+        enhanced_prompt = self._build_enhanced_prompt(
+            original_prompt, enriched_context
+        )
+
+        return enhanced_prompt
+
+    def _build_enhanced_prompt(self, original_prompt: str, enriched_context: dict) -> str:
+        """
+        Build prompt with documentation context
+        """
+        prompt_parts = []
+
+        # Add documentation context
+        if enriched_context.get('docs'):
+            prompt_parts.append("## Documentation Context")
+            for doc in enriched_context['docs']:
+                prompt_parts.append(f"### {doc['title']}")
+                prompt_parts.append(f"Source: {doc['url']}")
+                prompt_parts.append(f"Content: {doc['content'][:500]}...")
+                prompt_parts.append("")
+
+        # Add original prompt
+        prompt_parts.append("## Task")
+        prompt_parts.append(original_prompt)
+
+        # Add usage instructions
+        prompt_parts.append("")
+        prompt_parts.append("## Instructions")
+        prompt_parts.append("Use the provided documentation to ensure accurate implementation.")
+        prompt_parts.append("Reference specific API calls, parameters, and examples from the docs.")
+
+        return "\n".join(prompt_parts)
+```
+
+### Documentation Provider Implementations
+```python
+class Context7Provider:
+    """Provider for Context7 MCP server integration"""
+
+    async def fetch_docs(self, request: DocRequest) -> List[DocSnippet]:
+        """
+        Fetch docs using Context7 MCP server
+        """
+        try:
+            # Simulate Context7 API call
+            docs = await self._call_context7_api(request)
+
+            return [{
+                'title': doc['title'],
+                'content': doc['content'],
+                'url': doc['url'],
+                'provider': 'context7',
+                'freshness': doc['last_updated']
+            } for doc in docs]
+
+        except Exception as e:
+            logger.warning(f"Context7 fetch failed: {e}")
+            return []
+
+class WebSearchProvider:
+    """Provider for web-based documentation search"""
+
+    async def fetch_docs(self, request: DocRequest) -> List[DocSnippet]:
+        """
+        Fetch docs using web search
+        """
+        try:
+            # Use Cursor's built-in browser agent
+            search_results = await self._search_web_for_docs(request)
+
+            return [{
+                'title': result['title'],
+                'content': result['snippet'],
+                'url': result['url'],
+                'provider': 'web_search',
+                'freshness': 'current'
+            } for result in search_results[:3]]  # Top 3 results
+
+        except Exception as e:
+            logger.warning(f"Web search failed: {e}")
+            return []
+```
+
+**Benefits:**
+- Up-to-date API documentation
+- Prevention of deprecated code patterns
+- Accurate library usage
+- Real-time knowledge injection
+
+## Dynamic Model Selection Strategies (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-model-selection)
+**Implementation:** Intelligent model selection based on task characteristics
+
+### Model Selection Engine
+
+#### Task Analysis & Model Matching
+```python
+class ModelSelector:
+    """Intelligent model selection based on task analysis"""
+
+    def __init__(self):
+        self.models = {
+            'composer': {
+                'speed': 5, 'cost': 1, 'quality': 3,
+                'strengths': ['fast_iteration', 'simple_tasks', 'prototyping'],
+                'weaknesses': ['complex_logic', 'deep_analysis']
+            },
+            'gpt-4': {
+                'speed': 3, 'cost': 3, 'quality': 4,
+                'strengths': ['balanced_performance', 'good_reasoning', 'code_generation'],
+                'weaknesses': ['expensive', 'slower_than_fast_models']
+            },
+            'claude-3': {
+                'speed': 3, 'cost': 3, 'quality': 4,
+                'strengths': ['excellent_reasoning', 'safety', 'long_context'],
+                'weaknesses': ['can_be_cautious', 'less_code_focused']
+            },
+            'gpt-5': {
+                'speed': 2, 'cost': 5, 'quality': 5,
+                'strengths': ['maximum_quality', 'complex_reasoning', 'cutting_edge'],
+                'weaknesses': ['very_expensive', 'slowest']
+            }
+        }
+
+    def select_optimal_model(self, task: Task, constraints: dict = None) -> ModelSelection:
+        """
+        Select the best model for a given task
+        """
+        # Analyze task characteristics
+        task_profile = self._analyze_task_profile(task)
+
+        # Apply constraints
+        if constraints:
+            task_profile = self._apply_constraints(task_profile, constraints)
+
+        # Find best model match
+        best_model = self._find_best_model_match(task_profile)
+
+        # Calculate expected performance
+        performance = self._calculate_expected_performance(best_model, task_profile)
+
+        return ModelSelection(
+            model=best_model,
+            confidence=performance['confidence'],
+            expected_cost=performance['cost'],
+            expected_time=performance['time'],
+            reasoning=performance['reasoning']
+        )
+
+    def _analyze_task_profile(self, task: Task) -> TaskProfile:
+        """
+        Analyze task to determine requirements
+        """
+        profile = {
+            'complexity': self._assess_complexity(task),
+            'speed_requirement': self._assess_speed_requirement(task),
+            'quality_requirement': self._assess_quality_requirement(task),
+            'domain': self._identify_domain(task),
+            'size': self._estimate_size(task)
+        }
+
+        return profile
+
+    def _assess_complexity(self, task: Task) -> str:
+        """
+        Assess task complexity level
+        """
+        complexity_indicators = {
+            'architectural': ['design', 'architecture', 'system', 'infrastructure'],
+            'algorithmic': ['algorithm', 'optimization', 'complex', 'analysis'],
+            'integration': ['api', 'integration', 'external', 'third-party'],
+            'standard': ['implement', 'create', 'add', 'basic']
+        }
+
+        description = task.description.lower()
+
+        for level, keywords in complexity_indicators.items():
+            if any(keyword in description for keyword in keywords):
+                return level
+
+        return 'standard'  # Default
+
+    def _find_best_model_match(self, profile: TaskProfile) -> str:
+        """
+        Find model that best matches task profile
+        """
+        # Simple decision tree
+        if profile['complexity'] == 'architectural' or profile['quality_requirement'] == 'critical':
+            return 'gpt-5'
+        elif profile['complexity'] == 'algorithmic':
+            return 'claude-3'
+        elif profile['speed_requirement'] == 'high':
+            return 'composer'
+        elif profile['size'] == 'large' or profile['domain'] == 'enterprise':
+            return 'gpt-4'
+        else:
+            return 'composer'  # Default for simple tasks
+```
+
+#### Adaptive Model Switching
+```python
+class AdaptiveModelSwitcher:
+    """Dynamically switch models during task execution"""
+
+    def __init__(self, model_selector: ModelSelector):
+        self.model_selector = model_selector
+        self.performance_history = {}
+        self.current_model = None
+
+    async def execute_with_adaptive_switching(self, task: Task) -> ExecutionResult:
+        """
+        Execute task with potential model switching
+        """
+        # Start with optimal model
+        initial_selection = self.model_selector.select_optimal_model(task)
+        self.current_model = initial_selection.model
+
+        # Execute initial phase
+        result = await self._execute_with_model(task, self.current_model)
+
+        # Monitor progress and consider switching
+        while not result.is_complete:
+            progress = self._assess_progress(result)
+
+            if self._should_switch_model(progress, task):
+                new_model = self._select_switch_target(progress, task)
+                if new_model != self.current_model:
+                    print(f"Switching from {self.current_model} to {new_model}")
+                    self.current_model = new_model
+
+                    # Resume execution with new model
+                    result = await self._continue_with_model(result, new_model)
+            else:
+                # Continue with current model
+                result = await self._continue_execution(result)
+
+        return result
+
+    def _should_switch_model(self, progress: Progress, task: Task) -> bool:
+        """
+        Determine if model switching is beneficial
+        """
+        # Switch if current model is struggling
+        if progress.confidence < 0.7:
+            return True
+
+        # Switch for different phases of complex tasks
+        if task.complexity == 'high' and progress.phase_changed:
+            return True
+
+        # Switch if hitting quality/speed trade-offs
+        if progress.quality_vs_speed_trade_off:
+            return True
+
+        return False
+
+    def _select_switch_target(self, progress: Progress, task: Task) -> str:
+        """
+        Select best model for current situation
+        """
+        if progress.needs_speed:
+            return 'composer'
+        elif progress.needs_quality:
+            return 'gpt-5'
+        elif progress.needs_reasoning:
+            return 'claude-3'
+        else:
+            return 'gpt-4'  # Balanced default
+```
+
+### Model Performance Tracking
+```python
+class ModelPerformanceTracker:
+    """Track and learn from model performance"""
+
+    def __init__(self):
+        self.performance_db = {}
+        self.learning_rate = 0.1
+
+    def record_performance(self, model: str, task_type: str, metrics: dict):
+        """
+        Record model performance for learning
+        """
+        key = f"{model}_{task_type}"
+
+        if key not in self.performance_db:
+            self.performance_db[key] = {
+                'success_rate': 0.0,
+                'avg_quality': 0.0,
+                'avg_speed': 0.0,
+                'samples': 0
+            }
+
+        # Update running averages
+        current = self.performance_db[key]
+        new_samples = current['samples'] + 1
+        weight = self.learning_rate
+
+        current['success_rate'] = self._update_average(
+            current['success_rate'], metrics['success'], weight
+        )
+        current['avg_quality'] = self._update_average(
+            current['avg_quality'], metrics['quality'], weight
+        )
+        current['avg_speed'] = self._update_average(
+            current['avg_speed'], metrics['speed'], weight
+        )
+        current['samples'] = new_samples
+
+    def get_model_recommendation(self, task_type: str, priority: str = 'balanced') -> str:
+        """
+        Get model recommendation based on learned performance
+        """
+        candidates = [key for key in self.performance_db.keys() if key.endswith(f"_{task_type}")]
+
+        if not candidates:
+            return 'composer'  # Default
+
+        if priority == 'quality':
+            return max(candidates, key=lambda k: self.performance_db[k]['avg_quality']).split('_')[0]
+        elif priority == 'speed':
+            return max(candidates, key=lambda k: self.performance_db[k]['avg_speed']).split('_')[0]
+        else:  # balanced
+            # Calculate balanced score
+            def balanced_score(key):
+                perf = self.performance_db[key]
+                return (perf['avg_quality'] * 0.6 + perf['avg_speed'] * 0.4) * perf['success_rate']
+
+            return max(candidates, key=balanced_score).split('_')[0]
+```
+
+**Benefits:**
+- Optimal model selection for each task type
+- Cost optimization through strategic model usage
+- Continuous learning from performance data
+- Adaptive switching during complex tasks
+
+---
+
+**Updated:** November 2025
+**New sections added based on Cursor 2.0 best practices from October 2025**
+- Multi-Model Agent Orchestration (bp-multi-model)
+- Real-time Documentation Integration (bp-docs-context)
+- Dynamic Model Selection Strategies (bp-model-selection)

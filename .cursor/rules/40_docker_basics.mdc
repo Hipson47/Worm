@@ -1,0 +1,512 @@
+---
+description: >
+  Docker best practices for agents. Covers multi-stage builds, distroless images,
+  user/permissions management, health checks, security hardening, and SBOM generation.
+globs: ['**/Dockerfile', '**/docker-compose*.yml', '**/*.dockerfile']
+alwaysApply: true
+---
+
+# Docker Basics — Best Practices
+
+## Multi-Stage Build Architecture
+
+### Principle of Multi-Staging
+```
+Dockerfile should be split into stages:
+1. BUILD stage: Compilation, dev dependencies
+2. RUNTIME stage: Minimal production image
+3. TESTING stage (optional): For integration tests
+
+Benefits:
+- Reduce final image size by 70-90%
+- Remove vulnerabilities from build tools
+- Better security (no compilers in runtime)
+```
+
+### Optimal Dockerfile Structure
+```dockerfile
+# ================================
+# Build stage - full toolchain
+# ================================
+FROM python:3.12-slim AS builder
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PIP_NO_CACHE_DIR=1 \
+    PIP_DISABLE_PIP_VERSION_CHECK=1
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    gcc \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY . .
+
+RUN python -m pytest tests/ -v
+
+# ================================
+# Production stage - minimal image
+# ================================
+FROM python:3.12-slim AS production
+
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONPATH="/app"
+
+RUN apt-get update && apt-get install -y \
+    libpq-dev \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/* \
+    && groupadd -r appuser && useradd -r -g appuser appuser
+
+COPY --from=builder --chown=appuser:appuser /opt/venv /opt/venv
+
+RUN mkdir -p /app && chown -R appuser:appuser /app
+WORKDIR /app
+
+COPY --chown=appuser:appuser ./app ./app
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD python -c "import requests; requests.get('http://localhost:8000/health')"
+
+USER appuser
+EXPOSE 8000
+CMD ["python", "-m", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+## Base Image Selection
+- Prefer distroless when possible (minimal attack surface)
+- Use Wolfi or Debian Slim for debugging/compatibility
+- Avoid Alpine for glibc-heavy workloads (musl issues)
+
+## Users & Permissions
+- Never run as root in production
+- Create dedicated app user (UID/GID >= 10000 in enterprise)
+- Use read-only root filesystem; mount writable volumes
+
+## Health Checks & Monitoring
+```dockerfile
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+```
+
+## Security Hardening (Runtime)
+```bash
+docker run \
+  --read-only \
+  --tmpfs /tmp \
+  --cap-drop=all \
+  --cap-add=NET_BIND_SERVICE \
+  --security-opt=no-new-privileges \
+  --user=1000:1000 \
+  myapp:latest
+```
+
+## Docker Compose Patterns
+```yaml
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    environment:
+      - NODE_ENV=production
+    deploy:
+      replicas: 3
+      resources:
+        limits:
+          memory: 512M
+          cpus: '0.5'
+```
+
+## SBOM Generation (CI)
+```yaml
+- name: Build Docker image
+  uses: docker/build-push-action@v5
+  with:
+    sbom: true
+    provenance: true
+
+- name: Generate SBOM
+  uses: anchore/sbom-action@v0
+  with:
+    format: spdx-json
+```
+
+## Kubernetes 1.31+ for AI Workloads (2025)
+
+**Source:** emerging_tech_research_2025
+**Implementation:** Modern orchestration for AI/ML applications
+
+### AI-Optimized Pod Specifications
+```yaml
+# Kubernetes 1.31+ with AI workload optimizations
+apiVersion: v1
+kind: Pod
+metadata:
+  name: ai-model-server
+  labels:
+    app: ml-inference
+    model: llama-3-70b
+spec:
+  # Use topology spread constraints for GPU workloads
+  topologySpreadConstraints:
+  - maxSkew: 1
+    topologyKey: kubernetes.io/hostname
+    whenUnsatisfiable: DoNotSchedule
+    labelSelector:
+      matchLabels:
+        app: ml-inference
+
+  containers:
+  - name: model-server
+    image: vllm/vllm-openai:latest
+    ports:
+    - containerPort: 8000
+
+    # Resource requests/limits for AI workloads
+    resources:
+      requests:
+        nvidia.com/gpu: "1"  # A100/H100 GPU
+        memory: "64Gi"
+        cpu: "16"
+      limits:
+        nvidia.com/gpu: "1"
+        memory: "128Gi"
+        cpu: "32"
+
+    # GPU memory optimization
+    env:
+    - name: VLLM_GPU_MEMORY_UTILIZATION
+      value: "0.95"
+    - name: PYTORCH_CUDA_ALLOC_CONF
+      value: "max_split_size_mb:512"
+
+    # Health checks for AI models
+    livenessProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 300  # Allow model loading time
+      periodSeconds: 30
+      timeoutSeconds: 10
+      failureThreshold: 3
+
+    readinessProbe:
+      httpGet:
+        path: /v1/models
+        port: 8000
+      initialDelaySeconds: 60
+      periodSeconds: 10
+      timeoutSeconds: 5
+
+    # Startup probe for slow-loading models
+    startupProbe:
+      httpGet:
+        path: /health
+        port: 8000
+      initialDelaySeconds: 600  # 10 minutes for model loading
+      periodSeconds: 60
+      timeoutSeconds: 30
+      failureThreshold: 10
+```
+
+### Advanced Scheduling for AI Workloads
+```yaml
+# GPU topology-aware scheduling
+apiVersion: scheduling.k8s.io/v1
+kind: PriorityClass
+metadata:
+  name: ai-workload-high
+value: 1000000
+globalDefault: false
+description: "High priority for AI inference workloads"
+
+---
+# Node affinity for GPU nodes
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gpu-ai-workload
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: gpu-ai-workload
+  template:
+    metadata:
+      labels:
+        app: gpu-ai-workload
+    spec:
+      priorityClassName: ai-workload-high
+
+      # Node affinity for GPU-equipped nodes
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: nvidia.com/gpu.present
+                operator: In
+                values:
+                - "true"
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - "g5.12xlarge"  # AWS P3 instances
+                - "p4d.24xlarge" # Latest GPU instances
+
+      # Tolerations for GPU nodes
+      tolerations:
+      - key: "nvidia.com/gpu"
+        operator: "Equal"
+        value: "present"
+        effect: "NoSchedule"
+
+      containers:
+      - name: ai-container
+        image: pytorch/pytorch:2.1.0-cuda12.1-cudnn8-runtime
+        resources:
+          requests:
+            nvidia.com/gpu: "1"
+          limits:
+            nvidia.com/gpu: "1"
+```
+
+### Ray Serve Integration for AI Scaling
+```python
+# Ray Serve on Kubernetes 1.31+
+# app.py
+from ray import serve
+import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+@serve.deployment(
+    ray_actor_options={
+        "num_gpus": 1,
+        "memory": 8 * 1024 * 1024 * 1024  # 8GB
+    },
+    autoscaling_config={
+        "min_replicas": 1,
+        "max_replicas": 10,
+        "target_num_ongoing_requests_per_replica": 5,
+    }
+)
+class LLMModel:
+    def __init__(self):
+        self.device = "cuda" if torch.cuda.is_available() else "cpu"
+        self.model = AutoModelForCausalLM.from_pretrained(
+            "meta-llama/Llama-3-70b",
+            torch_dtype=torch.float16,
+            device_map="auto"
+        )
+        self.tokenizer = AutoTokenizer.from_pretrained("meta-llama/Llama-3-70b")
+
+    async def __call__(self, request):
+        prompt = request.query_params["prompt"]
+        inputs = self.tokenizer(prompt, return_tensors="pt").to(self.device)
+
+        with torch.no_grad():
+            outputs = self.model.generate(
+                **inputs,
+                max_new_tokens=100,
+                temperature=0.7,
+                do_sample=True
+            )
+
+        response = self.tokenizer.decode(outputs[0], skip_special_tokens=True)
+        return {"response": response}
+
+# Ray Serve deployment
+llm_app = LLMModel.bind()
+```
+
+### Kubernetes YAML for Ray Serve
+```yaml
+# Ray Serve on Kubernetes with GPU support
+apiVersion: ray.io/v1
+kind: RayCluster
+metadata:
+  name: ai-inference-cluster
+spec:
+  rayVersion: '2.9.0'
+  headGroupSpec:
+    rayStartParams:
+      dashboard-host: '0.0.0.0'
+      num-cpus: '2'
+      num-gpus: '0'
+    template:
+      spec:
+        containers:
+        - name: ray-head
+          image: rayproject/ray:2.9.0-py310-gpu
+          ports:
+          - containerPort: 6379
+          - containerPort: 8265
+          - containerPort: 10001
+          resources:
+            requests:
+              cpu: 2
+              memory: "4Gi"
+            limits:
+              cpu: 2
+              memory: "4Gi"
+
+  workerGroupSpecs:
+  - replicas: 3
+    minReplicas: 1
+    maxReplicas: 10
+    groupName: gpu-workers
+    rayStartParams:
+      num-cpus: '8'
+      num-gpus: '1'
+    template:
+      spec:
+        containers:
+        - name: ray-worker
+          image: rayproject/ray:2.9.0-py310-gpu
+          resources:
+            requests:
+              cpu: 8
+              memory: "32Gi"
+              nvidia.com/gpu: 1
+            limits:
+              cpu: 8
+              memory: "64Gi"
+              nvidia.com/gpu: 1
+        tolerations:
+        - key: "nvidia.com/gpu"
+          operator: "Equal"
+          value: "present"
+          effect: "NoSchedule"
+
+---
+# Service for Ray Serve
+apiVersion: v1
+kind: Service
+metadata:
+  name: ray-serve-service
+spec:
+  selector:
+    ray.io/cluster: ai-inference-cluster
+    ray.io/group: headgroup
+  ports:
+  - name: http
+    port: 8000
+    targetPort: 8000
+  - name: dashboard
+    port: 8265
+    targetPort: 8265
+  type: LoadBalancer
+```
+
+### VLLM for High-Performance Inference
+```python
+# VLLM deployment configuration
+# vllm_deployment.py
+from vllm import LLM, SamplingParams
+from vllm.sampling_params import GuidedDecodingParams
+
+class VLLMInferenceService:
+    def __init__(self, model_name: str = "meta-llama/Llama-3-70b"):
+        # Initialize VLLM with GPU optimization
+        self.llm = LLM(
+            model=model_name,
+            tensor_parallel_size=4,  # Multi-GPU support
+            gpu_memory_utilization=0.95,
+            max_model_len=4096,
+            quantization="awq",  # 4-bit quantization
+            enforce_eager=False
+        )
+
+    async def generate(self, prompt: str, **kwargs) -> str:
+        """High-performance text generation"""
+        sampling_params = SamplingParams(
+            temperature=kwargs.get('temperature', 0.7),
+            top_p=kwargs.get('top_p', 0.9),
+            max_tokens=kwargs.get('max_tokens', 100),
+            stop=kwargs.get('stop', [])
+        )
+
+        outputs = self.llm.generate([prompt], sampling_params)
+        return outputs[0].outputs[0].text
+
+# FastAPI integration
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+vllm_service = VLLMInferenceService()
+
+class GenerationRequest(BaseModel):
+    prompt: str
+    temperature: float = 0.7
+    max_tokens: int = 100
+
+@app.post("/generate")
+async def generate_text(request: GenerationRequest):
+    response = await vllm_service.generate(
+        request.prompt,
+        temperature=request.temperature,
+        max_tokens=request.max_tokens
+    )
+    return {"generated_text": response}
+```
+
+### BentoML for Model Packaging
+```python
+# BentoML service for production AI deployment
+# service.py
+import bentoml
+from bentoml.io import JSON
+
+# Create BentoML service
+svc = bentoml.Service("llm-service", runners=[])
+
+@svc.api(input=JSON(), output=JSON())
+def predict(input_data):
+    """AI model prediction endpoint"""
+    prompt = input_data["prompt"]
+
+    # Model inference logic
+    response = generate_response(prompt)
+
+    return {"response": response}
+
+# Build and deploy
+if __name__ == "__main__":
+    # Save model
+    bentoml.models.save_model("llm-model", model_instance)
+
+    # Build Bento
+    svc.build()
+
+    # Deploy to Kubernetes
+    bentoml.deployment.apply("llm-deployment", svc)
+```
+
+**Benefits:**
+- **GPU-optimized scheduling** for AI workloads
+- **Auto-scaling** based on inference load
+- **High-performance inference** with VLLM/Ray Serve
+- **Production-ready deployment** with BentoML
+- **Kubernetes 1.31 features** utilization
+
+---
+
+**Updated:** November 2025
+**New sections added based on emerging technologies research 2025**
+- Kubernetes 1.31+ for AI Workloads
+- Advanced Scheduling for AI Workloads
+- Ray Serve Integration for AI Scaling
+- VLLM for High-Performance Inference
+- BentoML for Model Packaging

@@ -1,0 +1,375 @@
+{
+  "meta": {
+    "artifact": "cursor_best_practices_last30days",
+    "time_window": {"from": "2025-10-01", "to": "2025-10-30"},
+    "generated_at": "2025-10-30T12:00:00Z",
+    "tool": "Cursor 2.0 Research Agent",
+    "version": "1.0"
+  },
+  "items": [
+    {
+      "id": "bp-plan-mode-effective",
+      "category": "planning",
+      "practice": "Use Plan Mode for complex tasks to generate a detailed, editable plan before executing code changes.",
+      "why_it_matters": "Cursor’s Plan Mode enables the agent to analyse the codebase, ask clarifying questions and produce a sequenced plan. An upfront plan reduces back‑and‑forth, controls the scope and makes tasks reproducible.",
+      "how_to_apply": [
+        "Trigger Plan Mode (Shift+Tab) or slash command before starting a significant change.",
+        "Answer the agent’s clarifying questions and revise the generated plan in markdown; break large goals into smaller steps and save the plan to the repository if relevant.",
+        "Once satisfied, ask the agent to execute each step using the preferred model (e.g., Sonnet 4.5 or Gemini 2.5) and monitor progress." 
+      ],
+      "usage_example": {
+        "context": "Refactoring a legacy billing module across multiple files.",
+        "steps": [
+          "Open Plan Mode and describe the overall goal: refactor billing to use a new payment API.",
+          "Respond to questions about existing file locations and confirm the new API version.",
+          "Edit the proposed steps (e.g., update API client, adjust tests, deprecate old functions) and save the plan.",
+          "Run the plan; the agent executes tasks step‑by‑step using the chosen model." 
+        ],
+        "expected_outcome": "A structured refactoring plan is executed with fewer revisions and clearer progress tracking.",
+        "snippet": "// Refactor billing module: update PaymentService, modify tests in @Folders/tests/billing, remove legacy endpoints." 
+      },
+      "checks": ["Plan document exists and is versioned", "Agent answered clarifying questions", "Steps correspond to files/modules"],
+      "caveats": ["Plan Mode adds initial overhead; use only for multi‑step tasks", "Overly broad plans still require refinement"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Cursor Blog – Introducing Plan Mode", "url": "https://cursor.com/blog/introducing-plan-mode", "published_date": "2025-10-07", "accessed_at": "2025-10-30T11:00:00Z"},
+        {"title": "Forum: Boosting Productivity with Cursor's new Plan Mode", "url": "https://forum.cursor.com/t/boosting-productivity-with-cursors-new-plan-mode", "published_date": "2025-10-03", "accessed_at": "2025-10-30T11:05:00Z"},
+        {"title": "Collabnix – Effective Prompting & Workflow Patterns", "url": "https://collabnix.com/cursor-developer-guide#workflow-patterns", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:10:00Z"}
+      ]
+    },
+    {
+      "id": "bp-context-mention-files",
+      "category": "context_scoping",
+      "practice": "Use @Files, @Folders and @Docs to anchor queries to specific files, directories or documentation instead of the entire repository.",
+      "why_it_matters": "Large context windows slow responses and can introduce irrelevant information. Pinpointing the exact files or folders tells the model where to look, resulting in faster and more accurate answers.",
+      "how_to_apply": [
+        "When asking the agent to modify or analyse code, include @Files/path and @Folders/path to constrain its view to the relevant modules.",
+        "Use @Docs to add third‑party or internal documentation (e.g., API references) so the model follows your stack’s conventions.",
+        "Summarise noisy sections rather than pasting entire files; provide only the necessary context." 
+      ],
+      "usage_example": {
+        "context": "Optimising authentication helper functions.",
+        "steps": [
+          "Invoke the agent with: ‘Refactor @Files/src/auth.ts to simplify branching. Consider helpers in @Folders/src/utils.’", 
+          "Add @Docs/our-auth-guidelines.md to supply style conventions.",
+          "Review the proposed change and ensure it adheres to the guidelines." 
+        ],
+        "expected_outcome": "The agent proposes targeted refactoring within the specified file and uses the documentation for consistency.",
+        "snippet": "Refactor @Files/src/auth.ts; consult @Docs/AuthAPI.md" 
+      },
+      "checks": ["Prompts include specific @ references", "Context size remains small", "Docs version matches project"],
+      "caveats": ["Including outdated docs can mislead the model", "Too many references may increase token usage"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Skywork – 5 Practical Tips for Coding Faster with Cursor AI", "url": "https://skywork.ai/blog/cursor-ai-coding-tips-2025/", "published_date": "2025-10-01", "accessed_at": "2025-10-30T11:20:00Z"},
+        {"title": "Collabnix – Context Optimization", "url": "https://collabnix.com/cursor-developer-guide#context-optimization", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:21:00Z"},
+        {"title": "Edana – Cursor AI Code Editor: Advantages, Limitations, and Use Cases", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases", "published_date": "2025-10-19", "accessed_at": "2025-10-30T11:22:00Z"}
+      ]
+    },
+    {
+      "id": "bp-context-session-structuring",
+      "category": "context_scoping",
+      "practice": "Break complex requests into focused sessions and limit the context window to improve performance and relevance.",
+      "why_it_matters": "Long sessions with broad goals increase token usage and lead to off‑target suggestions. Structuring sessions keeps the agent’s attention on one goal at a time and produces cleaner diffs.",
+      "how_to_apply": [
+        "Before invoking the agent, decompose the overall objective into smaller, sequential tasks (e.g., update one module or API at a time).",
+        "Run each task in its own agent session of 15–30 minutes; avoid mixing unrelated changes.",
+        "Disable continuous analysis on the main branch and enable agents on feature branches to control scope." 
+      ],
+      "usage_example": {
+        "context": "Adding logging and caching to an analytics service.",
+        "steps": [
+          "Create a feature branch and run an agent session to add structured logging to @Files/src/analytics.ts.",
+          "After reviewing and committing that diff, start a new session to introduce caching using @Folders/src/cache.",
+          "Finally merge the feature branch after tests pass." 
+        ],
+        "expected_outcome": "Each change is isolated, easier to review and less likely to introduce drift.",
+        "snippet": null
+      },
+      "checks": ["Tasks are scoped to one module", "Sessions are time‑boxed", "Branch isolation used"],
+      "caveats": ["Requires discipline and may slow momentum on tight deadlines", "Too many small commits may clutter history"],
+      "evidence_level": "medium",
+      "volatile": false,
+      "sources": [
+        {"title": "Edana – Feedback and Use Cases", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases#feedback", "published_date": "2025-10-19", "accessed_at": "2025-10-30T11:25:00Z"},
+        {"title": "Forum: 10 Pro Tips for Working with Cursor Agent", "url": "https://forum.cursor.com/t/10-pro-tips-for-working-with-cursor-agent", "published_date": "2025-10-13", "accessed_at": "2025-10-30T11:26:00Z"},
+        {"title": "Collabnix – Context Optimization & Project Setup", "url": "https://collabnix.com/cursor-developer-guide#project-setup", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:27:00Z"}
+      ]
+    },
+    {
+      "id": "bp-rules-define-scope",
+      "category": "rules_engine",
+      "practice": "Define project rules (e.g., allowed file types, naming conventions, search requirements, patch size limits) in version‑controlled `.cursorrules` files and use custom slash commands to apply them.",
+      "why_it_matters": "Rules constrain the agent’s modifications, ensuring consistency, preventing unintentional changes and reducing hallucinations. Version control makes rule changes auditable and shareable across teams.",
+      "how_to_apply": [
+        "Create a `.cursorrules` file or a `.cursor/rules` directory specifying naming patterns, allowed languages, maximum patch sizes, search guidelines (semantic and grep), and restrictions on running dev servers or altering build files.",
+        "Commit the rules to your repository so they are automatically loaded when agents run.",
+        "For manual runs, create a custom command (e.g., `/apply-rules`) that reads the active file and inserts its content along with rules into the prompt so the agent uses them." 
+      ],
+      "usage_example": {
+        "context": "Maintaining consistency in a React project.",
+        "steps": [
+          "Write rules: use Tailwind colours from theme.js; require named exports; prefer pnpm; search using both semantic and grep; limit patches to 200 lines; forbid running `npm run dev` unless asked.",
+          "Add them to `.cursorrules` and commit.",
+          "Run `/apply-rules` before asking the agent to add a new feature; the agent adheres to the conventions." 
+        ],
+        "expected_outcome": "Generated code respects style and tool requirements, and the agent does not modify forbidden files.",
+        "snippet": "rules:\n  naming: camelCase\n  max_patch: 200" 
+      },
+      "checks": ["Rules file exists in repository", "Max patch size enforced", "Commands apply rules before run"],
+      "caveats": ["Changing rules requires re‑indexing and may confuse the agent", "Rules enforcement may not cover all edge cases"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Edana – Best Practices and Recommendations", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases#best-practices", "published_date": "2025-10-19", "accessed_at": "2025-10-30T11:30:00Z"},
+        {"title": "dev.to – My Top Cursor Tips (Oct 2025)", "url": "https://dev.to/someuser/my-top-cursor-tips-oct-2025", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:31:00Z"},
+        {"title": "Reflag – Add rules and custom commands to Cursor", "url": "https://reflag.dev/blog/cursor-rules-and-custom-commands", "published_date": "2025-10-17", "accessed_at": "2025-10-30T11:32:00Z"}
+      ]
+    },
+    {
+      "id": "bp-testing-tdd-pattern",
+      "category": "testing_tdd",
+      "practice": "Adopt test‑driven development by asking Cursor to write tests first, then implement or refactor code to satisfy them.",
+      "why_it_matters": "Writing tests up front clarifies requirements, exposes edge cases and guides the AI to generate production‑ready implementations. It also provides an objective way to verify generated code and catch regressions.",
+      "how_to_apply": [
+        "Describe the desired functionality and instruct the agent to generate unit or integration tests using frameworks relevant to your stack (e.g., Jest, pytest).",
+        "Run the tests locally; they will fail initially since the implementation is missing.",
+        "Ask the agent to implement the functionality to satisfy the tests and iteratively refine until all tests pass." 
+      ],
+      "usage_example": {
+        "context": "Adding a new endpoint to a Flask API.",
+        "steps": [
+          "Ask the agent: ‘Write pytest tests for a `/status` endpoint returning app health metrics.’", 
+          "Run the tests and confirm failures.",
+          "Request the implementation of the endpoint with proper error handling and update tests accordingly.",
+          "Re‑run tests until they pass." 
+        ],
+        "expected_outcome": "The endpoint is implemented with confidence, guided by tests that capture expected behaviour.",
+        "snippet": "def test_status_endpoint(client):\n    response = client.get('/status')\n    assert response.status_code == 200" 
+      },
+      "checks": ["Tests exist and fail initially", "Implementation passes tests", "Edge cases covered"],
+      "caveats": ["Poorly written tests lead to weak implementations", "Time‑consuming for trivial features"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Collabnix – TDD and API Workflow Patterns", "url": "https://collabnix.com/cursor-developer-guide#workflow-patterns", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:35:00Z"},
+        {"title": "Skywork – Delegate scoped tasks with Agent", "url": "https://skywork.ai/blog/cursor-ai-coding-tips-2025/#delegate-scoped-tasks", "published_date": "2025-10-01", "accessed_at": "2025-10-30T11:36:00Z"},
+        {"title": "Forum: Boosting Productivity with Cursor's new Plan Mode", "url": "https://forum.cursor.com/t/boosting-productivity-with-cursors-new-plan-mode", "published_date": "2025-10-03", "accessed_at": "2025-10-30T11:37:00Z"}
+      ]
+    },
+    {
+      "id": "bp-safe-edits-diff",
+      "category": "safe_edits",
+      "practice": "Review diffs carefully and limit patch sizes to ensure safe, minimal edits.",
+      "why_it_matters": "LLM‑generated changes can be broad or intrusive. Reviewing diffs and capping patch sizes prevents unintended modifications and keeps Git history readable.",
+      "how_to_apply": [
+        "When using the agent for multi‑file refactors, instruct it to show diffs before applying. Do not auto‑apply changes without inspection.",
+        "Specify a maximum patch size in your rules (e.g., 200 lines) and restrict changes to selected folders.",
+        "Commit changes in logical chunks and write meaningful messages." 
+      ],
+      "usage_example": {
+        "context": "Migrating from Moment.js to Day.js in a large codebase.",
+        "steps": [
+          "Set a patch limit in `.cursorrules`: `max_patch_size: 200`.",
+          "Run the agent with the task: ‘Replace Moment.js imports in @Folders/src/components with Day.js; propose diffs.’", 
+          "Review the proposed diffs; accept or reject each chunk; commit approved changes.",
+          "Repeat across modules until migration completes." 
+        ],
+        "expected_outcome": "The migration occurs through controlled, reviewable diffs, avoiding sweeping, hard‑to‑review patches.",
+        "snippet": null
+      },
+      "checks": ["Diffs reviewed before apply", "Patch size within limit", "Commits atomic"],
+      "caveats": ["Limiting patch size may require more manual sessions", "Agents sometimes ignore patch size instructions"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Skywork – Delegate scoped tasks with Agent", "url": "https://skywork.ai/blog/cursor-ai-coding-tips-2025/#delegate-scoped-tasks", "published_date": "2025-10-01", "accessed_at": "2025-10-30T11:40:00Z"},
+        {"title": "Edana – Safeguards and Limitations", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases#safeguards", "published_date": "2025-10-19", "accessed_at": "2025-10-30T11:41:00Z"},
+        {"title": "Forum: 10 Pro Tips for Working with Cursor Agent", "url": "https://forum.cursor.com/t/10-pro-tips-for-working-with-cursor-agent", "published_date": "2025-10-13", "accessed_at": "2025-10-30T11:42:00Z"}
+      ]
+    },
+    {
+      "id": "bp-background-agents-setup",
+      "category": "background_agents",
+      "practice": "Configure background agents to run on feature branches with specific rules and monitor their reliability.",
+      "why_it_matters": "Background agents can continuously review pull requests, enforce security rules and suggest fixes. However, misconfiguration or unstable early releases may lead to unexpected behaviour.",
+      "how_to_apply": [
+        "Create a feature branch for each feature or bug fix and enable a background agent configured with your `.cursorrules` to monitor that branch.",
+        "Specify tasks for the agent such as linting, vulnerability scanning or style enforcement, and limit its scope to avoid acting on unrelated code.",
+        "Regularly check agent logs for errors; if agents misbehave or degrade, disable them temporarily and wait for stable updates or patches." 
+      ],
+      "usage_example": {
+        "context": "Automating security checks on pull requests in a fintech project.",
+        "steps": [
+          "Define a background agent that triggers on new PRs against the `payments` branch and runs static analysis with your rules.",
+          "Set the agent to comment with findings and propose patches but not auto‑merge.",
+          "Monitor its output; if you notice repeated failures or irrelevant comments, adjust the rules or disable until updates are released." 
+        ],
+        "expected_outcome": "Security scans run automatically on feature branches without blocking unrelated development, and misbehaving agents are contained.",
+        "snippet": null
+      },
+      "checks": ["Agents run on feature branches", "Tasks defined", "Logs monitored"],
+      "caveats": ["Early Cursor 2.0 background agents experienced reliability issues", "Agents may consume resources on local machines"],
+      "evidence_level": "medium",
+      "volatile": true,
+      "sources": [
+        {"title": "Cursor Changelog – Oct 29 Release", "url": "https://cursor.com/changelog/2025-10-29", "published_date": "2025-10-29", "accessed_at": "2025-10-30T11:45:00Z"},
+        {"title": "Edana – Agents and Rules System", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases#agents", "published_date": "2025-10-19", "accessed_at": "2025-10-30T11:46:00Z"},
+        {"title": "Forum Thread – Issues with Cursor 2.0 lost functionality", "url": "https://forum.cursor.com/t/cursor-2-0-lost-functionality", "published_date": "2025-10-28", "accessed_at": "2025-10-30T11:47:00Z"}
+      ]
+    },
+    {
+      "id": "bp-docs-web-retrieval",
+      "category": "docs_web",
+      "practice": "Use the built‑in browser or @Docs to reference official documentation and keep third‑party docs version‑aligned with your project.",
+      "why_it_matters": "Reliable documentation anchors the model’s responses to authoritative sources, reducing hallucinations and ensuring that generated code follows correct APIs.",
+      "how_to_apply": [
+        "Add relevant external docs (e.g., Next.js, Prisma) via @Docs and specify the version to match your project.",
+        "When uncertain about library usage, open the in‑editor browser to search official docs instead of relying on generic internet answers.",
+        "Regularly update or remove outdated docs from your settings to prevent mixing versions." 
+      ],
+      "usage_example": {
+        "context": "Implementing a feature using Prisma ORM.",
+        "steps": [
+          "Attach Prisma v5 documentation using @Docs/prisma-5.x before asking the agent to generate queries.",
+          "Open the browser to confirm details such as relation definitions.",
+          "In prompts, reference specific sections using @Docs so the model uses the correct syntax." 
+        ],
+        "expected_outcome": "Generated code aligns with the exact version of the library and reduces errors from outdated examples.",
+        "snippet": "@Docs/Prisma-ORM#relations" 
+      },
+      "checks": ["Docs version specified", "Outdated docs removed", "Browser used for ambiguous questions"],
+      "caveats": ["Managing multiple docs can clutter settings", "External sites may have restrictive terms"],
+      "evidence_level": "medium",
+      "volatile": false,
+      "sources": [
+        {"title": "Skywork – Tune models for the task and add stack docs", "url": "https://skywork.ai/blog/cursor-ai-coding-tips-2025/#tune-models", "published_date": "2025-10-01", "accessed_at": "2025-10-30T11:50:00Z"},
+        {"title": "Collabnix – Project Setup Checklist", "url": "https://collabnix.com/cursor-developer-guide#project-setup", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:51:00Z"},
+        {"title": "Cursor Changelog – GA of in‑editor browser", "url": "https://cursor.com/changelog/2025-10-29", "published_date": "2025-10-29", "accessed_at": "2025-10-30T11:52:00Z"}
+      ]
+    },
+    {
+      "id": "bp-security-privacy-mode",
+      "category": "security",
+      "practice": "Enable privacy mode, restrict indexing to non‑sensitive directories and apply security patches promptly.",
+      "why_it_matters": "Cursor uses external AI services. Privacy mode prevents code from leaving your machine, and limiting the index reduces exposure of secrets. Staying current with patches mitigates known vulnerabilities.",
+      "how_to_apply": [
+        "Turn on Privacy Mode in settings; this runs the model in an isolated container and stops snippets from being sent to remote servers.",
+        "Exclude configuration files, environment secrets and private keys in your `.cursorrules` or `.cursorignore` so they are never indexed or proposed for editing.",
+        "Monitor security advisories (e.g., CVE‑2025‑59944, CVE‑2025‑54135/36) and update Cursor promptly to patched versions." 
+      ],
+      "usage_example": {
+        "context": "Working on a payment gateway containing API keys.",
+        "steps": [
+          "Activate Privacy Mode before indexing the project.",
+          "Add `.env` and `config/keys` folders to `.cursorignore` and rules for exclusion.",
+          "After a security bulletin about a case‑sensitivity bug, upgrade Cursor to the patched version and verify that the vulnerability is mitigated." 
+        ],
+        "expected_outcome": "Sensitive files remain local, unauthorized code execution is prevented and the project benefits from the latest security fixes.",
+        "snippet": null
+      },
+      "checks": ["Privacy Mode enabled", "Sensitive paths excluded", "Cursor version up‑to‑date"],
+      "caveats": ["Privacy Mode disables background agents that need remote resources", "Overly restrictive ignores may hinder indexing and suggestions"],
+      "evidence_level": "high",
+      "volatile": true,
+      "sources": [
+        {"title": "Cursor Security & Privacy", "url": "https://cursor.com/security", "published_date": "2025-10-20", "accessed_at": "2025-10-30T11:55:00Z"},
+        {"title": "Collabnix – Security and Privacy Architecture", "url": "https://collabnix.com/cursor-developer-guide#security", "published_date": "2025-10-21", "accessed_at": "2025-10-30T11:56:00Z"},
+        {"title": "Lakera – CVE‑2025‑59944 vulnerability analysis", "url": "https://lakera.ai/blog/cursor-vulnerability-cve-2025-59944", "published_date": "2025-10-10", "accessed_at": "2025-10-30T11:57:00Z"}
+      ]
+    },
+    {
+      "id": "bp-security-vulnerability-awareness",
+      "category": "security",
+      "practice": "Stay informed about Cursor vulnerabilities (e.g., CurXecute, MCPoison) and adjust workflows to mitigate prompt injection risks.",
+      "why_it_matters": "Recent CVEs revealed that adversaries could inject malicious commands via configuration files or MCP servers. Understanding these risks helps you harden your environment and avoid exploits.",
+      "how_to_apply": [
+        "Review advisory notes (e.g., CVE‑2025‑54135/54136) and understand the attack vectors such as case‑insensitive file systems and Slack‑based MCP servers.",
+        "Disable or tightly control remote MCP servers; verify the origin of any external prompts or commands before accepting changes.",
+        "Normalise file paths in your environment and apply vendor‑provided patches that close injection paths." 
+      ],
+      "usage_example": {
+        "context": "Using MCP servers to run code generation through Slack.",
+        "steps": [
+          "Read Tenable’s FAQs on CVE‑2025‑54135/36 to understand how prompt injections can modify `mcp.json`.",
+          "Limit Slack integration to trusted workspaces and disable automatic command execution.",
+          "After applying the patch, test that remote prompts cannot alter configuration files with case variations." 
+        ],
+        "expected_outcome": "MCP usage is secure, reducing the risk of remote code execution and unauthorized configuration changes.",
+        "snippet": null
+      },
+      "checks": ["Advisories reviewed", "MCP server restrictions applied", "Patch verification tests run"],
+      "caveats": ["Requires continual monitoring of security advisories", "May limit collaborative features relying on MCP"],
+      "evidence_level": "medium",
+      "volatile": true,
+      "sources": [
+        {"title": "Tenable – FAQs for CVE‑2025‑54135 & CVE‑2025‑54136", "url": "https://www.tenable.com/blog/faqs-cve-2025-54135-36", "published_date": "2025-10-20", "accessed_at": "2025-10-30T12:00:00Z"},
+        {"title": "Lakera – CVE‑2025‑59944 vulnerability analysis", "url": "https://lakera.ai/blog/cursor-vulnerability-cve-2025-59944", "published_date": "2025-10-10", "accessed_at": "2025-10-30T12:01:00Z"},
+        {"title": "Forum thread – Background agents reliability issues", "url": "https://forum.cursor.com/t/cursor-2-0-lost-functionality", "published_date": "2025-10-28", "accessed_at": "2025-10-30T12:02:00Z"}
+      ]
+    },
+    {
+      "id": "bp-performance-model-selection",
+      "category": "performance",
+      "practice": "Select the appropriate model for each task and take advantage of Composer and multi‑agent parallelism to optimize speed and quality.",
+      "why_it_matters": "Models vary in context length, cost and reasoning ability. Choosing wisely and using multiple models concurrently through Cursor 2.0’s multi‑agent interface increases throughput and yields diverse solutions.",
+      "how_to_apply": [
+        "For quick autocompletions and simple refactors, use small, fast models (Tab, Sonnet 3.x).",
+        "Use larger models (GPT‑4o, Claude Sonnet 4.5) for architecture changes or code understanding tasks that require deeper reasoning.",
+        "In the multi‑agent interface, run tasks across different models and agents (up to eight). Compare their proposed solutions and select or merge the best parts." 
+      ],
+      "usage_example": {
+        "context": "Building a new authentication feature.",
+        "steps": [
+          "Assign a small model to scaffold boilerplate and type definitions.",
+          "Run a mid‑size model to implement the core logic and handle edge cases.",
+          "Use a large model to audit and improve architecture, generating tests and documentation.",
+          "Compare outputs and apply the most robust solution." 
+        ],
+        "expected_outcome": "Development speed improves without sacrificing quality, and the chosen solution benefits from multiple perspectives.",
+        "snippet": null
+      },
+      "checks": ["Model selection recorded", "Multiple agents compared", "Performance measured"],
+      "caveats": ["Switching models can reset chat context", "Running many agents uses more compute and tokens"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Cursor Blog – Introducing Cursor 2.0 and Composer", "url": "https://cursor.com/blog/introducing-cursor-2-0", "published_date": "2025-10-29", "accessed_at": "2025-10-30T12:05:00Z"},
+        {"title": "Collabnix – Model Selection Strategy", "url": "https://collabnix.com/cursor-developer-guide#model-selection", "published_date": "2025-10-21", "accessed_at": "2025-10-30T12:06:00Z"},
+        {"title": "Skywork – Tune models for the task and add stack docs", "url": "https://skywork.ai/blog/cursor-ai-coding-tips-2025/#tune-models", "published_date": "2025-10-01", "accessed_at": "2025-10-30T12:07:00Z"}
+      ]
+    },
+    {
+      "id": "bp-team-workflows-governance",
+      "category": "team_workflows",
+      "practice": "Establish governance and metrics for Cursor usage through versioned conventions, custom commands and CI integration.",
+      "why_it_matters": "Scaling Cursor across a team requires consistent guidelines and accountability. Governance structures and metrics ensure that AI suggestions improve productivity without degrading quality.",
+      "how_to_apply": [
+        "Create a repository of shared conventions and rules (style guides, allowed modifications) and keep it under version control.",
+        "Develop custom slash commands to standardise workflows (e.g., run linters, apply rules, generate PR descriptions).",
+        "Integrate Cursor into your CI/CD pipeline: run automated code review via CLI on pull requests, track metrics such as generation time, suggestion acceptance rate, and set up pre‑commit hooks to abort commits on critical issues." 
+      ],
+      "usage_example": {
+        "context": "Onboarding a new team to use Cursor for a microservice architecture.",
+        "steps": [
+          "Create conventions.md with architecture decisions and place it in the repo along with `.cursorrules`.", 
+          "Write a custom command `/setup-service` that scaffolds a new service with tests and docs based on the conventions.",
+          "Configure a GitHub Action that runs `cursor review` on pull requests and posts results. Monitor metrics monthly and adjust rules accordingly." 
+        ],
+        "expected_outcome": "Team members follow consistent workflows; automated reviews catch issues early and metrics inform continuous improvement.",
+        "snippet": null
+      },
+      "checks": ["Conventions repo exists", "Custom commands defined", "CI integration configured"],
+      "caveats": ["Requires time to set up and maintain governance", "Overly rigid conventions may stifle creativity"],
+      "evidence_level": "high",
+      "volatile": false,
+      "sources": [
+        {"title": "Edana – Best Practices and Recommendations", "url": "https://edana.ch/en/2025/10/19/cursor-ai-code-editor-advantages-limitations-and-use-cases#best-practices", "published_date": "2025-10-19", "accessed_at": "2025-10-30T12:10:00Z"},
+        {"title": "Collabnix – Project Setup Checklist & Git Workflow", "url": "https://collabnix.com/cursor-developer-guide#git-workflow", "published_date": "2025-10-21", "accessed_at": "2025-10-30T12:11:00Z"},
+        {"title": "Cursor Docs – Custom Commands", "url": "https://cursor.com/docs/custom-commands", "published_date": "2025-10-15", "accessed_at": "2025-10-30T12:12:00Z"}
+      ]
+    }
+  ]
+}

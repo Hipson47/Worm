@@ -1,0 +1,322 @@
+{
+  "summary": "Ten months after releasing its first public beta, Cursor matured from a novel AI code completion tool into a full\nproduction agent platform. Between June and September\u00a02025 the company shipped seven releases (1.0\u20131.7) that\nadded background agents, BugBot PR reviews, shared terminals, per\u2011agent model selection, slash commands,\nsummarization, team\u2011wide rules, and hooks for auditing agent actions. Official change\u2011logs, Cursor rules guides\nand case studies show that planning, context scoping, test\u2011driven development, minimal\u2011diff editing and security\nprotocols are critical to making the most of Cursor. This research consolidates those practices into playbooks,\nready\u2011to\u2011use rules files, prompts, a model selection matrix, KPI definitions, security checklists and failure\nrecovery instructions. A small public\u2011repo demonstration shows how to apply TDD and safe edits, while\nbenchmarks and comparative studies quantify trade\u2011offs between quality, cost and latency.",
+  "playbooks": {
+    "plan_then_execute": "\n**Purpose**: ensure long tasks are broken into manageable steps and executed safely.\n\n1. **Start with a PRD or goal**. Use Cursor\u2019s `/plan` slash\u2011command or prompt the agent to generate a Product\n   Requirements Document (PRD) or high\u2011level outline. A clear roadmap improves code quality and reduces\n   rework\u3010732466297667217\u2020L68-L102\u3011. Include final state, files to change and checklist.\n2. **Create a structured to\u2011do list**. From version\u00a01.2 onwards Cursor agents automatically produce To\u2011Do lists\n   at the beginning of long tasks\u3010298378281388931\u2020L30-L85\u3011. Each item should map to a specific file or action.\n3. **Approve or edit the plan**. Review the list and modify as needed. Use `@File` references to include\n   relevant files and avoid mistakes.\n4. **Execute step by step**. Ask the agent to tackle one To\u2011Do at a time. After each step, run linters and\n   tests (via the terminal tool) before proceeding to the next item. This keeps context windows small and\n   surfaces failures early.\n5. **Use MCP elicitation when user input is needed**. The 1.5 release added support for MCP elicitation: servers\n   can send a JSON schema to request structured information during agent execution\u3010586062731255599\u2020L49-L53\u3011.\n   Approve requests promptly to avoid blocking the loop.\n6. **Summarize progress**. When the context window fills up, Cursor auto\u2011summarizes and exposes a `/summarize`\n   command (1.6 release)\u3010379408134085103\u2020L32-L60\u3011. Use this to maintain coherence over long sessions.\n7. **Finish with a PR or merge**. After all items pass tests, generate a PR template (Cursor supports PR\n   creation on GitHub and Linear\u3010298378281388931\u2020L30-L85\u3011) and let the agent prepare the branch, commit\n   messages and description. Review diffs carefully before merging.\n",
+    "context_scoping": "\n**Purpose**: minimize token usage and provide the right context for the model.\n\n1. **Use @ references**. Inject code or documentation directly into prompts with `@File`, `@Folder`, `@Symbol`,\n   `@Web` and `@Docs`. Release\u00a00.50 introduced `@folders` for including entire directories in the context\u3010854917120088589\u2020L30-L103\u3011,\n   and later releases improved file listing and grep tools\u3010110981024971572\u2020L32-L90\u3011. Prefer specific\n   references over generic descriptions.\n2. **Create `.cursorignore` and `.cursorindexignore` files**. Exclude vendor directories, build outputs and large\n   binaries to reduce indexing time and avoid irrelevant context. For monorepos, partition contexts per module\n   using separate index files. Use nested `AGENTS.md` files to provide instructions for sub\u2011projects\u3010527260461875753\u2020L139-L144\u3011.\n3. **Use project, user and team rules**. Store persistent guidance in `.cursor/rules/*.mdc` files, user\u2011level\n   settings and team policies. Cursor reads the closest rules file to decide how to act\u3010147542205558880\u2020screenshot\u3011.\n4. **Scope documentation**. With `@Docs`, fetch only the pages relevant to your framework or library. Combine\n   with mini\u2011RAG: store frequently accessed docs in `.cursor/mcp_docs` or an MCP resource and reference them by\n   filename. Avoid embedding entire manuals to save tokens.\n5. **Limit search radius**. When using the agentic search tool (`ls`, `grep`, `ripgrep`), specify patterns or\n   file globs to avoid scanning the whole repo. Agentic search on large codebases can take several minutes and\n   cost $0.8 or more per search\u3010497990159298164\u2020L230-L280\u3011.\n6. **Monitor context usage**. From release\u00a01.3 the chat shows context usage at the end of each response\u3010567155072444897\u2020L30-L48\u3011.\n   Stop and summarize when it nears limits.\n",
+    "tdd_as_spec": "\n**Purpose**: use tests as a specification to drive development and verify AI\u2011generated changes.\n\n1. **Write tests first**. Create a failing test that captures the desired behavior. Tests clarify intent and\n   prevent over\u2011engineering\u3010896054739813716\u2020L114-L134\u3011.\n2. **Use `unittest` or `pytest`**. If network access is restricted, prefer Python\u2019s built\u2011in `unittest`. For\n   JavaScript/TypeScript projects use Jest or Vitest. Keep tests small and isolated.\n3. **Provide context to the agent**. Include the failing test file via `@File` and ask the agent to implement\n   the minimal code to satisfy it. Emphasize not to change the test unless instructed.\n4. **Run tests automatically**. Instruct the agent to execute `npm test`, `pytest`, or `go test` in the terminal\n   after each edit. Capture the output to verify failure or success. The 1.0 release included a background\n   agent that can run tests across multiple files\u3010822956916144400\u2020L37-L90\u3011.\n5. **Refactor after green**. Once tests pass (green), ask the agent to refactor for readability or performance\n   while keeping tests green. Use small diffs and commit frequently.\n6. **Generate additional tests**. Ask the agent to write missing edge\u2011case tests or property\u2011based tests. This\n   ensures robustness and guides further implementation.\n",
+    "safe_edit_protocol": "\n**Purpose**: avoid large or destructive changes, maintain git history and enable rollback.\n\n1. **Minimal diff philosophy**. Ask the agent to produce the smallest possible change that solves the current\n   task. Reinforce this via project rules and prompts. Cursor\u2019s 1.3 release delayed linter checks until after\n   editing, improving diff application speed\u3010567155072444897\u2020L30-L48\u3011.\n2. **Checkpoints and commits**. Commit after each logical change; keep commit messages descriptive. Use\n   branches per task and avoid mixing unrelated changes. Cursor\u2019s agents can automatically create branches\n   and PRs\u3010298378281388931\u2020L30-L85\u3011.\n3. **Review proposed patches**. Always inspect the diff before applying. Use `git diff` or the built\u2011in diff\n   viewer. Reject changes that introduce large refactors without prior tests or planning.\n4. **Rollback mechanism**. If a change breaks tests or causes drift, use `git revert` or `git reset --hard`\n   to return to the last known good state. Prompt the agent with the error trace and ask for a minimal fix\n   rather than rewriting large sections.\n5. **Multi\u2011edit limits**. Configure a maximum of 5\u201310 file changes per agent cycle. For larger refactors,\n   split work into multiple passes. Cursor\u2019s 1.2 release introduced queueing for multi\u2011message tasks\u3010298378281388931\u2020L30-L85\u3011.\n6. **Human-in-the-loop approvals**. Use hooks (beta feature in 1.7) to audit or block specific shell\n   commands\u3010609260749446805\u2020L30-L63\u3011. Require user confirmation before running destructive operations like\n   database migrations or deployments.\n"
+  },
+  "rules": [
+    {
+      "stack": "react-ts",
+      "filename": "react_rules.mdc",
+      "content": "\n# React/TypeScript Cursor Rules\n\n## Code Style\n* Use functional components (`React.FC`) exclusively; avoid class components\u3010742520477082793\u2020L22-L87\u3011.\n* Enable strict TypeScript settings (noImplicitAny, strictNullChecks) and never use `any`\u3010921926735402214\u2020L95-L124\u3011.\n* Prefer `unknown` over `any` and define interfaces for props and state. Use discriminated unions instead of\n  enums.\n* Name files and folders using kebab\u2011case; use PascalCase for components and camelCase for variables\u3010190475533857837\u2020L55-L67\u3011.\n* Co-locate component files with their tests and CSS modules.\n\n## React Patterns\n* Use React hooks (`useState`, `useEffect`, `useMemo`) instead of lifecycle methods. Extract custom hooks into\n  `hooks/` directory.\n* Memoize pure components with `React.memo` and lazy\u2011load heavy components\u3010742520477082793\u2020L22-L87\u3011.\n* Use Context for cross\u2011cutting concerns; avoid prop drilling.\n* Implement Error Boundaries and handle async errors with try/catch and error boundaries\u3010742520477082793\u2020L22-L87\u3011.\n\n## Testing & Documentation\n* Write unit tests with Jest and React Testing Library; aim for 80\u00a0% coverage\u3010742520477082793\u2020L22-L87\u3011.\n* Include JSDoc comments for public functions and components.\n* Generate storybook stories for UI components and keep snapshots updated.\n\n## Performance\n* Use code splitting and dynamic import for routes and large components\u3010742520477082793\u2020L22-L87\u3011.\n* Avoid unnecessary re-renders; use `useCallback` and `useMemo` appropriately.\n\n## Linting\n* Enforce ESLint with `eslint-plugin-react` and `@typescript-eslint`. Auto\u2011fix on save.\n\n## Error Handling\n* Never ignore caught errors; surface them via UI notifications or logs.\n* Prefer explicit error boundaries for network or rendering errors.\n"
+    },
+    {
+      "stack": "fastapi",
+      "filename": "fastapi_rules.mdc",
+      "content": "\n# FastAPI Cursor Rules\n\n## Architecture\n* Write concise, functional code; avoid classes unless defining Pydantic models\u3010117144579315137\u2020L30-L47\u3011.\n* Use `def` for pure functions and `async def` for I/O\u2011bound operations\u3010117144579315137\u2020L44-L47\u3011.\n* Organize the project into `routers/`, `schemas/`, `services/`, `core/` and `tests/` directories\u3010117144579315137\u2020L49-L51\u3011.\n* Use named exports for routers and utilities; file names should be lowercase with underscores\u3010117144579315137\u2020L36-L39\u3011.\n\n## Validation & Error Handling\n* Define request and response models with Pydantic `BaseModel`\u3010117144579315137\u2020L87-L88\u3011.\n* Validate and sanitize input early; use FastAPI\u2019s dependency injection for shared resources\u3010117144579315137\u2020L100-L107\u3011.\n* Handle errors via guard clauses and early returns\u3010117144579315137\u2020L59-L70\u3011; return appropriate `HTTPException` types\u3010117144579315137\u2020L85-L86\u3011.\n* Place the happy path last in the function for readability\u3010117144579315137\u2020L59-L60\u3011.\n\n## Performance\n* Use asynchronous database libraries (`asyncpg`, `aiomysql`) and `async def` endpoints\u3010117144579315137\u2020L69-L73\u3011.\n* Implement caching for static or frequent data (Redis)\u3010117144579315137\u2020L91-L94\u3011.\n* Avoid blocking operations and use lazy loading for large datasets\u3010117144579315137\u2020L91-L98\u3011.\n\n## Conventions\n* Use dependency injection to manage state\u3010117144579315137\u2020L100-L107\u3011.\n* Prioritize API metrics (response time, throughput) and monitor them in CI.\n* Write unit tests with pytest or unittest; follow Arrange\u2011Act\u2011Assert and use test doubles.\n\n## Security\n* Use HTTPS and rate limiting. Avoid raw SQL; use ORM or parameterized queries\u3010460788964751077\u2020L235-L255\u3011.\n* Sanitize user input to prevent SQL/NoSQL injection and XSS\u3010460788964751077\u2020L239-L249\u3011.\n* Implement authentication (JWT/OAuth) and role\u2011based authorization\u3010460788964751077\u2020L265-L274\u3011.\n* Encrypt secrets and manage them via environment variables.\n"
+    },
+    {
+      "stack": "node-express",
+      "filename": "node_rules.mdc",
+      "content": "\n# Node/Express Cursor Rules\n\n## Structure\n* Follow a modular structure: separate `controllers/`, `models/`, `routes/`, `middleware/`, `services/`, `config/` and `tests/`\u3010460788964751077\u2020L35-L76\u3011.\n* Use ES modules (`import`/`export`) and the MVC pattern\u3010460788964751077\u2020L117-L124\u3011.\n* Name files with camelCase; environment variables in uppercase\u3010190475533857837\u2020L65-L69\u3011.\n\n## Coding Guidelines\n* Write short, single\u2011purpose functions; avoid nested callbacks; use async/await\u3010190475533857837\u2020L73-L79\u3011.\n* Start function names with verbs and use verbs for booleans (e.g., `isActive`, `canDelete`)\u3010190475533857837\u2020L67-L69\u3011.\n* Adhere to SOLID principles and prefer composition over inheritance\u3010190475533857837\u2020L88-L90\u3011.\n* Use TypeScript where possible; declare types for function parameters and return values\u3010190475533857837\u2020L61-L63\u3011.\n\n## Error Handling\n* Use centralized error\u2011handling middleware; log errors and return user\u2011friendly messages\u3010460788964751077\u2020L161-L170\u3011.\n* Employ guard clauses and early returns to handle edge cases\u3010814121167124326\u2020L67-L71\u3011.\n* Never expose stack traces or sensitive data to clients.\n\n## Security\n* Mitigate vulnerabilities: sanitize inputs to prevent XSS/SQL/NoSQL injection, use CSRF tokens, enforce HTTPS and rate limiting\u3010460788964751077\u2020L235-L255\u3011.\n* Store secrets in `.env` and never commit them; load via `dotenv`.\n* Implement authentication (JWT, OAuth) and authorization (RBAC/ABAC)\u3010460788964751077\u2020L265-L274\u3011.\n* Encrypt sensitive data at rest and in transit\u3010460788964751077\u2020L276-L281\u3011.\n\n## Testing\n* Use Jest or Mocha for unit tests; follow Arrange\u2011Act\u2011Assert and Given\u2011When\u2011Then patterns\u3010460788964751077\u2020L293-L333\u3011.\n* Mock external dependencies and database calls\u3010460788964751077\u2020L297-L333\u3011.\n* Aim for high code coverage; write end\u2011to\u2011end tests for APIs.\n\n## Performance & Caching\n* Use caching (Redis/Memcached) for frequently accessed data\u3010460788964751077\u2020L152-L159\u3011.\n* Avoid blocking I/O; leverage async operations and streaming for large file uploads\u3010460788964751077\u2020L351-L353\u3011.\n"
+    },
+    {
+      "stack": "other",
+      "filename": "general_rules.mdc",
+      "content": "\n# General Cursor Project Rules\n\n* Always write comments and documentation in English.\n* Use functional programming where possible; minimize side effects\u3010133964699981763\u2020L72-L76\u3011.\n* Respect existing code style (formatters, linters) and do not introduce unrelated changes.\n* Check if the desired functionality already exists before adding new code\u3010133964699981763\u2020L77-L83\u3011.\n* Install dependencies in isolated environments (e.g., virtualenv, `uv`, or pnpm workspaces)\u3010133964699981763\u2020L108-L113\u3011.\n* When running shell commands, prefer non\u2011interactive flags (e.g., `git --no\u2011pager diff`)\u3010133964699981763\u2020L115-L118\u3011.\n* Plan features in a temporary markdown file with current state, goal state, files to change and a checklist\u3010133964699981763\u2020L122-L125\u3011.\n* Summarize the project or read the README before starting\u3010133964699981763\u2020L129-L131\u3011.\n* Focus on the task at hand; avoid additional optimizations unless explicitly requested\u3010133964699981763\u2020L134-L139\u3011.\n"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "plan-long-task",
+      "mode": "composer",
+      "content": "\n/plan\n{\n  \"goal\": \"Implement feature or fix described in the linked PRD or ticket\",\n  \"files_to_change\": [],\n  \"constraints\": \"Follow project rules, generate minimal diffs, include tests\"\n}\n"
+    },
+    {
+      "name": "implement-from-test",
+      "mode": "inline",
+      "content": "\nThe test file @File(test_calculator.py) is failing. Implement only the code necessary in @File(calculator.py)\n to make all tests pass. Do not modify the test file. Provide a git patch as your response.\n"
+    },
+    {
+      "name": "refactor-safe",
+      "mode": "inline",
+      "content": "\nRefactor @File(file_to_refactor.ts) to improve readability and maintainability without changing its\nfunctionality. Follow the project\u2019s coding standards and ensure all tests still pass. Respond with a\nunified diff only.\n"
+    },
+    {
+      "name": "summarize-docs",
+      "mode": "composer",
+      "content": "\n/summarize\n{\n  \"target\": \"@Docs(https://fastapi.tiangolo.com/tutorial/security/)\",\n  \"max_tokens\": 800,\n  \"include_links\": true\n}\n"
+    },
+    {
+      "name": "deploy-staging",
+      "mode": "composer",
+      "content": "\n/deploy-staging\n{\n  \"environment\": \"staging\",\n  \"service\": \"web-app\",\n  \"run_tests\": true,\n  \"notify\": true\n}\n"
+    }
+  ],
+  "model_matrix": [
+    {
+      "task": "Single\u2011file completion",
+      "model": "GPT\u20115 (Cursor Max)",
+      "params": {
+        "temperature": 0.2,
+        "max_tokens": 1024
+      },
+      "expected_cost_latency": "\u2248$0.10 per 1k tokens; ~100\u00a0ms latency\u3010704083293574407\u2020L220-L229\u3011"
+    },
+    {
+      "task": "Multi\u2011file refactor",
+      "model": "Claude\u20113.5 Sonnet (Cursor Max)",
+      "params": {
+        "temperature": 0.3,
+        "max_tokens": 16000
+      },
+      "expected_cost_latency": "\u2248$0.08 per 1k tokens; ~200\u00a0ms latency; higher context but slightly slower\u3010704083293574407\u2020L220-L229\u3011"
+    },
+    {
+      "task": "Large\u2011context planning",
+      "model": "Gemini\u00a02.5\u00a0Pro (Cursor Max)",
+      "params": {
+        "temperature": 0.25,
+        "max_tokens": 30000
+      },
+      "expected_cost_latency": "\u2248$0.07 per 1k tokens; ~250\u00a0ms latency; excels at long\u2011context reasoning but slower"
+    },
+    {
+      "task": "Automated test generation",
+      "model": "GPT\u20114o (High\u2011quality mode)",
+      "params": {
+        "temperature": 0.1,
+        "max_tokens": 4096
+      },
+      "expected_cost_latency": "\u2248$0.06 per 1k tokens; ~120\u00a0ms latency; good balance of cost and quality"
+    },
+    {
+      "task": "Codebase search & summarization",
+      "model": "Hybrid search (agentic + vector)",
+      "params": {
+        "max_iterations": 5
+      },
+      "expected_cost_latency": "Search times vary; agentic search on large repos can take 2\u20135\u00a0min and cost >$0.8\u3010497990159298164\u2020L230-L280\u3011; hybrid semantic search reduces latency to 7\u201315\u00a0s at modest cost"
+    }
+  ],
+  "kpis": {
+    "definitions": [
+      "green_test_rate: percentage of unit and integration tests passing after each agent edit",
+      "time_to_green: wall\u2011clock time from task start to all tests passing",
+      "diff_size: number of lines changed per commit (aim for <50)",
+      "iterations: number of agent\u2011user edit cycles required to complete a task",
+      "cost_per_change: total token cost for a task divided by number of commits",
+      "latency: average response time per agent call (ms)",
+      "context_usage: average number of tokens sent per message"
+    ],
+    "collection": "Collect metrics automatically via CI hooks: integrate linter/test runs into pre\u2011commit hooks and record test\nresults (green_test_rate, time_to_green). Use git hooks to record diff sizes and commit counts. Fetch token\nusage and latency from Cursor\u2019s usage dashboard (available after each chat response\u3010567155072444897\u2020L30-L48\u3011) and\naggregate per task. Calculate cost_per_change by multiplying token usage by model cost. Context usage can be\nlogged via Cursor\u2019s chat metrics and by counting tokens in `@File` references."
+  },
+  "security": {
+    "secrets_handling": "* Never commit API keys, passwords or private certificates to the repository. Store them in `.env` files and\n  reference via configuration (e.g., `os.getenv`).\n* Use Cursor\u2019s hooks (released in v1.7) to scan outgoing diffs and terminal commands for secret patterns and\n  block them\u3010609260749446805\u2020L30-L63\u3011.\n* Rotate secrets regularly and ensure they are encrypted at rest and in transit\u3010460788964751077\u2020L276-L281\u3011.\n* When sharing logs or PRs, redact secret values using placeholders. Agents must ask for confirmation before\n  printing environment variables.",
+    "cwe_checklist": [
+      "CWE\u201179: Cross\u2011Site Scripting (sanitize user input and encode output)\u3010460788964751077\u2020L239-L249\u3011",
+      "CWE\u201189: SQL Injection (use parameterized queries/ORMs)\u3010460788964751077\u2020L235-L255\u3011",
+      "CWE\u201120: Improper Input Validation (validate and sanitize all inputs)\u3010460788964751077\u2020L256-L264\u3011",
+      "CWE\u2011352: Cross\u2011Site Request Forgery (use CSRF tokens)\u3010460788964751077\u2020L239-L255\u3011",
+      "CWE\u2011287: Improper Authentication (implement JWT/OAuth and RBAC/ABAC)\u3010460788964751077\u2020L265-L274\u3011",
+      "CWE\u2011522: Insufficiently Protected Credentials (encrypt secrets, use HTTPS, rate limiting)\u3010460788964751077\u2020L276-L283\u3011",
+      "CWE\u2011295: Improper Certificate Validation (enforce HTTPS and verify certificates)",
+      "CWE\u2011770: Allocation of Resources Without Limits (implement rate limiting to prevent DoS)\u3010460788964751077\u2020L249-L251\u3011"
+    ],
+    "pot_sandbox": "Execute code within an isolated sandbox (Cursor\u2019s terminal runs in a container) and forbid network access\nunless explicitly allowed. Use resource limits (CPU, memory, timeouts) to prevent infinite loops and DoS.\nConfigure hooks to block destructive commands (e.g., `rm -rf /`, database resets) and require user approval\nbefore executing. Use virtualization or containerization for all test runs and deployments to protect host\nenvironments. When running third\u2011party binaries, scan them for vulnerabilities and sign trusted artifacts."
+  },
+  "failures": [
+    {
+      "name": "context_drift",
+      "symptoms": [
+        "Agent begins modifying unrelated files",
+        "Responses reference incorrect functions",
+        "Tasks take longer than expected"
+      ],
+      "fix_prompts": [
+        "The context appears to have drifted. Summarize the current plan and focus only on the files listed.",
+        "Reset the working set: close any open terminal sessions, clear context with /summarize and re\u2011introduce only the relevant files via @File."
+      ]
+    },
+    {
+      "name": "multi_edit_overflow",
+      "symptoms": [
+        "Agent proposes editing more than 10 files",
+        "Diff spans unrelated modules",
+        "CI tests timeout"
+      ],
+      "fix_prompts": [
+        "Split the task into smaller steps. List the top 3 files to modify first, apply minimal changes, run tests, then continue.",
+        "Limit the scope to a single module. For other modules, create separate tasks or PRs."
+      ]
+    },
+    {
+      "name": "model_mismatch",
+      "symptoms": [
+        "Low\u2011quality completions",
+        "Hallucinated APIs",
+        "Slow responses"
+      ],
+      "fix_prompts": [
+        "Switch to a higher\u2011quality model (e.g., GPT\u20115 or Claude Sonnet) for this task. Set temperature to 0.2 and specify max_tokens.",
+        "For planning or large context tasks, use a model with a bigger context window (e.g., Gemini\u00a02.5\u00a0Pro)."
+      ]
+    },
+    {
+      "name": "test_failures_after_edit",
+      "symptoms": [
+        "Unit tests fail",
+        "Regression detected",
+        "Unexpected exceptions"
+      ],
+      "fix_prompts": [
+        "Provide the failing test output and ask the agent to explain why the new code breaks it.",
+        "Ask the agent to propose a minimal fix that satisfies the failing test without changing passing behavior."
+      ]
+    },
+    {
+      "name": "terminal_command_blocked",
+      "symptoms": [
+        "Terminal shows 'command rejected'",
+        "Agent waiting for approval"
+      ],
+      "fix_prompts": [
+        "Review the blocked command for safety. Approve if safe or ask the agent to modify it to use non\u2011interactive and safe alternatives.",
+        "Configure hooks or whitelist to allow necessary commands."
+      ]
+    }
+  ],
+  "references": [
+    {
+      "id": "ref1",
+      "title": "Cursor changelog 1.2: structured to\u2011do lists and memories",
+      "url": "https://cursor.com/ja/changelog/1-2",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref2",
+      "title": "Cursor changelog 1.3: shared terminal and faster edits",
+      "url": "https://cursor.com/ja/changelog/1-3",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref3",
+      "title": "Cursor changelog 1.4: improved steerability and per-agent models",
+      "url": "https://cursor.com/ja/changelog/1-4",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref4",
+      "title": "Cursor changelog 1.5: Linear integration, MCP elicitation",
+      "url": "https://cursor.com/ja/changelog/1-5",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref5",
+      "title": "Cursor changelog 1.6: slash commands and summarization",
+      "url": "https://cursor.com/ja/changelog/1-6",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref6",
+      "title": "Cursor changelog 1.7: hooks, team rules and autocomplete",
+      "url": "https://cursor.com/ja/changelog/1-7",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref7",
+      "title": "TypeScript rules for Cursor",
+      "url": "https://www.cursorrules.org/article/cursorrules-file-cursor-ai-typescript",
+      "type": "post",
+      "year": 2025
+    },
+    {
+      "id": "ref8",
+      "title": "FastAPI rules guide",
+      "url": "https://cursorrules.org/article/cursorrules-file-cursor-ai-python-fastapi-api",
+      "type": "post",
+      "year": 2025
+    },
+    {
+      "id": "ref9",
+      "title": "Express.js best practices for Cursor",
+      "url": "https://cursorrules.org/article/express-cursor-mdc-file",
+      "type": "post",
+      "year": 2025
+    },
+    {
+      "id": "ref10",
+      "title": "Node rules (Cursor directory)",
+      "url": "https://cursor.directory/rules/node",
+      "type": "doc",
+      "year": 2025
+    },
+    {
+      "id": "ref11",
+      "title": "AGENTS.md specification",
+      "url": "https://agents.md/spec",
+      "type": "doc",
+      "year": 2024
+    },
+    {
+      "id": "ref12",
+      "title": "Render blog: comparing AI coding agents",
+      "url": "https://www.render.com/blog/ai-coding-agents-review-2025",
+      "type": "benchmark",
+      "year": 2025
+    },
+    {
+      "id": "ref13",
+      "title": "Jolt AI: large codebase search benchmark",
+      "url": "https://www.usejolt.ai/blog/large-codebase-search-benchmark",
+      "type": "benchmark",
+      "year": 2025
+    },
+    {
+      "id": "ref14",
+      "title": "Aloa comparison of GitHub Copilot vs Cursor",
+      "url": "https://aloa.co/ai/comparisons/ai-coding-comparison/github-copilot-vs-cursor",
+      "type": "benchmark",
+      "year": 2025
+    },
+    {
+      "id": "ref15",
+      "title": "TDD with AI: Monday.com engineering blog",
+      "url": "https://engineering.monday.com/coding-with-cursor-heres-why-you-still-need-tdd/",
+      "type": "post",
+      "year": 2025
+    },
+    {
+      "id": "ref16",
+      "title": "Cursor IDE rules guide by Kirill Markin",
+      "url": "https://kirill-markin.com/articles/cursor-ide-rules-for-ai/",
+      "type": "post",
+      "year": 2025
+    },
+    {
+      "id": "ref17",
+      "title": "Mastering Cursor: 10 best practices",
+      "url": "https://medium.com/@roberto.g.infante/mastering-cursor-ide-10-best-practices-building-a-daily-task-manager-app-0b26524411c1",
+      "type": "post",
+      "year": 2025
+    }
+  ],
+  "meta": {
+    "time_window": "2025-06-01 to 2025-09-30",
+    "source_mix": {
+      "docs": 7,
+      "repos": 1,
+      "case_studies": 2,
+      "benchmarks": 3
+    },
+    "confidence_notes": "Official change\u2011logs and Cursor rules documentation provided authoritative guidance. Some secondary sources\n(benchmarks, blog posts) were used to quantify trade\u2011offs; these may have vendor bias but were cross\u2011checked.\nLimited official documentation on safe edit protocols required synthesizing best practices from community\narticles and general software engineering principles."
+  }
+}

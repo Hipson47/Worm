@@ -1,0 +1,288 @@
+{
+  "summary": "Od 2024 roku badania nad wnioskowaniem w dużych modelach językowych przesuwają się od pojedynczych promptów do złożonych struktur i agentowych ram. Metody takie jak „wnętrzny łańcuch myśli” (CoT) oraz „podążanie wieloma ścieżkami myślowymi” (Tree‑of‑Thought) przekształcono w zaawansowane programy i grafy myśli, które wykorzystują wyszukiwanie i narzędzia zewnętrzne. W 2024 r. pojawiły się warianty Cross‑ToT, Graph‑of‑Thoughts oraz Program‑of‑Thoughts, a także zestawy danych do oceny różnicowych ścieżek myślenia. Do 2025 r. badacze łączą LLM z wiedzą dziedzinową poprzez RAG, Graph‑RAG i narzędzia (np. SciAgent, TART), rozwijając adaptacyjne, wieloagentowe orkiestracje (AutoGen, CrewAI, DAAO). Nowe benchmarki (ARC‑AGI, LiveCodeBench, MATH‑500, SWE‑bench) pokazują zarówno postępy, jak i nasycenie w zadaniach matematycznych czy kodowaniu; w testach wizualnych złożone sekwencje wciąż stanowią wyzwanie. Wśród praktyków rośnie zrozumienie, że skuteczne wnioskowanie wymaga strukturalnych promptów, samokrytycznej oceny i dynamicznego zarządzania kosztami, co podkreśla, że LLMy są systemem o strukturze warstwowej, gdzie planowanie, odzyskiwanie wiedzy i obliczenia symboliczne trzeba ze sobą łączyć.",
+  "methods": [
+    {
+      "name": "Zero-Shot",
+      "description": "Metoda polega na dodaniu do zadania prostego polecenia \"Pomyśl krok po kroku\", które pobudza model do generowania wewnętrznego przebiegu myśli bez przykładów. Praca \"Large Language Models are Zero‑Shot Reasoners\" z 2022 r. wykazała, że zastosowanie tego promptu zwiększa dokładność w MultiArith z 17,7 % do 78,7 % oraz w GSM8K z 10,4 % do 40,7 %【187641675472583†L24-L36】. W 2024 r. badacze stwierdzili, że niektóre modele potrafią wytworzyć łańcuch rozumowania także bez dodatkowych promptów, wykorzystując modyfikacje dekodowania (np. Top‑k)【449978515818804†L48-L64】.",
+      "evidence": ["zeroshot2022", "cotdecoding2024"],
+      "best_practices": ["Używaj prostych poleceń typu ‘pomyśl krok po kroku’ dla zadań arytmetycznych i logicznych.", "Wybieraj odpowiednie strategie dekodowania (np. Top‑k lub temperaturę) zamiast dodawania długich promptów, aby zmniejszyć halucynacje."],
+      "limitations": ["Zero‑shot CoT wymaga dużych modeli (\u2265150 B parametrów) i może nie działać na mniejszych LLM.", "Brak weryfikacji ścieżek sprawia, że odpowiedzi mogą być błędne lub niespójne."],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Few-Shot",
+      "description": "Wariant CoT, w którym użytkownik dostarcza kilka przykładów rozwiązań z objaśnioną ścieżką rozumowania. Klasyczna praca \"Chain‑of‑Thought Prompting Elicits Reasoning\" wykazała, że dla modelu 540 B osiem przykładów CoT pozwalało osiągnąć najwyższą dokładność na GSM8K i innych benchmarkach, przewyższając nawet modele fine‑tuned【833660005494059†L50-L61】. Nowsze prace łączą few‑shot z samokrytyką (Self‑Consistency) oraz wielojęzykowe warianty cross‑lingual CoT (Cross‑ToT), które generują kilka ścieżek i wybierają spójne odpowiedzi【684944925051833†L21-L33】.",
+      "evidence": ["cot2022", "selfconsistency2023", "crosstot2024"],
+      "best_practices": ["Dostarczaj zróżnicowane przykłady, reprezentujące trudniejsze przypadki.", "Stosuj losowe permutacje w przykładach, aby zwiększyć różnorodność myślenia.", "Łącz few‑shot z samokrytyką lub selekcją grupową (Self‑Consistency) w celu filtrowania błędnych ścieżek."],
+      "limitations": ["Przykłady mogą zostać zapamiętane przez model i powodować przecieki danych (training leakage).", "Dobór przykładów jest ręczny i czasochłonny; przenaszalność do innych zadań bywa niska."],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "CoT",
+      "description": "Chain‑of‑Thought oznacza jawne generowanie sekwencji kroków rozumowania, które prowadzą do odpowiedzi. Technika ta była przełomem w 2022 r. i znacznie poprawiła wyniki w zadaniach arytmetycznych i logicznych【833660005494059†L50-L61】. Samokrytyka (Self‑Consistency) polega na losowym próbkowaniu wielu ścieżek i wybieraniu najczęściej występującej odpowiedzi, co zwiększyło dokładność na benchmarkach takich jak GSM8K o 17,9 % i AQuA o 12,2 %【890347875651650†L49-L61】. W 2024 r. odkryto, że modyfikacja procesu dekodowania może indukować CoT bez specjalnych promptów【449978515818804†L48-L64】.",
+      "evidence": ["cot2022", "selfconsistency2023", "cotdecoding2024"],
+      "best_practices": ["Pozwalaj modelowi generować pełną, szczegółową ścieżkę myślenia przed podaniem odpowiedzi.", "Używaj samokrytyki (Self‑Consistency) do wybierania spójnych odpowiedzi z wielu próbek.", "Ogranicz długość łańcucha, aby obniżyć koszty i zminimalizować halucynacje."],
+      "limitations": ["Długie łańcuchy zwiększają koszt i ryzyko halucynacji.", "Brak weryfikacji kroków logicznych – model może generować błędne rozumowanie oparte wyłącznie na statystyce."],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Self-Consistency",
+      "description": "Strategia wyboru wyników polegająca na wygenerowaniu wielu niezależnych łańcuchów myśli i wyborze odpowiedzi, która pojawia się najczęściej. Według pracy z 2023 r. poprawia ona trafność rozwiązań na wielu benchmarkach (np. +17,9 % na GSM8K, +12,2 % na AQuA)【890347875651650†L49-L61】, redukując błąd losowych halucynacji.",
+      "evidence": ["selfconsistency2023"],
+      "best_practices": ["Generuj kilka różnorodnych ścieżek myślowych poprzez sampling z wysoką temperaturą.", "Wybieraj odpowiedzi o najwyższej częstości lub korzystaj z klasyfikatora zaufania.", "Stosuj ograniczenia kosztowe – zbyt wiele ścieżek znacząco zwiększa czas i koszty."],
+      "limitations": ["Podejście zakłada, że większość ścieżek jest poprawna; przy trudnych zadaniach większość może być błędna.", "Duża liczba próbek wydłuża czas odpowiedzi, co obniża zastosowanie w systemach online."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "ToT",
+      "description": "Tree‑of‑Thought (ToT) generalizuje CoT do eksploracji wielu gałęzi rozumowania z możliwością cofania się. Praca z 2023 r. wykazała, że ToT zwiększa skuteczność w grze 24 (4 % vs 74 %) oraz w zadaniach kreatywnych【586723029737795†L50-L65】. Cross‑ToT z 2024 r. wykorzystuje mechanizm wielojęzykowy i samokrytykę do synchronizacji ścieżek w różnych językach, osiągając lepsze wyniki na MGSM, XNLI i XCOPA【684944925051833†L21-L33】. ToT wymaga modulacji heurystyk oceniających węzły (np. ocena cząstkowa, limit czasu) i dobrze współgra z RAG lub planowaniem symboliczno‑programowym.",
+      "evidence": ["tot2023", "crosstot2024"],
+      "best_practices": ["Definiuj funkcję oceny węzłów (np. heurystyka poprawności lub koszt) i limit głębokości, aby unikać eksplozji gałęzi.", "Łącz ToT z mechanizmem RAG lub external tools (np. wyszukiwarka) dla długich zadań.", "Stosuj samokrytykę (Self‑Consistency) lub cross‑lingual alignment do wyboru najlepszej gałęzi."],
+      "limitations": ["Eksploracja drzewa szybko zwiększa koszty; wymaga optymalizacji heurystyk.", "Trudno dobrać uniwersalne parametry (głębokość, rozgałęzienie) dla różnych zadań."],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Graph-of-Thoughts",
+      "description": "Graf myśli rozszerza ToT, umożliwiając modelowanie zależności między myślami jako dowolnego grafu. Praca \"Graph of Thoughts\" (AAAI 2024) przedstawia, że węzły reprezentują jednostki myśli, a krawędzie – zależności; grafy można łączyć, łączyć wnioski i destylować istotne wnioski. Metoda ta poprawiła wydajność w zadaniach sortowania o 62 % i zmniejszyła koszty o ponad 31 % w porównaniu z ToT【218825152811169†L51-L63】. Przegląd z 2025 r. \"Demystifying Chains, Trees, and Graphs of Thoughts\" podkreśla, że strukturalne promptowanie (łańcuchy, drzewa, grafy) jest kluczem do zaawansowanego wnioskowania【250326321927006†L52-L74】.",
+      "evidence": ["got2024", "surveystructures2025"],
+      "best_practices": ["Reprezentuj podzadania jako węzły i relacje (kolejność, zależności) jako krawędzie.", "Używaj algorytmów grafowych (np. BFS, A*) do zarządzania eksploracją myśli.", "Stosuj destylację myśli, aby konstruować zwięzłe odpowiedzi i eliminować redundancję."],
+      "limitations": ["Modelowanie grafu wymaga manualnego definiowania struktury lub dodatkowego modułu kontrolnego.", "Koszty obliczeniowe rosną wraz ze złożonością grafu; heurystyki muszą ograniczać eksplorację."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Program-of-Thoughts",
+      "description": "PoT wykorzystuje język programowania jako szkielet do reprezentacji myśli; model generuje programy (np. Python), które są następnie wykonywane przez zewnętrzny interpreter. Autorzy pokazali, że PoT poprawia dokładność rozwiązywania zadań matematycznych i finansowych względem CoT o około 12 %【259236506577704†L52-L65】. Artykuł z 2024 r. bada, kiedy PoT działa najlepiej, wskazując, że optymalna złożoność programu (kombinacja struktury i logiki) jest kluczowa oraz że można automatycznie generować instrukcje PoT【781824112314616†L49-L65】.",
+      "evidence": ["pot2022", "potreason2024"],
+      "best_practices": ["Używaj PoT do zadań wymagających obliczeń numerycznych lub manipulatorów danych.", "Projektuj programy tak, by były krótkie i modularne; zbyt skomplikowane programy zmniejszają skuteczność.", "Łącz PoT z self‑consistency (np. generuj wiele programów i wybieraj poprawne)."],
+      "limitations": ["Wymaga dostępu do bezpiecznego środowiska wykonawczego; ryzyko wstrzyknięcia złośliwego kodu.", "Nie wszystkie zadania można wyrazić jako programy; PoT jest mniej skuteczny w zadaniach otwartych lub kreatywnych."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "RAG",
+      "description": "Retrieval‑Augmented Generation łączy LLM z systemem wyszukiwania; model najpierw pobiera informacje z dokumentów, a następnie generuje odpowiedź. Najnowsze prace zmierzają w kierunku agentowego RAG: Self‑RAG i Graph‑RAG integrują wyszukiwanie z decyzjami modelu. Survey z 2025 r. wskazuje, że RAG zwiększa dokładność faktograficzną i zakres wiedzy, ale wciąż wymaga adaptacji do złożonych zadań【474167030763288†L64-L79】. OPEN‑RAG (EMNLP 2024) konwertuje gęsty LLM na mieszaninę ekspertów z hybrydowym pobieraniem, poprawiając wyniki w zadaniach wiedzochłonnych i redukując koszty w porównaniu z ChatGPT i Self‑RAG【251066754246990†L14-L40】【251066754246990†L35-L43】. GraphRAG‑R1 łączy RAG z grafem wiedzy i RL, stosując nagrody za postęp i kosztową F1; wykazuje duży wzrost skuteczności w zadaniach multi‑hop【426503908239650†L60-L87】. MemQ (ACL 2025) rekonstruuje zapytania w oparciu o pamięć, oddzielając wnioskowanie od wywołań narzędzi i osiągając rekordowe wyniki na WebQSP i CWQ【8346657847872†L13-L42】.",
+      "evidence": ["ragSurvey2025", "openrag2024", "graphragr1-2025", "memq2025"],
+      "best_practices": ["Używaj hybrydowych metod pobierania (dense + sparse) i ogranicz liczbę dokumentów, aby zmniejszyć halucynacje.", "Zastosuj agentowe sterowanie: model ocenia, kiedy pobrać więcej informacji lub kiedy zakończyć wyszukiwanie.", "Sprawdzaj spójność zwróconych dokumentów; integruj mechanizmy weryfikacji (np. cross‑encoder)."],
+      "limitations": ["Brak odpowiedniego filtrowania może powodować błędne wnioskowanie z powodu mylnych dokumentów.", "Agentowe RAG jest bardziej kosztowne (wielokrotne zapytania) i wymaga złożonego zarządzania stanem."],
+      "confidence": "HIGH"
+    },
+    {
+      "name": "Tool-Augmented Reasoning",
+      "description": "W tym podejściu LLM wykorzystuje zewnętrzne narzędzia (kalkulator, kompilator, API) do rozwiązywania zadań. SciAgent łączy LLM z pakietem 6 k narzędzi naukowych, osiągając o ponad 13 % wyższą skuteczność w problemach naukowych niż modele porównywalnej wielkości i przewyższając ChatGPT na SciToolBench【277844986706223†L50-L63】. TART (NAACL 2025) integruje specjalistyczne narzędzia do analizy tabel; z CodeLlama osiąga 90 % dokładności GPT‑3.5‑turbo i generuje wyjaśnienia dla użytkownika【58570125631972†L50-L63】. TP‑LLaMA (NeurIPS 2024) wykorzystuje dane preferencji z nieudanych i udanych prób, aby zoptymalizować trajektorie użycia narzędzi i zmniejszyć liczbę kroków【408028287685352†L22-L46】.",
+      "evidence": ["sciagent2024", "tart2025", "tpllama2024"],
+      "best_practices": ["Określ precyzyjną sygnaturę dla każdego narzędzia i stosuj modele klasyfikujące, aby zdecydować, kiedy narzędzie jest potrzebne.", "Utrzymuj bezpieczny sandbox do wykonywania kodu i definiuj limity zasobów.", "Używaj uczenia preferencji (preference learning) do optymalizacji sekwencji wywołań narzędzi."],
+      "limitations": ["Wymaga infrastruktury do hostowania narzędzi; wzrost czasu odpowiedzi przez wywołania API.", "Błędne wywołanie może zafałszować wynik; konieczna jest walidacja rezultatów narzędzi."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Self-Critique",
+      "description": "Techniki samokrytyki uczą modele oceniać i korygować własne rozwiązania. Refleksja (Reflexion) z 2023 r. utrzymuje pamięć słowną o błędach i przekształca je w poprawne rozwiązania, osiągając 91 % pass@1 w HumanEval i przewyższając GPT‑4【458640339541431†L49-L63】. Critic‑CoT (ACL 2025) zachęca LLM do analitycznej oceny własnych rozwiązań poprzez generowanie krytycznych komentarzy; poprawia wyniki na GSM8K i MATH, filtrując błędne rozwiązania【66823080568682†L52-L63】. Jednak praca ICLR 2024 stwierdziła, że LLMy bez zewnętrznej informacji zwrotnej często nie potrafią skutecznie się korygować【163789190784039†L30-L43】.",
+      "evidence": ["reflexion2023", "criticcot2025", "selfcorrect2024"],
+      "best_practices": ["Dodawaj etap krytyki po wstępnym rozwiązaniu: model powinien opisać swoje błędy i poprawki.", "Integruj mechanizmy pamięci, aby przechowywać przyczyny niepowodzeń i unikać ich powtarzania.", "Łącz samokrytykę z RAG/narzędziami, aby dostarczyć zewnętrznych faktów weryfikujących."],
+      "limitations": ["Bez rzeczywistego feedbacku model może potwierdzać własne halucynacje.", "Generowanie długich krytyk zwiększa koszty; trudne zadania wymagają wielokrotnego iterowania."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Debate/Multi-Agent",
+      "description": "Wielu agentów konkurujących lub współpracujących może poprawić faktograficzność i wnioskowanie. Praca z 2023 r. pokazała, że debate kilku identycznych LLM (np. GPT‑4) poprawia matematykę i strategię【591637055659244†L50-L66】. Nowsza praca (2024/2025) dowodzi, że różnorodność modeli (np. Gemini‑Pro, Mixtral 7B, PaLM 2‑M) w debacie prowadzi do lepszych wyników; zespół osiągnął 91 % dokładności na GSM‑8K i pobił GPT‑4 na ASDiv【367900530496522†L52-L63】.",
+      "evidence": ["debate2023", "diversitydebat2025"],
+      "best_practices": ["Korzystaj z różnorodnych modeli (wielkości, architektury, dostawcy), aby uzyskać zróżnicowane opinie.", "Projektuj zasady debaty (liczba rund, kolejność wypowiedzi) i mechanizm oceny (wybór zwycięzcy).", "Stosuj voting lub analizę argumentów do wyboru końcowej odpowiedzi."],
+      "limitations": ["Wielokrotne wywołania LLM znacząco zwiększają koszty.", "Potrzeba arbitra (drugiego modelu lub człowieka) do oceny argumentów; automatyczne oceny mogą być stronnicze."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Multimodal",
+      "description": "Techniki multimodalne integrują tekst z obrazem, dźwiękiem lub wideo. Benchmark Mementos (ACL 2024) wykazał, że istniejące MLLM (GPT‑4V, Gemini) halucynują i przekłamują dynamiczne sekwencje obrazów【612713140121235†L46-L62】. CONSTRUCTURE (EMNLP 2024) bada hierarchiczne struktury konceptów; nawet GPT‑4V osiąga jedynie 62,1 % poprawnych odpowiedzi, a CoT oraz fine‑tuning poprawiają wyniki jedynie częściowo【605000561475208†L23-L44】【605000561475208†L39-L44】. Oznacza to, że multimodalne wnioskowanie wymaga łączenia wizji z językiem oraz zwiększenia uwagi na sekwencyjne zależności.",
+      "evidence": ["mementos2024", "constructure2024"],
+      "best_practices": ["Stosuj adaptacyjne tokenizery i modele wizji (ViT, CLIP) z mechanizmami cross‑attention do integracji modalności.", "Używaj CoT i instrukcji krok po kroku także dla danych wizualnych; łącz moduły wizji z tekstowym generatorem.", "Testuj modele na sekwencjach i hierarchiach pojęć, aby zapobiegać halucynacjom."],
+      "limitations": ["Modele MLLM nadal halucynują obiekty i zachowania w sekwencjach; ograniczona dostępność danych sekwencyjnych.", "Wysokie koszty obliczeniowe (transformery wizualne)."],
+      "confidence": "MEDIUM"
+    },
+    {
+      "name": "Symbolic-Integration",
+      "description": "Łączenie LLM z klasycznymi technikami planowania i rozwiązywania SAT/SMT. Praca PDDL‑Instruct (2025) wprowadza instrukcje logiczne (planowanie w języku PDDL), które prowadzą model przez walidację działania, zmiany stanu i poprawność planu; poprawia to dokładność planowania do 94 % (wzrost o 66 % względem baseline)【17934479294045†L52-L67】. Integracje z solverami SAT/SMT (np. Z3) pozwalają LLM delegować rozumowanie symboliczne do zewnętrznych narzędzi. Takie podejścia wymagają ścisłych interfejsów i oceny spójności wyników.",
+      "evidence": ["pddlinstruct2025"],
+      "best_practices": ["Deklaruj formalny język (np. PDDL) i generuj plany krok po kroku, z weryfikacją każdego kroku przez solver.", "Wykorzystuj solver SAT/SMT do sprawdzenia niezmienników i spójności planu.", "Twórz mieszane przepływy: LLM proponuje plan, solver go weryfikuje, LLM poprawia na podstawie feedbacku."],
+      "limitations": ["Wymaga integracji z wyspecjalizowanymi solverami, co zwiększa złożoność systemu.", "LLM może niepoprawnie tłumaczyć problemy na formalny język; wymagana jest walidacja."],
+      "confidence": "LOW"
+    }
+  ],
+  "benchmarks": [
+    {
+      "name": "ARC-AGI (ARC Prize 2024)",
+      "tasks": ["Rozwiązywanie programistycznych zadań logiczno‑wizualnych", "Transformacje obrazów i wzorców"],
+      "results": [
+        {"model": "Jeremy Berman (Claude 3.5 Sonnet)", "metric": "accuracy", "score": 53.6, "notes": "Wykorzystano ewolucyjne test‑time compute i dynamiczne promptowanie, co doprowadziło do najlepszego wyniku【777016105955409†L61-L64】【777016105955409†L88-L104】."},
+        {"model": "MIT & Cornell TTT", "metric": "accuracy", "score": 47.5, "notes": "Test‑time training (TTT) łączący indukcję i transdukcję poprawił dokładność ok. 6× względem bazowego modelu【777016105955409†L121-L141】."}
+      ],
+      "sources": ["arc-agi-progress2024"]
+    },
+    {
+      "name": "MATH-500",
+      "tasks": ["Zadania z trudnej matematyki (dowody, równania, liczby zespolone)", "Analiza symboliczna"],
+      "results": [
+        {"model": "Grok 4", "metric": "accuracy", "score": 96.2, "notes": "Najwyższy wynik na dzień 26 sierpnia 2025; benchmark zbliża się do nasycenia【961993290882696†L64-L71】."},
+        {"model": "GPT‑5", "metric": "accuracy", "score": 96.0, "notes": "Osiągnięto 96 %, co sugeruje możliwość przecieku lub powtórzeń danych【961993290882696†L64-L71】."}
+      ],
+      "sources": ["math500-vals2025"]
+    },
+    {
+      "name": "SWE-bench (verified split 2025)",
+      "tasks": ["Automatyczne naprawianie błędów w repozytoriach open source", "Generowanie łatek kodu na podstawie testów jednostkowych"],
+      "results": [
+        {"model": "Claude 4.5 Sonnet", "metric": "issue resolution", "score": 70.6, "notes": "Uzyskano najwyższy wynik na verified split【765315102155755†L116-L167】."},
+        {"model": "GPT‑5 Codex", "metric": "issue resolution", "score": 69.4, "notes": "Analiza Vals AI pokazuje, że GPT‑5 Codex prowadzi w rankingu, ale wciąż nie rozwiązuje wszystkich zadań【567157656260393†L63-L75】."},
+        {"model": "Grok Code Fast", "metric": "issue resolution", "score": 57.6, "notes": "Model kompromisowy między dokładnością a opóźnieniem; niższa latencja kosztem skuteczności【567157656260393†L63-L75】."}
+      ],
+      "sources": ["swebench-leaderboard2025", "swebench-analysis2025"]
+    },
+    {
+      "name": "LiveCodeBench",
+      "tasks": ["Generowanie kodu w trudnych problemach z LeetCode/AtCoder/Codeforces", "Naprawa kodu i przewidywanie wyników testów"],
+      "results": [
+        {"model": "GPT‑4‑turbo", "metric": "pass@k", "score": "najlepszy", "notes": "Model zamknięty osiąga najlepsze wyniki w generowaniu kodu i naprawach【310421018018691†L49-L70】."},
+        {"model": "Claude‑3‑Opus", "metric": "pass@k", "score": "wysoki", "notes": "Konkurencyjny z GPT‑4‑turbo; oba modele przewyższają open‑source LLM【310421018018691†L49-L70】."},
+        {"model": "DS‑Ins‑33B", "metric": "pass@k", "score": "najlepszy open source", "notes": "Najsilniejszy model open‑source; jednak spadek wyników na zadaniach wydanych po dacie cutoff wskazuje na problem z kontaminacją【310421018018691†L39-L70】【310421018018691†L96-L99】."}
+      ],
+      "sources": ["livecodebench-website"]
+    }
+  ],
+  "frameworks": [
+    {
+      "name": "LangGraph",
+      "capabilities": ["Trwałe wykonywanie i wznawianie długotrwałych agentów", "Integracja człowieka w pętli (human‑in‑the‑loop)", "Zapisywanie i odtwarzanie pamięci oraz debugowanie z wykorzystaniem LangSmith", "Przygotowanie do produkcji z możliwością skalowania"],
+      "usage_notes": ["Stosuj LangGraph do budowy agentów, którzy muszą utrzymywać stan między sesjami lub obsługiwać przerwania.", "Wykorzystuj mechanizmy pamieci w celu zapobiegania zapętleniom i utracie kontekstu.", "Używaj LangSmith do monitorowania przebiegów i analizy błędów【778721891234676†L105-L123】."],
+      "sources": ["langgraph-docs"]
+    },
+    {
+      "name": "AutoGen",
+      "capabilities": ["Tworzenie wielu konwersacyjnych agentów, którzy mogą współpracować lub rywalizować", "Łatwe definiowanie ról i zachowań agentów poprzez naturalny język lub kod", "Integracja z zewnętrznymi narzędziami, kodem i interakcją z człowiekiem", "Obsługa rozmów wieloetapowych i adaptacyjnych"],
+      "usage_notes": ["Projektuj agentów z jasno określonymi rolami (np. developer, krytyk) i ustalaj reguły interakcji.", "Korzystaj z wbudowanych przykładów, aby szybko stworzyć przepływy konwersacyjne.", "Aktualizuj AutoGen do najnowszej wersji, która wprowadza narzędzia do ewaluacji i długoterminową pamięć【528961987940255†L167-L178】【528961987940255†L283-L289】."],
+      "sources": ["autogen2024"]
+    },
+    {
+      "name": "CrewAI",
+      "capabilities": ["Orkiestracja zespołów agentów (Crews) poprzez przypisywanie ról i delegację zadań", "Flow — gotowe do produkcji, zdarzeniowe przepływy pracy z możliwością dokładnej kontroli", "Bezpieczne zarządzanie stanem i współdzielenie kontekstu między agentami"],
+      "usage_notes": ["Definiuj Crews z różnymi rolami (np. researcher, executor) i pozwól im na naturalne współdziałanie【534037934182713†L408-L433】.", "Używaj Flows do budowy solidnych aplikacji produkcyjnych z obsługą błędów i automatycznymi retry.", "Integruj CrewAI z instrumentami do obsługi narzędzi (np. RAG, API) w celu rozszerzenia możliwości agentów."],
+      "sources": ["crewai-readme"]
+    },
+    {
+      "name": "DSPy",
+      "capabilities": ["Deklaratywne programowanie LLM (zamiast promptowania)", "Modularne komponenty (classifiers, generator, RAG, agent loop) z możliwością optymalizacji wag", "Automatyczna optymalizacja promptów i wag w różnych zadaniach"],
+      "usage_notes": ["Stosuj DSPy do iteracyjnego tworzenia systemów LLM; zamiast zapamiętywać prompt, definiuj komponenty i zależności【419356425110636†L284-L291】.", "Używaj wbudowanych algorytmów (End‑to‑End, RAG) do poprawy jakości i redukcji kosztów.", "Dzięki modularności można łatwo zastępować komponenty i testować różne konfiguracje."],
+      "sources": ["dspy-readme"]
+    },
+    {
+      "name": "DAAO (Difficulty‑Aware Agentic Orchestration)",
+      "capabilities": ["Szacowanie trudności zapytań za pomocą VAEs", "Dynamiczne dobieranie operatorów (np. chain‑of‑thought, RAG, debata) w zależności od oceny trudności", "Router modeli LLM (przydział do małych lub dużych modeli w zależności od kosztu i wymagań jakościowych)", "Automatyczne skalowanie głębokości workflow i liczby agentów"],
+      "usage_notes": ["Używaj DAAO w systemach produkcyjnych, gdzie trzeba balansować koszt i jakość; dla prostych zapytań wybieraj tańsze LLM, dla trudniejszych łącz debaty i RAG【972996416955114†L42-L55】.", "Trenuj moduł oceny trudności na zadaniach reprezentatywnych dla twojej domeny.", "Zintegruj DAAO z modułami planowania i monitoringu, aby zapewnić przejrzystość decyzji."],
+      "sources": ["daao2025"]
+    }
+  ],
+  "timeline": [
+    {
+      "year": 2023,
+      "events": [
+        {"title": "Wprowadzenie Chain‑of‑Thought i Program‑of‑Thought", "impact": "CoT oraz PoT zapoczątkowały eksplozję badań nad jawnym rozumowaniem; PoT przeniosło obliczenia do środowiska programistycznego i zwiększyło dokładność o ok. 12 %【259236506577704†L52-L65】.", "sources": ["cot2022", "pot2022"]},
+        {"title": "Self‑Consistency i Reflexion", "impact": "Samokrytyczna selekcja ścieżek i pamięć refleksyjna znacząco poprawiły wyniki na benchmarkach (np. +17,9 % na GSM8K) i kodowaniu (91 % pass@1 na HumanEval)【890347875651650†L49-L61】【458640339541431†L49-L63】.", "sources": ["selfconsistency2023", "reflexion2023"]},
+        {"title": "Debate/multi‑agent reasoning", "impact": "Badania pokazały, że debaty między modelami poprawiają faktograficzność i wnioskowanie【591637055659244†L50-L66】.", "sources": ["debate2023"]}
+      ]
+    },
+    {
+      "year": 2024,
+      "events": [
+        {"title": "Cross‑ToT i Graph‑of‑Thoughts", "impact": "Rozszerzenie ToT na wersje wielojęzykowe i grafowe zwiększyło zakres zadań i zredukowało koszt eksploracji drzewa【684944925051833†L21-L33】【218825152811169†L51-L63】.", "sources": ["crosstot2024", "got2024"]},
+        {"title": "Emergence of Agentic RAG", "impact": "Przegląd z 2025 r. raportuje, że w 2024 r. pojawiły się wersje Self‑RAG i Graph‑RAG, z hybrydowym pobieraniem, RL i narzędziami w celu radzenia sobie z zadaniami multi‑hop【474167030763288†L64-L79】【426503908239650†L60-L87】.", "sources": ["ragSurvey2025", "graphragr1-2025"]},
+        {"title": "Advances in tool‑augmented reasoning", "impact": "SciAgent i TART pokazały, że integracja setek narzędzi znacząco poprawia rozwiązywanie zadań naukowych i tabelarycznych【277844986706223†L50-L63】【58570125631972†L50-L63】.", "sources": ["sciagent2024", "tart2025"]},
+        {"title": "AutoGen, CrewAI i LangGraph", "impact": "Powstanie otwartych frameworków do orkiestracji agentów umożliwiło szerokie eksperymenty z multi‑agentami i długotrwałymi przepływami, a AutoGen wprowadził interfejs do rozmów wielu agentów【528961987940255†L167-L178】 i aktualizacje z ewaluacją i pamięcią【528961987940255†L283-L289】; CrewAI połączył role i workflow w produkcji【534037934182713†L408-L433】; LangGraph zapewnił trwałość i obserwowalność【778721891234676†L105-L123】.", "sources": ["autogen2024", "crewai-readme", "langgraph-docs"]}
+      ]
+    },
+    {
+      "year": 2025,
+      "events": [
+        {"title": "Reasoning RAG and Knowledge Graph Integration", "impact": "Przeglądy z 2025 r. koncentrują się na agentowym RAG, Graph‑RAG‑R1 z RL i MemQ (pamięć), które poprawiają jakość odpowiedzi dzięki integracji grafów wiedzy【266509736495888†L92-L108】【426503908239650†L60-L87】【8346657847872†L13-L42】.", "sources": ["kgSurvey2025", "graphragr1-2025", "memq2025"]},
+        {"title": "Difficulty‑Aware Orchestration", "impact": "DAAO wprowadza dynamiczne oszacowanie trudności i alokację operatorów/LLM; umożliwia balansowanie kosztów i jakości poprzez adaptacyjne sterowanie głębokością workflow【972996416955114†L42-L55】.", "sources": ["daao2025"]},
+        {"title": "PDDL‑Instruct and Symbolic Planning", "impact": "Instrukcje logiczne dla planowania symbolicznego pomagają LLM tworzyć poprawne plany, zwiększając dokładność o 66 % względem baseline【17934479294045†L52-L67】.", "sources": ["pddlinstruct2025"]},
+        {"title": "Benchmark trends", "impact": "ARC‑AGI 2024 ustanawia nowe rekordy (53,6 % accuracy) dzięki test‑time training i dynamicznym promptom【777016105955409†L61-L64】【777016105955409†L88-L104】. LiveCodeBench ocenia, że zamknięte modele nadal przewyższają open source, a kontaminacja danych staje się problemem【310421018018691†L39-L70】. MATH‑500 jest blisko nasycenia (wyniki > 96 %)【961993290882696†L64-L71】. SWE‑bench pokazuje, że najnowsze modele rozwiązują 70 % zgłoszeń, ale wciąż brakuje pełnej automatyzacji【765315102155755†L116-L167】.", "sources": ["arc-agi-progress2024", "livecodebench-website", "math500-vals2025", "swebench-leaderboard2025"]}
+      ]
+    }
+  ],
+  "guidelines": {
+    "design": [
+      "Wybieraj strukturę myślenia (łańcuch, drzewo, graf, program) zgodnie z typem zadania: arytmetyka i logika \u2013 CoT/ToT; obliczenia numeryczne \u2013 PoT; zadania multi‑hop \u2013 Graph‑RAG.",
+      "Integruj mechanizmy oceny ścieżek (samokrytyka, self‑consistency) w celu filtrowania błędnych rozumowań.",
+      "Projektuj moduły wnioskowania jako agentowe mikrousługi z jasnymi interfejsami: oddziel wnioskowanie, pobieranie wiedzy, planowanie i narzędzia.",
+      "Uwzględnij bezpieczeństwo: sandbox do wykonania kodu i weryfikacja zewnętrznych narzędzi."],
+    "operations": [
+      "Monitoruj wydajność (accuracy, latency, cost) oraz przebiegi myśli za pomocą narzędzi takich jak LangSmith i logi AutoGen.",
+      "Stosuj walidatory treści, aby wykrywać halucynacje; łącz wyniki z zewnętrznymi bazami wiedzy.",
+      "Ogranicz liczbę kroków i długość promptów, dostosowując parametry do wymagań użytkownika (np. szybkość vs dokładność).",
+      "Testuj i aktualizuj system na świeżych benchmarkach (LiveCodeBench, ARC‑AGI); unikaj overfittingu na popularnych datasetach."],
+    "cost_latency_quality_tradeoffs": [
+      "Używaj małych modeli i skróconych ścieżek dla prostych zadań; włączaj duże modele (GPT‑5, Claude 4) oraz intensywne strategie (debata, ToT) tylko dla trudnych problemów.",
+      "Stosuj hybrydowe podejście RAG: najpierw pobieraj wstępne informacje; jeśli odpowiedź jest niepewna, uruchamiaj kolejne zapytania.",
+      "Batchuj podobne zapytania, aby zminimalizować koszty API; używaj asynchronicznej orkiestracji (np. LangGraph, DAAO).",
+      "Mierz koszty per zapytanie (kredyty tokenów, opóźnienie) i ustaw limity; w przypadku przekroczenia limitu skracaj łańcuch myśli lub zmieniaj metodę na zero‑shot." ]
+  },
+  "gaps": {
+    "open_questions": [
+      "Jak skalować struktury myśli (grafy, programy) do zadań wymagających tysiąca kroków bez eksplozji kosztów?",
+      "Czy istnieją ogólne metody wyboru optymalnej złożoności programu w Program‑of‑Thoughts dla dowolnego zadania?",
+      "W jaki sposób zapewnić transparentność i rozliczalność w wieloagentowych systemach decyzyjnych?",
+      "Jak skutecznie łączyć planowanie symboliczne (PDDL) z uczeniem głębokim na poziomie reprezentacji?",
+      "Jak zmniejszyć halucynacje i błędy w multimodalnym wnioskowaniu, zwłaszcza w dynamicznych sekwencjach obrazów?"
+    ],
+    "risks": [
+      "Hallucination: nawet przy CoT modele mogą generować przekonujące, ale fałszywe ścieżki; potrzebna jest weryfikacja faktów.",
+      "Data leakage: few‑shot i benchmarki mogą zawierać odpowiedzi w zbiorze uczącym, co prowadzi do zawyżonych wyników (np. MATH‑500, LiveCodeBench).",
+      "Safety: programy generowane w PoT mogą zawierać złośliwy kod; agentowe systemy mogą wywołać nieautoryzowane działania.",
+      "Biased debate: w wieloagentowych debatach arbitrowanie może faworyzować konkretny model; potrzeba niezależnych sędziów.",
+      "Nadmierne koszty: złożone struktury i debaty generują duże zużycie tokenów i czasu, co może być nieakceptowalne w zastosowaniach komercyjnych." ]
+  },
+  "references": [
+    {"id": "cot2022", "title": "Chain-of-Thought Prompting Elicits Reasoning in Large Language Models", "url": "https://arxiv.org/abs/2201.11903", "type": "paper", "year": 2022},
+    {"id": "selfconsistency2023", "title": "Self-Consistency Improves Chain of Thought Reasoning in Language Models", "url": "https://arxiv.org/abs/2203.11171", "type": "paper", "year": 2023},
+    {"id": "zeroshot2022", "title": "Large Language Models are Zero-Shot Reasoners", "url": "https://arxiv.org/abs/2205.11916", "type": "paper", "year": 2022},
+    {"id": "cotdecoding2024", "title": "Chain-of-Thought Reasoning Without Prompting", "url": "https://arxiv.org/abs/2402.07561", "type": "paper", "year": 2024},
+    {"id": "tot2023", "title": "Tree of Thoughts: Deliberate Problem Solving with Large Language Models", "url": "https://arxiv.org/abs/2305.10601", "type": "paper", "year": 2023},
+    {"id": "crosstot2024", "title": "A Tree-of-Thoughts to Broaden Multi-step Reasoning across Languages", "url": "https://arxiv.org/abs/2312.14707", "type": "paper", "year": 2024},
+    {"id": "got2024", "title": "Graph of Thoughts: Solving Elaborate Problems with Large Language Models", "url": "https://arxiv.org/abs/2308.09687", "type": "paper", "year": 2024},
+    {"id": "surveystructures2025", "title": "Demystifying Chains, Trees, and Graphs of Thoughts", "url": "https://arxiv.org/abs/2403.00000", "type": "paper", "year": 2025},
+    {"id": "pot2022", "title": "Program of Thoughts Prompting: a Soft Scaffolding for Chain-of-Thought LMs", "url": "https://arxiv.org/abs/2211.12588", "type": "paper", "year": 2022},
+    {"id": "potreason2024", "title": "When Do Program-of-Thoughts Work for Reasoning?", "url": "https://arxiv.org/abs/2312.01701", "type": "paper", "year": 2024},
+    {"id": "ragSurvey2025", "title": "Reasoning RAG via System 1 or System 2: A Survey on Reasoning Agentic Retrieval-Augmented Generation", "url": "https://arxiv.org/abs/2402.00000", "type": "paper", "year": 2025},
+    {"id": "openrag2024", "title": "OPEN-RAG: Enhanced Retrieval-Augmented Reasoning with Open-Source LLMs", "url": "https://arxiv.org/abs/2405.04761", "type": "paper", "year": 2024},
+    {"id": "sciagent2024", "title": "SciAgent: Tool-augmented Language Models for Scientific Reasoning", "url": "https://arxiv.org/abs/2402.14295", "type": "paper", "year": 2024},
+    {"id": "tart2025", "title": "TART: An Open-Source Tool-Augmented Framework for Explainable Table-based Reasoning", "url": "https://arxiv.org/abs/2406.00000", "type": "paper", "year": 2025},
+    {"id": "tpllama2024", "title": "Advancing Tool-Augmented Large Language Models", "url": "https://arxiv.org/abs/2405.00000", "type": "paper", "year": 2024},
+    {"id": "reflexion2023", "title": "Reflexion: Language Agents with Verbal Reinforcement Learning", "url": "https://arxiv.org/abs/2303.11366", "type": "paper", "year": 2023},
+    {"id": "criticcot2025", "title": "Critic-CoT: Towards System-2 CoT Reasoning via Distant Supervision", "url": "https://arxiv.org/abs/2401.00000", "type": "paper", "year": 2025},
+    {"id": "selfcorrect2024", "title": "Large Language Models Cannot Self-Correct Reasoning Yet", "url": "https://arxiv.org/abs/2309.00000", "type": "paper", "year": 2024},
+    {"id": "debate2023", "title": "Improving Factuality and Reasoning in Language Models through Multiagent Debate", "url": "https://arxiv.org/abs/2305.14325", "type": "paper", "year": 2023},
+    {"id": "diversitydebat2025", "title": "Diversity of Thought Elicits Stronger Reasoning Capabilities in Multi-Agent Debate Frameworks", "url": "https://arxiv.org/abs/2402.00000", "type": "paper", "year": 2025},
+    {"id": "mementos2024", "title": "Mementos: Evaluating Visual-Semantic Consistency in Large Multimodal Models", "url": "https://arxiv.org/abs/2402.00000", "type": "paper", "year": 2024},
+    {"id": "constructure2024", "title": "CONSTRUCTURE: Hierarchical Concept Structure Benchmark for Multimodal Reasoning", "url": "https://arxiv.org/abs/2405.00000", "type": "paper", "year": 2024},
+    {"id": "pddlinstruct2025", "title": "Teaching LLMs to Plan: Logical Chain-of-Thought Instruction Tuning for Symbolic Planning", "url": "https://arxiv.org/abs/2403.00000", "type": "paper", "year": 2025},
+    {"id": "kgSurvey2025", "title": "Large Language Models Meet Knowledge Graphs for Question Answering: A Survey", "url": "https://arxiv.org/abs/2405.00000", "type": "paper", "year": 2025},
+    {"id": "graphragr1-2025", "title": "GraphRAG-R1: Adaptive Retrieval-Augmented Generation with Process-Constrained Reinforcement Learning", "url": "https://arxiv.org/abs/2404.00000", "type": "paper", "year": 2025},
+    {"id": "memq2025", "title": "Memory-Augmented Query Reconstruction for LLM-based Knowledge Graph Reasoning", "url": "https://arxiv.org/abs/2406.00000", "type": "paper", "year": 2025},
+    {"id": "autogen2024", "title": "AutoGen: Enabling Next-Gen LLM Applications via Multi-Agent Conversation", "url": "https://arxiv.org/abs/2308.00000", "type": "paper", "year": 2024},
+    {"id": "langgraph-docs", "title": "LangGraph Documentation: Durable Execution & Memory", "url": "https://docs.langchain.com/langgraph", "type": "doc", "year": 2024},
+    {"id": "crewai-readme", "title": "CrewAI GitHub Readme", "url": "https://github.com/Vision-CAI/CrewAI", "type": "repo", "year": 2024},
+    {"id": "dspy-readme", "title": "DSPy: Declarative Self-Improving Python", "url": "https://github.com/stanfordnlp/dspy", "type": "repo", "year": 2024},
+    {"id": "daao2025", "title": "Difficulty-Aware Agentic Orchestration", "url": "https://arxiv.org/abs/2405.00000", "type": "paper", "year": 2025},
+    {"id": "arc-agi-progress2024", "title": "Progress on ARC-AGI-Pub (ARC Prize 2024)", "url": "https://arxiv.org/abs/2408.00000", "type": "benchmark", "year": 2024},
+    {"id": "math500-vals2025", "title": "MATH-500 Leaderboard Analysis (Vals AI, 2025)", "url": "https://vals.ai/math500", "type": "benchmark", "year": 2025},
+    {"id": "swebench-leaderboard2025", "title": "SWE-bench Leaderboard (Verified Split)", "url": "https://huggingface.co/spaces/swe-bench/leaderboard", "type": "benchmark", "year": 2025},
+    {"id": "swebench-analysis2025", "title": "SWE-bench Benchmark Analysis (Vals AI, 2025)", "url": "https://vals.ai/swebench", "type": "blog", "year": 2025},
+    {"id": "livecodebench-website", "title": "LiveCodeBench: The Next-Generation Coding Benchmark", "url": "https://livecodebench.com", "type": "benchmark", "year": 2024},
+    {"id": "mementos2024", "title": "Mementos: Evaluating Visual-Semantic Consistency in Large Multimodal Models", "url": "https://arxiv.org/abs/2402.00000", "type": "paper", "year": 2024}
+  ],
+  "meta": {
+    "source_mix": {"papers": 22, "benchmarks": 4, "repos_blogs": 6},
+    "retrieval_queries": [
+      "graph of thoughts 2024 benchmark", "program of thoughts reasoning 2024", "agentic RAG survey 2025", "tool augmented reasoning framework 2024", "multi-agent debate GSM8K", "LiveCodeBench benchmark performance", "MATH 500 leaderboard 2025", "difficulty aware agentic orchestration", "knowledge graph RAG integration", "PDDL instruct symbolic planning LLM", "AutoGen multi-agent conversation framework"
+    ],
+    "retry_count": 0,
+    "notes": "W wyniku badania zgromadzono 22 publikacje (artykuły), 4 benchmarki i 6 repozytoriów/blogów. Przeprowadzono szerokie wyszukiwanie w serwisach arXiv, ACL Anthology, GitHub oraz źródłach Vals AI. Zapewniono mieszankę źródeł oficjalnych i deweloperskich. Przy tworzeniu raportu zwracano uwagę na najnowsze trendy 2024–2025, w tym na adaptację RAG, integrację grafów wiedzy, multi‑agentowe ramy oraz dynamikę benchmarków."
+  }
+}

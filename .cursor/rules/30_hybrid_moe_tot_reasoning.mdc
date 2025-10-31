@@ -1,0 +1,484 @@
+---
+description: >
+  Hybrid Mixture-of-Experts (MoE) system with Tree-of-Thought (ToT) reasoning.
+  Implements 6 specialized expert roles working concurrently with adaptive
+  context management and cost control. Combines multiple reasoning techniques
+  (CoT, ToT, GoT, PoT, RAG, Tool-Augmented) for optimal decision quality.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Hybrid MoE with ToT Reasoning
+
+## System Architecture
+
+The system implements a **Mixture of Experts (MoE)** with **6 specialized roles**:
+
+### 1. PLANNER
+**Specialization**: Strategic multi-step planning
+- **Methods**: Graph-of-Thoughts (GoT), Self-Consistency, Debate
+- **Tasks**: Task decomposition, dependency graphs, risk assessment
+- **Triggers**: "write plan", "decompose task", "how to approach"
+- **Cost Control**: Max 15% token budget on planning
+
+### 2. REASONER
+**Specialization**: Deep analysis and problem solving
+- **Methods**: Chain-of-Thought (CoT), Tree-of-Thought (ToT), Program-of-Thoughts (PoT)
+- **Tasks**: Root cause analysis, solution simulation, logic validation
+- **Triggers**: "why", "how it works", "analyze", "solve problem"
+- **Cost Control**: Adaptive allocation up to 40% for complex problems
+
+### 3. IMPLEMENTER
+**Specialization**: Code generation and editing
+- **Methods**: Tool-Augmented Reasoning, Retrieval-Augmented Generation (RAG)
+- **Tasks**: Coding, refactoring, performance optimization
+- **Triggers**: "implement", "write code", "change function", "add feature"
+- **Cost Control**: Efficient implementation with minimal iterations
+
+### 4. TESTER
+**Specialization**: Quality and reliability validation
+- **Methods**: Self-Consistency, Tool-Augmented (test tools), Debate
+- **Tasks**: Test authoring, validation runs, coverage analysis
+- **Triggers**: "test", "add tests", "check quality", "validate"
+- **Cost Control**: Max 25% on testing, priority on critical paths
+
+### 5. REFACTORER
+**Specialization**: Optimization and maintainability
+- **Methods**: GoT for dependencies, tool-augmented analysis
+- **Tasks**: Duplicate removal, readability improvements, architecture optimization
+- **Triggers**: "clean code", "refactor", "improve structure", "optimize"
+- **Cost Control**: Only when quality drops below threshold
+
+### 6. DOCUMENTER
+**Specialization**: Communication and documentation
+- **Methods**: RAG, Multi-Agent Consensus
+- **Tasks**: Documentation, decision explainers, examples
+- **Triggers**: "document", "explain", "write README", "add comments"
+- **Cost Control**: Minimal cost, runs concurrently
+
+## Control and Orchestration Mechanisms
+
+### Adaptive Context Management
+```
+Context Level 1 (Basic): < 1000 tokens
+- IMPLEMENTER + TESTER only
+- Quick implementation tasks
+
+Context Level 2 (Medium): 1000-5000 tokens
+- PLANNER + IMPLEMENTER + TESTER
+- Standard development tasks
+
+Context Level 3 (Advanced): 5000-15000 tokens
+- All 6 experts
+- Complex architectural problems
+
+Context Level 4 (Maximum): >15000 tokens
+- Queued processing
+- Background execution with cost control
+```
+
+### Real-Time Control Signals
+```
+🔴 STOP: Immediate stop (cost > limit, critical error)
+🟡 PAUSE: Wait for user decision (uncertainty > 80%)
+🟢 CONTINUE: Proceed with confidence (confidence > 95%)
+🔵 ADAPT: Switch strategy (poor performance metrics)
+```
+
+### Cost-Latency Tradeoffs
+```
+FAST Strategy:     PLANNER → IMPLEMENTER → TESTER (60% of tasks)
+QUALITY Strategy:  PLANNER → REASONER → IMPLEMENTER → TESTER → REFACTORER (30%)
+DEEP Strategy:     All experts + iterations (10%)
+```
+
+## Hybrid Reasoning Strategies
+
+### 1. Chain-of-Thought (CoT) Integration
+- **Use**: Sequential reasoning for logical problems
+- **Pattern**: "Think step-by-step: 1) Problem analysis 2) Solutions 3) Consequences"
+- **Control**: Up to 5 steps, self-critique every 2 steps
+
+### 2. Tree-of-Thought (ToT) for Exploration
+- **Use**: Branching problems with multiple paths
+- **Implementation**: Decision graph with node scoring heuristics
+- **Optimization**: Early stopping at confidence > 90%
+
+### 3. Graph-of-Thoughts (GoT) for Dependencies
+- **Use**: Problems with complex inter-component dependencies
+- **Structure**: Nodes = thought units, edges = relationships
+- **Algorithms**: BFS/DFS with distillation for optimization
+
+### 4. Program-of-Thoughts (PoT) for Computation
+- **Use**: Tasks requiring code/programmatic computation
+- **Safety**: Sandbox execution with timeouts
+- **Verification**: Multiple sampling for consistency
+
+### 5. RAG-Augmented Reasoning
+- **Use**: Tasks requiring external knowledge
+- **Strategy**: Hybrid retrieval (dense + sparse) with re-ranking
+- **Control**: Max 5 documents per query
+
+## Quality Gates and Monitoring
+
+- **Security**: OWASP Top 10, input validation, secrets management
+- **Quality**: Static analysis, linting, formatting
+- **Testing**: Unit/Integration/E2E, coverage > 90%
+- **Performance**: Latency targets, resource budgets
+- **Resilience**: Retries, circuit breakers, timeouts
+- **Observability**: Structured logs, metrics, traces (OpenTelemetry)
+
+## Execution Modes
+
+- **FAST**: Minimal planning, straight to implementation
+- **BALANCED**: Plan → Implement → Test (default)
+- **QUALITY**: Plan → Reason → Implement → Test → Refactor
+- **RESEARCH**: Reason → Explore → Validate → Implement
+
+## Safety and Compliance
+
+- **Least Privilege** and **Defense-in-Depth** everywhere
+- No plaintext secrets; use environment variables/secrets stores
+- Sanitize logs and error messages
+- Comply with GDPR/SOC2 where applicable
+
+## Result Format (for AI outputs)
+
+All AI-assisted decisions should be returned in JSON with keys:
+- `reasoning`: string (concise explanation)
+- `actions`: list[string] (next steps)
+- `risks`: list[string] (key risks and mitigations)
+- `confidence`: number (0-1)
+
+## Plan Mode Integration (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-plan-mode)
+**Integration:** Pre-implementation planning strategies with AI assistance
+
+### Plan Mode Workflow Integration
+
+#### Structured Planning Process
+```python
+class PlanModeIntegrator:
+    """Integrates Plan Mode with existing MoE reasoning system"""
+
+    def __init__(self, moe_system: MixtureOfExperts):
+        self.moe_system = moe_system
+        self.plan_cache = {}
+        self.user_feedback_loop = UserFeedbackLoop()
+
+    async def execute_plan_mode_workflow(self, task_request: TaskRequest) -> ExecutionResult:
+        """
+        Execute complete Plan Mode workflow with MoE integration
+        """
+        # Phase 1: Initial Planning (PLANNER expert)
+        initial_plan = await self._generate_initial_plan(task_request)
+
+        # Phase 2: User Refinement Loop
+        refined_plan = await self._user_refinement_loop(initial_plan)
+
+        # Phase 3: Validation & Enhancement (REASONER expert)
+        validated_plan = await self._validate_and_enhance_plan(refined_plan)
+
+        # Phase 4: Execution Planning (IMPLEMENTER expert)
+        execution_plan = await self._create_execution_plan(validated_plan)
+
+        return ExecutionResult(
+            plan=validated_plan,
+            execution_strategy=execution_plan,
+            confidence_score=self._calculate_plan_confidence(validated_plan)
+        )
+
+    async def _generate_initial_plan(self, task_request: TaskRequest) -> InitialPlan:
+        """
+        Generate initial plan using PLANNER expert with AI assistance
+        """
+        # Use PLANNER expert for initial decomposition
+        planner_result = await self.moe_system.activate_expert(
+            'PLANNER',
+            {
+                'task': task_request.description,
+                'context': task_request.context,
+                'constraints': task_request.constraints
+            }
+        )
+
+        # Structure the plan using AI reasoning
+        structured_plan = await self._structure_plan_with_ai(
+            planner_result.raw_plan,
+            task_request.complexity_level
+        )
+
+        return InitialPlan(
+            steps=structured_plan.steps,
+            dependencies=structured_plan.dependencies,
+            risks=structured_plan.risks,
+            estimated_effort=structured_plan.effort_estimate
+        )
+
+    async def _user_refinement_loop(self, initial_plan: InitialPlan) -> RefinedPlan:
+        """
+        Interactive user refinement with real-time feedback
+        """
+        current_plan = initial_plan
+
+        while True:
+            # Present plan to user
+            user_feedback = await self.user_feedback_loop.get_feedback(current_plan)
+
+            if user_feedback.accepted:
+                break
+
+            # Apply user modifications
+            current_plan = await self._apply_user_modifications(
+                current_plan, user_feedback.modifications
+            )
+
+            # Re-validate modified plan
+            current_plan = await self._revalidate_plan(current_plan)
+
+        return RefinedPlan.from_initial_plan(current_plan)
+```
+
+#### AI-Enhanced Plan Structuring
+```python
+class AIPlanStructurer:
+    """Uses AI to structure and optimize plans"""
+
+    def __init__(self, ai_client):
+        self.ai_client = ai_client
+
+    async def structure_plan_with_ai(self, raw_plan_text: str, complexity: str) -> StructuredPlan:
+        """
+        Use AI to structure raw plan text into optimized format
+        """
+        prompt = f"""
+        Analyze and structure the following plan for a {complexity} complexity task:
+
+        Raw Plan:
+        {raw_plan_text}
+
+        Please provide:
+        1. Clear, numbered steps
+        2. Dependencies between steps
+        3. Risk assessment for each step
+        4. Time estimates
+        5. Success criteria
+
+        Format as JSON with keys: steps[], dependencies[], risks[], estimates[], criteria[]
+        """
+
+        ai_response = await self.ai_client.generate_structured_output(prompt)
+
+        return StructuredPlan.from_ai_response(ai_response)
+
+    async def optimize_plan_for_execution(self, structured_plan: StructuredPlan) -> OptimizedPlan:
+        """
+        Optimize plan for efficient execution
+        """
+        optimization_prompt = f"""
+        Analyze this structured plan and suggest optimizations:
+
+        {structured_plan.to_dict()}
+
+        Consider:
+        - Parallel execution opportunities
+        - Risk mitigation strategies
+        - Resource optimization
+        - Quality assurance integration
+
+        Return optimized plan with improvements.
+        """
+
+        optimized_response = await self.ai_client.generate_optimization_suggestions(optimization_prompt)
+
+        return OptimizedPlan.from_optimization_response(
+            structured_plan, optimized_response
+        )
+```
+
+### Plan Execution Monitoring
+
+#### Real-time Progress Tracking
+```python
+class PlanExecutionMonitor:
+    """Monitor plan execution with AI assistance"""
+
+    def __init__(self, moe_system: MixtureOfExperts):
+        self.moe_system = moe_system
+        self.execution_state = {}
+        self.progress_analyzer = ProgressAnalyzer()
+
+    async def monitor_plan_execution(self, plan: RefinedPlan, execution_context: dict):
+        """
+        Monitor plan execution and provide intelligent feedback
+        """
+        for step in plan.steps:
+            # Start step execution
+            await self._start_step_execution(step)
+
+            # Monitor step progress
+            progress_updates = await self._monitor_step_progress(step)
+
+            # Analyze progress with AI
+            analysis = await self.progress_analyzer.analyze_progress(
+                step, progress_updates
+            )
+
+            # Provide intelligent feedback
+            if analysis.needs_attention:
+                feedback = await self._generate_intelligent_feedback(
+                    step, analysis, execution_context
+                )
+
+                # Adjust execution strategy if needed
+                if analysis.requires_strategy_change:
+                    await self._adjust_execution_strategy(plan, feedback)
+
+            # Complete step
+            await self._complete_step_execution(step, analysis.final_status)
+
+    async def _generate_intelligent_feedback(self, step: PlanStep,
+                                           analysis: ProgressAnalysis,
+                                           context: dict) -> ExecutionFeedback:
+        """
+        Generate intelligent feedback using multiple experts
+        """
+        # Use REASONER for problem analysis
+        reasoning_result = await self.moe_system.activate_expert(
+            'REASONER',
+            {
+                'step': step.description,
+                'progress': analysis.progress_data,
+                'issues': analysis.issues,
+                'context': context
+            }
+        )
+
+        # Use IMPLEMENTER for solution suggestions
+        implementation_result = await self.moe_system.activate_expert(
+            'IMPLEMENTER',
+            {
+                'problem_analysis': reasoning_result.analysis,
+                'current_state': analysis.current_state,
+                'goal_state': step.success_criteria
+            }
+        )
+
+        return ExecutionFeedback(
+            analysis=reasoning_result,
+            suggestions=implementation_result,
+            confidence_score=self._calculate_feedback_confidence(
+                reasoning_result, implementation_result
+            )
+        )
+```
+
+### Plan Quality Assurance
+
+#### Automated Plan Validation
+```python
+class PlanValidator:
+    """Validate plan quality and feasibility"""
+
+    def __init__(self, moe_system: MixtureOfExperts):
+        self.moe_system = moe_system
+        self.quality_metrics = PlanQualityMetrics()
+
+    async def validate_plan_quality(self, plan: RefinedPlan) -> ValidationReport:
+        """
+        Comprehensive plan validation using AI experts
+        """
+        validation_results = []
+
+        # Structural validation
+        structure_check = await self._validate_plan_structure(plan)
+        validation_results.append(structure_check)
+
+        # Dependency validation
+        dependency_check = await self._validate_dependencies(plan)
+        validation_results.append(dependency_check)
+
+        # Risk assessment
+        risk_check = await self._assess_plan_risks(plan)
+        validation_results.append(risk_check)
+
+        # Resource feasibility
+        resource_check = await self._validate_resource_requirements(plan)
+        validation_results.append(resource_check)
+
+        # AI-powered quality scoring
+        quality_score = await self.quality_metrics.calculate_overall_score(
+            validation_results
+        )
+
+        return ValidationReport(
+            checks=validation_results,
+            overall_score=quality_score,
+            recommendations=await self._generate_improvement_recommendations(
+                validation_results
+            ),
+            confidence_level=self._calculate_validation_confidence(validation_results)
+        )
+
+    async def _validate_plan_structure(self, plan: RefinedPlan) -> StructureCheck:
+        """
+        Validate plan structure using REASONER expert
+        """
+        structure_analysis = await self.moe_system.activate_expert(
+            'REASONER',
+            {
+                'task': 'analyze_plan_structure',
+                'plan_steps': [step.description for step in plan.steps],
+                'dependencies': plan.dependencies
+            }
+        )
+
+        return StructureCheck(
+            is_well_formed=structure_analysis.structure_valid,
+            issues=structure_analysis.issues,
+            suggestions=structure_analysis.improvements
+        )
+```
+
+### Integration with Existing MoE System
+
+#### Expert Role Extensions
+```python
+# Extend PLANNER expert with Plan Mode capabilities
+class EnhancedPlanner(PlannerExpert):
+    """Enhanced PLANNER with Plan Mode integration"""
+
+    async def generate_plan_mode_plan(self, task_request: TaskRequest) -> PlanModePlan:
+        """
+        Generate plan using Cursor 2.0 Plan Mode approach
+        """
+        # Initial AI-assisted planning
+        ai_plan = await self.generate_ai_plan(task_request)
+
+        # Add user interaction capabilities
+        interactive_plan = self.add_interaction_capabilities(ai_plan)
+
+        # Integrate with execution monitoring
+        monitored_plan = self.add_monitoring_capabilities(interactive_plan)
+
+        return PlanModePlan(
+            ai_generated_plan=ai_plan,
+            user_interaction_points=interactive_plan.interaction_points,
+            monitoring_triggers=monitored_plan.monitoring_triggers,
+            adaptive_strategies=monitored_plan.adaptation_strategies
+        )
+```
+
+**Benefits:**
+- Structured pre-implementation planning
+- User-guided plan refinement
+- AI-enhanced plan optimization
+- Real-time execution monitoring
+- Integration with existing MoE reasoning
+
+---
+
+**Updated:** November 2025
+**New section added based on Cursor 2.0 best practices from October 2025**
+- Plan Mode Integration (bp-plan-mode)

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "ai-orchestrator": {
+      "command": "bash",
+      "args": [".cursor/orchestrator/start_mcp_server.sh"],
+      "cwd": "${workspaceFolder}",
+      "description": "AI Orchestrator with RAG - Intelligent task orchestration and knowledge retrieval"
+    }
+  }
+}

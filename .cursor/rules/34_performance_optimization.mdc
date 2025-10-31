@@ -1,0 +1,779 @@
+---
+alwaysApply: false
+description: "Performance optimization strategies for Cursor agents"
+---
+
+# Performance Optimization Strategies
+
+## 🎯 **Purpose**
+
+This rule implements advanced performance optimization strategies based on Cursor 2.0 best practices from October 2025. It enables intelligent model selection, parallel execution, and resource optimization to maximize development efficiency.
+
+## 📋 **Implemented Practices**
+
+### **bp-parallel-features**: Parallel Feature Development
+**Source:** cursor_2_0_best_practices.json (bp-parallel-features)
+
+**Implementation:** Multi-agent parallel execution for independent features
+
+### **bp-model-selection**: Intelligent Model Selection
+**Source:** cursor_2_0_best_practices.json (bp-model-selection)
+
+**Implementation:** Dynamic model selection based on task characteristics
+
+## 🚀 **Parallel Execution Engine**
+
+### Multi-Agent Coordinator
+```python
+class MultiAgentCoordinator:
+    """Coordinates parallel execution across multiple AI agents"""
+
+    def __init__(self, max_concurrent_agents: int = 8):
+        self.max_concurrent_agents = max_concurrent_agents
+        self.active_agents = {}
+        self.resource_manager = ResourceManager()
+        self.task_scheduler = TaskScheduler()
+
+    async def execute_parallel_features(self, features: List[FeatureSpec]) -> ParallelExecutionResult:
+        """
+        Execute multiple features in parallel using separate agents
+        """
+        # Analyze feature dependencies
+        dependency_graph = await self.analyze_feature_dependencies(features)
+
+        # Identify parallelizable features
+        parallel_groups = await self.identify_parallel_groups(dependency_graph)
+
+        # Allocate resources
+        resource_allocation = await self.allocate_resources(parallel_groups)
+
+        # Launch parallel execution
+        execution_tasks = []
+        for group in parallel_groups:
+            task = self.execute_feature_group(group, resource_allocation)
+            execution_tasks.append(task)
+
+        # Wait for completion
+        results = await asyncio.gather(*execution_tasks, return_exceptions=True)
+
+        # Merge results
+        final_result = await self.merge_parallel_results(results)
+
+        return ParallelExecutionResult(
+            feature_results=final_result.feature_results,
+            execution_time=final_result.total_time,
+            resource_usage=final_result.resource_usage,
+            optimization_metrics=self.calculate_optimization_metrics(results)
+        )
+
+    async def analyze_feature_dependencies(self, features: List[FeatureSpec]) -> DependencyGraph:
+        """
+        Analyze dependencies between features to determine execution order
+        """
+        dependency_analyzer = DependencyAnalyzer()
+
+        # Build dependency graph
+        graph = DependencyGraph()
+
+        for feature in features:
+            dependencies = await dependency_analyzer.find_dependencies(feature)
+            graph.add_feature(feature, dependencies)
+
+        # Resolve circular dependencies
+        resolved_graph = await self.resolve_circular_dependencies(graph)
+
+        return resolved_graph
+
+    async def identify_parallel_groups(self, dependency_graph: DependencyGraph) -> List[FeatureGroup]:
+        """
+        Group features that can be executed in parallel
+        """
+        # Use topological sorting to find parallel execution opportunities
+        parallel_groups = []
+
+        current_level = dependency_graph.get_independent_features()
+
+        while current_level:
+            # Create execution group
+            group = FeatureGroup(
+                features=current_level,
+                execution_mode='parallel',
+                resource_requirements=self.calculate_group_resources(current_level)
+            )
+
+            parallel_groups.append(group)
+
+            # Move to next level
+            current_level = dependency_graph.get_next_level(current_level)
+
+        return parallel_groups
+
+    async def execute_feature_group(self, group: FeatureGroup,
+                                   allocation: ResourceAllocation) -> GroupExecutionResult:
+        """
+        Execute a group of features in parallel
+        """
+        # Create isolated workspaces for each feature
+        workspaces = await self.create_isolated_workspaces(group.features)
+
+        # Launch agents for each feature
+        agent_tasks = []
+        for i, feature in enumerate(group.features):
+            agent = await self.create_feature_agent(feature, workspaces[i], allocation)
+            task = agent.execute_feature()
+            agent_tasks.append(task)
+
+        # Execute in parallel with resource limits
+        async with self.resource_manager.limit_resources(allocation):
+            results = await asyncio.gather(*agent_tasks, return_exceptions=True)
+
+        # Clean up workspaces
+        await self.cleanup_workspaces(workspaces)
+
+        return GroupExecutionResult(
+            feature_results=results,
+            execution_time=max(r.execution_time for r in results if hasattr(r, 'execution_time')),
+            resource_peak=self.calculate_resource_peak(results)
+        )
+```
+
+### Resource-Aware Scheduling
+```python
+class ResourceAwareScheduler:
+    """Schedule tasks based on resource availability and constraints"""
+
+    def __init__(self):
+        self.resource_monitor = ResourceMonitor()
+        self.task_queue = TaskQueue()
+        self.execution_engine = ExecutionEngine()
+
+    async def schedule_optimal_execution(self, tasks: List[Task]) -> ExecutionSchedule:
+        """
+        Create optimal execution schedule based on resources and dependencies
+        """
+        # Monitor current resource state
+        current_resources = await self.resource_monitor.get_current_state()
+
+        # Analyze task resource requirements
+        task_requirements = await self.analyze_task_requirements(tasks)
+
+        # Create execution schedule
+        schedule = ExecutionSchedule()
+
+        # Phase 1: Sequential tasks (dependencies)
+        sequential_tasks = [t for t in tasks if t.has_blocking_dependencies()]
+        for task in sequential_tasks:
+            schedule.add_sequential_task(task)
+
+        # Phase 2: Parallel tasks (independent)
+        parallel_tasks = [t for t in tasks if not t.has_blocking_dependencies()]
+        parallel_groups = await self.group_parallel_tasks(parallel_tasks, current_resources)
+
+        for group in parallel_groups:
+            schedule.add_parallel_group(group)
+
+        # Optimize schedule for resource efficiency
+        optimized_schedule = await self.optimize_schedule(schedule, current_resources)
+
+        return optimized_schedule
+
+    async def group_parallel_tasks(self, tasks: List[Task],
+                                  resources: ResourceState) -> List[TaskGroup]:
+        """
+        Group tasks for parallel execution based on resource constraints
+        """
+        # Calculate resource requirements for each task
+        task_resources = []
+        for task in tasks:
+            req = await self.calculate_task_resources(task)
+            task_resources.append((task, req))
+
+        # Group tasks that can run together
+        groups = []
+        current_group = []
+        current_usage = ResourceUsage()
+
+        for task, req in task_resources:
+            # Check if task can be added to current group
+            if self.can_add_to_group(current_usage, req, resources):
+                current_group.append(task)
+                current_usage = self.add_resource_usage(current_usage, req)
+            else:
+                # Start new group
+                if current_group:
+                    groups.append(TaskGroup(tasks=current_group, resource_usage=current_usage))
+                current_group = [task]
+                current_usage = req
+
+        # Add final group
+        if current_group:
+            groups.append(TaskGroup(tasks=current_group, resource_usage=current_usage))
+
+        return groups
+```
+
+## 🧠 **Intelligent Model Selection**
+
+### Task-Model Matching Engine
+```python
+class IntelligentModelSelector:
+    """AI-powered model selection based on task analysis"""
+
+    def __init__(self):
+        self.model_profiles = self._load_model_profiles()
+        self.performance_history = PerformanceHistory()
+        self.task_analyzer = TaskAnalyzer()
+
+    def _load_model_profiles(self) -> Dict[str, ModelProfile]:
+        """Load comprehensive model profiles with capabilities and costs"""
+        return {
+            'composer': ModelProfile(
+                name='composer',
+                speed_rating=5,  # 1-5 scale, 5 = fastest
+                cost_rating=1,   # 1-5 scale, 1 = cheapest
+                quality_rating=3,  # 1-5 scale, 5 = highest quality
+                strengths=['fast_iteration', 'simple_tasks', 'prototyping', 'autocomplete'],
+                weaknesses=['complex_logic', 'architectural_decisions', 'deep_analysis'],
+                max_context=128000,
+                typical_latency=0.5,  # seconds
+                cost_per_1k_tokens=0.001
+            ),
+
+            'gpt-4': ModelProfile(
+                name='gpt-4',
+                speed_rating=3,
+                cost_rating=3,
+                quality_rating=4,
+                strengths=['balanced_performance', 'good_reasoning', 'code_generation', 'api_integration'],
+                weaknesses=['expensive', 'slower_than_fast_models', 'limited_context'],
+                max_context=128000,
+                typical_latency=2.0,
+                cost_per_1k_tokens=0.03
+            ),
+
+            'claude-3': ModelProfile(
+                name='claude-3',
+                speed_rating=3,
+                cost_rating=3,
+                quality_rating=4,
+                strengths=['excellent_reasoning', 'safety_focused', 'long_context', 'creative_solutions'],
+                weaknesses=['can_be_cautious', 'less_code_centric', 'slower_responses'],
+                max_context=200000,
+                typical_latency=2.5,
+                cost_per_1k_tokens=0.025
+            ),
+
+            'claude_3_5_sonnet': ModelProfile(  # NEW 2025 - Exceptional quality
+                name='claude_3_5_sonnet',
+                speed_rating=4,
+                cost_rating=2,
+                quality_rating=5,
+                strengths=['exceptional_reasoning', 'code_generation', 'long_context', 'safety', 'mathematical_precision'],
+                weaknesses=['higher_cost', 'slower_than_fast_models'],
+                max_context=200000,
+                typical_latency=2.5,
+                cost_per_1k_tokens=0.015,
+                emerging_tech='anthropic_claude_3_5',
+                recommended_for=['complex_architecture', 'security_audits', 'mathematical_reasoning']
+            ),
+
+            'gpt_4o': ModelProfile(  # NEW 2025 - GPT-4o multimodal
+                name='gpt_4o',
+                speed_rating=4,
+                cost_rating=2,
+                quality_rating=4,
+                strengths=['balanced_performance', 'multimodal', 'good_reasoning', 'code_generation', 'vision_analysis'],
+                weaknesses=['expensive', 'context_limits'],
+                max_context=128000,
+                typical_latency=1.5,  # Faster than GPT-4
+                cost_per_1k_tokens=0.01,  # Cheaper than GPT-4
+                emerging_tech='openai_gpt4o_multimodal',
+                recommended_for=['ui_ux_design', 'visual_code_analysis', 'multimodal_tasks']
+            ),
+
+            'gpt_4o_mini': ModelProfile(  # NEW 2025 - Cost-effective
+                name='gpt_4o_mini',
+                speed_rating=5,
+                cost_rating=1,
+                quality_rating=3,
+                strengths=['fast_responses', 'cost_effective', 'good_for_simple_tasks', 'multimodal_lite'],
+                weaknesses=['lower_quality', 'limited_reasoning'],
+                max_context=128000,
+                typical_latency=0.8,
+                cost_per_1k_tokens=0.00015,  # Very cheap
+                emerging_tech='openai_gpt4o_efficiency',
+                recommended_for=['prototyping', 'simple_code_tasks', 'cost_sensitive_projects']
+            ),
+
+            'gpt-5': ModelProfile(  # LEGACY - marked for migration
+                name='gpt-5',
+                speed_rating=2,
+                cost_rating=5,
+                quality_rating=5,
+                strengths=['maximum_quality', 'complex_reasoning', 'cutting_edge', 'architectural_excellence'],
+                weaknesses=['very_expensive', 'slowest', 'highest_resource_usage', 'legacy_model'],
+                max_context=128000,
+                typical_latency=5.0,
+                cost_per_1k_tokens=0.15,
+                migration_path='claude_3_5_sonnet'  # NEW - migration guidance
+            )
+        }
+
+    async def select_optimal_model(self, task: Task, constraints: Optional[Dict] = None) -> ModelSelection:
+        """
+        Select the best model for a task based on comprehensive analysis
+        """
+        # Analyze task characteristics
+        task_profile = await self.task_analyzer.analyze_task(task)
+
+        # Apply constraints (budget, time, quality requirements)
+        effective_constraints = self._apply_constraints(constraints or {}, task_profile)
+
+        # Generate candidate models
+        candidates = await self._generate_model_candidates(task_profile, effective_constraints)
+
+        # Score candidates based on multiple factors
+        scored_candidates = await self._score_model_candidates(candidates, task_profile, effective_constraints)
+
+        # Select best model with confidence
+        best_model, confidence = self._select_best_model(scored_candidates)
+
+        # Record selection for learning
+        await self.performance_history.record_selection(
+            task=task,
+            selected_model=best_model,
+            candidates=scored_candidates,
+            constraints=effective_constraints
+        )
+
+        return ModelSelection(
+            model=best_model,
+            confidence_score=confidence,
+            reasoning=self._generate_selection_reasoning(best_model, scored_candidates, task_profile),
+            expected_performance=self._estimate_performance(best_model, task_profile),
+            cost_estimate=self._calculate_cost_estimate(best_model, task_profile)
+        )
+
+    async def _generate_model_candidates(self, task_profile: TaskProfile,
+                                       constraints: Dict) -> List[str]:
+        """
+        Generate list of viable model candidates for the task
+        """
+        candidates = []
+
+        # Filter by basic capabilities
+        for model_name, profile in self.model_profiles.items():
+            if self._model_meets_basic_requirements(profile, task_profile, constraints):
+                candidates.append(model_name)
+
+        # If no candidates meet requirements, relax constraints
+        if not candidates:
+            candidates = self._find_backup_candidates(task_profile, constraints)
+
+        return candidates
+
+    def _model_meets_basic_requirements(self, profile: ModelProfile,
+                                      task_profile: TaskProfile,
+                                      constraints: Dict) -> bool:
+        """
+        Check if model meets basic task requirements
+        """
+        # Check context length
+        estimated_tokens = task_profile.estimated_tokens
+        if estimated_tokens > profile.max_context:
+            return False
+
+        # Check quality requirements
+        if constraints.get('min_quality') and profile.quality_rating < constraints['min_quality']:
+            return False
+
+        # Check speed requirements
+        if constraints.get('max_latency') and profile.typical_latency > constraints['max_latency']:
+            return False
+
+        # Check budget constraints
+        if constraints.get('max_cost_per_task'):
+            estimated_cost = (estimated_tokens / 1000) * profile.cost_per_1k_tokens
+            if estimated_cost > constraints['max_cost_per_task']:
+                return False
+
+        return True
+
+    async def _score_model_candidates(self, candidates: List[str],
+                                    task_profile: TaskProfile,
+                                    constraints: Dict) -> List[ModelScore]:
+        """
+        Score each candidate model based on multiple criteria
+        """
+        scored_candidates = []
+
+        for model_name in candidates:
+            profile = self.model_profiles[model_name]
+
+            # Calculate composite score
+            score = await self._calculate_composite_score(
+                profile, task_profile, constraints
+            )
+
+            scored_candidates.append(ModelScore(
+                model_name=model_name,
+                total_score=score['total'],
+                breakdown=score['breakdown'],
+                strengths=self._identify_model_strengths(profile, task_profile),
+                weaknesses=self._identify_model_weaknesses(profile, task_profile)
+            ))
+
+        # Sort by total score
+        scored_candidates.sort(key=lambda x: x.total_score, reverse=True)
+
+        return scored_candidates
+```
+
+### Adaptive Model Switching
+```python
+class AdaptiveModelSwitcher:
+    """Dynamically switch models during task execution"""
+
+    def __init__(self, model_selector: IntelligentModelSelector):
+        self.model_selector = model_selector
+        self.current_model = None
+        self.performance_monitor = PerformanceMonitor()
+        self.switch_triggers = self._load_switch_triggers()
+
+    def _load_switch_triggers(self) -> Dict[str, SwitchTrigger]:
+        """Load predefined triggers for model switching"""
+        return {
+            'quality_degradation': SwitchTrigger(
+                condition=lambda perf: perf.confidence < 0.7,
+                target_model_strategy='higher_quality',
+                urgency='high'
+            ),
+
+            'speed_requirement': SwitchTrigger(
+                condition=lambda perf: perf.response_time > 5.0 and perf.task_complexity == 'simple',
+                target_model_strategy='faster_model',
+                urgency='medium'
+            ),
+
+            'complexity_escalation': SwitchTrigger(
+                condition=lambda perf: perf.task_complexity_changed and perf.new_complexity == 'high',
+                target_model_strategy='best_for_complexity',
+                urgency='high'
+            ),
+
+            'budget_exceeded': SwitchTrigger(
+                condition=lambda perf: perf.accumulated_cost > perf.budget_limit * 0.8,
+                target_model_strategy='cheaper_alternative',
+                urgency='high'
+            ),
+
+            'context_limit_approaching': SwitchTrigger(
+                condition=lambda perf: perf.context_usage > 0.9,
+                target_model_strategy='higher_context_limit',
+                urgency='medium'
+            )
+        }
+
+    async def execute_with_adaptive_switching(self, task: Task) -> AdaptiveExecutionResult:
+        """
+        Execute task with intelligent model switching
+        """
+        # Start with optimal model
+        initial_selection = await self.model_selector.select_optimal_model(task)
+        self.current_model = initial_selection.model
+
+        execution_state = ExecutionState(
+            current_model=self.current_model,
+            start_time=datetime.utcnow(),
+            performance_history=[],
+            switch_events=[]
+        )
+
+        # Execute task phases
+        while not task.is_complete():
+            # Execute current phase
+            phase_result = await self._execute_current_phase(task, execution_state)
+
+            # Monitor performance
+            performance = await self.performance_monitor.analyze_performance(phase_result)
+
+            # Check for switch triggers
+            switch_decision = await self._evaluate_switch_triggers(performance, task)
+
+            if switch_decision.should_switch:
+                # Execute model switch
+                switch_result = await self._execute_model_switch(
+                    switch_decision, execution_state, task
+                )
+
+                execution_state.switch_events.append(switch_result)
+                self.current_model = switch_result.new_model
+
+            # Record performance
+            execution_state.performance_history.append(performance)
+
+        # Calculate final results
+        final_result = AdaptiveExecutionResult(
+            task=task,
+            total_time=(datetime.utcnow() - execution_state.start_time).total_seconds(),
+            models_used=list(set([e.model for e in execution_state.switch_events] + [self.current_model])),
+            switch_count=len(execution_state.switch_events),
+            final_model=self.current_model,
+            performance_summary=self._summarize_performance(execution_state.performance_history),
+            cost_breakdown=self._calculate_cost_breakdown(execution_state)
+        )
+
+        return final_result
+
+    async def _evaluate_switch_triggers(self, performance: PerformanceMetrics,
+                                       task: Task) -> SwitchDecision:
+        """
+        Evaluate all switch triggers and make decision
+        """
+        potential_switches = []
+
+        for trigger_name, trigger in self.switch_triggers.items():
+            if trigger.condition(performance):
+                # Calculate target model
+                target_model = await self._determine_target_model(
+                    trigger.target_model_strategy, performance, task
+                )
+
+                if target_model != self.current_model:
+                    potential_switches.append({
+                        'trigger': trigger_name,
+                        'target_model': target_model,
+                        'urgency': trigger.urgency,
+                        'reasoning': self._generate_switch_reasoning(trigger, performance)
+                    })
+
+        if potential_switches:
+            # Select highest urgency switch
+            best_switch = max(potential_switches, key=lambda x: self._urgency_to_priority(x['urgency']))
+
+            return SwitchDecision(
+                should_switch=True,
+                target_model=best_switch['target_model'],
+                trigger=best_switch['trigger'],
+                reasoning=best_switch['reasoning'],
+                urgency=best_switch['urgency']
+            )
+
+        return SwitchDecision(should_switch=False)
+```
+
+## 📊 **Performance Monitoring & Optimization**
+
+### Real-time Performance Tracking
+```python
+class PerformanceMonitor:
+    """Monitor and optimize agent performance in real-time"""
+
+    def __init__(self):
+        self.metrics_collector = MetricsCollector()
+        self.optimization_engine = OptimizationEngine()
+
+    async def monitor_execution(self, execution_context: ExecutionContext) -> PerformanceMetrics:
+        """
+        Monitor execution performance and provide optimization recommendations
+        """
+        # Collect real-time metrics
+        metrics = await self.metrics_collector.collect_metrics(execution_context)
+
+        # Analyze performance patterns
+        analysis = await self.analyze_performance_patterns(metrics)
+
+        # Generate optimization recommendations
+        recommendations = await self.optimization_engine.generate_recommendations(
+            analysis, execution_context
+        )
+
+        return PerformanceMetrics(
+            current_metrics=metrics,
+            performance_analysis=analysis,
+            optimization_recommendations=recommendations,
+            efficiency_score=self.calculate_efficiency_score(metrics, analysis)
+        )
+
+    async def analyze_performance_patterns(self, metrics: Dict) -> PerformanceAnalysis:
+        """
+        Analyze performance patterns to identify optimization opportunities
+        """
+        # Detect bottlenecks
+        bottlenecks = self._identify_bottlenecks(metrics)
+
+        # Analyze resource utilization
+        resource_efficiency = self._analyze_resource_utilization(metrics)
+
+        # Identify optimization opportunities
+        opportunities = self._find_optimization_opportunities(metrics, bottlenecks)
+
+        # Predict future performance
+        predictions = self._predict_future_performance(metrics)
+
+        return PerformanceAnalysis(
+            bottlenecks=bottlenecks,
+            resource_efficiency=resource_efficiency,
+            optimization_opportunities=opportunities,
+            performance_predictions=predictions,
+            overall_assessment=self._generate_overall_assessment(
+                bottlenecks, resource_efficiency, opportunities
+            )
+        )
+
+    def _identify_bottlenecks(self, metrics: Dict) -> List[Bottleneck]:
+        """
+        Identify performance bottlenecks
+        """
+        bottlenecks = []
+
+        # CPU bottlenecks
+        if metrics.get('cpu_usage', 0) > 90:
+            bottlenecks.append(Bottleneck(
+                type='cpu',
+                severity='high',
+                description='High CPU usage detected',
+                impact='Slow response times',
+                recommendation='Consider using faster model or reducing parallelism'
+            ))
+
+        # Memory bottlenecks
+        if metrics.get('memory_usage', 0) > 85:
+            bottlenecks.append(Bottleneck(
+                type='memory',
+                severity='medium',
+                description='High memory usage detected',
+                impact='Potential out-of-memory errors',
+                recommendation='Reduce context size or use smaller models'
+            ))
+
+        # API rate limits
+        if metrics.get('api_rate_limit_usage', 0) > 80:
+            bottlenecks.append(Bottleneck(
+                type='api_limits',
+                severity='high',
+                description='Approaching API rate limits',
+                impact='Request throttling or failures',
+                recommendation='Implement request batching or reduce frequency'
+            ))
+
+        return bottlenecks
+```
+
+### Cost Optimization Engine
+```python
+class CostOptimizationEngine:
+    """Optimize costs while maintaining performance"""
+
+    def __init__(self):
+        self.cost_analyzer = CostAnalyzer()
+        self.model_pricing = self._load_model_pricing()
+
+    def _load_model_pricing(self) -> Dict[str, PricingInfo]:
+        """Load current model pricing information"""
+        return {
+            'composer': {'input': 0.001, 'output': 0.002},
+            'gpt-4': {'input': 0.03, 'output': 0.06},
+            'claude-3': {'input': 0.025, 'output': 0.125},
+            'gpt-5': {'input': 0.15, 'output': 0.30}
+        }
+
+    async def optimize_cost_for_task(self, task: Task, budget: float) -> CostOptimization:
+        """
+        Optimize model selection and usage for cost efficiency
+        """
+        # Estimate token usage
+        token_estimate = await self.estimate_token_usage(task)
+
+        # Find cost-optimal model combination
+        optimal_models = await self.find_cost_optimal_models(token_estimate, budget)
+
+        # Calculate expected cost and performance
+        cost_breakdown = self.calculate_cost_breakdown(optimal_models, token_estimate)
+
+        # Generate cost-saving recommendations
+        recommendations = await self.generate_cost_recommendations(
+            cost_breakdown, budget
+        )
+
+        return CostOptimization(
+            recommended_models=optimal_models,
+            estimated_cost=cost_breakdown['total'],
+            cost_savings=cost_breakdown['potential_savings'],
+            performance_impact=self.estimate_performance_impact(optimal_models),
+            recommendations=recommendations,
+            budget_utilization=cost_breakdown['total'] / budget if budget > 0 else 0
+        )
+
+    async def estimate_token_usage(self, task: Task) -> TokenEstimate:
+        """
+        Estimate token usage for different task phases
+        """
+        # Analyze task complexity
+        complexity = await self.analyze_task_complexity(task)
+
+        # Estimate tokens by phase
+        estimates = {
+            'analysis': self._estimate_analysis_tokens(complexity),
+            'implementation': self._estimate_implementation_tokens(complexity),
+            'testing': self._estimate_testing_tokens(complexity),
+            'documentation': self._estimate_documentation_tokens(complexity)
+        }
+
+        return TokenEstimate(
+            by_phase=estimates,
+            total=sum(estimates.values()),
+            confidence=self._calculate_estimate_confidence(complexity)
+        )
+```
+
+## 🎯 **Integration & Usage**
+
+### **With Existing Rules**
+- **30_hybrid_moe_tot_reasoning.mdc**: Enhanced reasoning with performance optimization
+- **31_advanced_agent_steering.mdc**: Model selection integration
+- **32_workflow_planning.mdc**: Parallel execution coordination
+
+### **Automatic Activation Triggers**
+```python
+# Performance optimization triggers
+PERFORMANCE_TRIGGERS = {
+    'high_complexity_task': {
+        'condition': lambda task: task.complexity_score > 0.8,
+        'action': 'activate_parallel_execution'
+    },
+
+    'budget_constrained': {
+        'condition': lambda task: task.budget_limit < 0.1,
+        'action': 'activate_cost_optimization'
+    },
+
+    'time_critical': {
+        'condition': lambda task: task.deadline_hours < 4,
+        'action': 'activate_speed_optimization'
+    },
+
+    'multiple_independent_features': {
+        'condition': lambda task: len(task.independent_features) > 2,
+        'action': 'activate_parallel_development'
+    }
+}
+```
+
+## 📈 **Metrics & Success Criteria**
+
+### **Performance Metrics**
+- **Speed Improvement**: 40-60% faster task completion
+- **Cost Reduction**: 30-50% lower API costs
+- **Resource Efficiency**: 70-90% resource utilization
+- **Quality Maintenance**: No degradation in output quality
+
+### **Success Indicators**
+- Parallel execution utilized in >60% of applicable tasks
+- Model selection accuracy >85%
+- Cost optimization activated for >70% of budget-constrained tasks
+- No performance regressions in optimized workflows
+
+---
+
+**This rule implements advanced performance optimization strategies based on Cursor 2.0 best practices from October 2025, enabling intelligent parallel execution and dynamic model selection for maximum development efficiency.**

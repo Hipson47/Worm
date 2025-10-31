@@ -1,0 +1,323 @@
+---
+alwaysApply: false
+description: "Workflow planning and parallel execution strategies for Cursor 2.0"
+---
+
+# Workflow Planning & Parallel Execution
+
+## 🎯 **Purpose**
+
+This rule implements advanced workflow planning and parallel execution strategies based on Cursor 2.0 best practices from October 2025. It enables AI Orchestrator to optimize task execution through structured planning and concurrent processing.
+
+## 📋 **Implemented Practices**
+
+### **bp-parallel-plan**: Parallel Planning Strategies
+**Source:** cursor_2_0_best_practices.json (bp-parallel-plan)
+
+**Implementation:**
+```python
+# AI Orchestrator integration
+def should_use_parallel_planning(task_complexity: str, available_agents: int) -> bool:
+    """
+    Determine if parallel planning should be used based on task characteristics
+    """
+    complex_tasks = ['architecture_changes', 'multi_file_refactor', 'feature_development']
+    return task_complexity in complex_tasks and available_agents >= 2
+
+def create_parallel_plan(task: Task, agents: List[Agent]) -> ParallelPlan:
+    """
+    Create a parallel execution plan using multiple agents
+    """
+    # Split task into independent subtasks
+    subtasks = decompose_task(task)
+
+    # Assign subtasks to agents
+    assignments = assign_subtasks_to_agents(subtasks, agents)
+
+    # Create execution plan with dependencies
+    plan = ParallelPlan(assignments=assignments, dependencies=analyze_dependencies(subtasks))
+
+    return plan
+```
+
+**Benefits:**
+- Faster task completion through parallel execution
+- Better resource utilization
+- Reduced waiting time between sequential steps
+
+### **bp-plan-mode**: Plan Mode Integration
+**Source:** cursor_2_0_best_practices.json (bp-plan-mode)
+
+**Implementation:**
+```python
+# Plan Mode workflow integration
+def activate_plan_mode_for_complex_tasks(task: Task) -> Plan:
+    """
+    Activate Plan Mode for tasks requiring detailed planning
+    """
+    if task.complexity >= TaskComplexity.HIGH:
+        # Generate detailed plan
+        plan = generate_structured_plan(task)
+
+        # Allow user refinement
+        refined_plan = allow_user_refinement(plan)
+
+        # Validate plan completeness
+        validated_plan = validate_plan_completeness(refined_plan)
+
+        return validated_plan
+
+    return None
+
+def generate_structured_plan(task: Task) -> Plan:
+    """
+    Generate a structured, editable plan using AI analysis
+    """
+    # Analyze codebase context
+    context = analyze_codebase_context(task.files)
+
+    # Generate plan steps
+    steps = ai_generate_plan_steps(task.description, context)
+
+    # Create markdown-formatted plan
+    plan = Plan(
+        title=f"Plan for: {task.description}",
+        steps=steps,
+        context=context,
+        estimated_time=estimate_completion_time(steps)
+    )
+
+    return plan
+```
+
+**Benefits:**
+- Reduced miscommunication through upfront clarification
+- Structured approach to complex tasks
+- Better task decomposition and sequencing
+
+## 🔄 **Execution Strategies**
+
+### **Parallel Execution Patterns**
+```python
+class ParallelExecutionManager:
+    """Manages parallel execution of tasks"""
+
+    def __init__(self, orchestrator: AIOrchestrator):
+        self.orchestrator = orchestrator
+        self.active_executions = {}
+
+    async def execute_parallel_plan(self, plan: ParallelPlan) -> ExecutionResult:
+        """
+        Execute a parallel plan with proper synchronization
+        """
+        # Start parallel executions
+        execution_tasks = []
+        for assignment in plan.assignments:
+            task = self.execute_agent_task(assignment)
+            execution_tasks.append(task)
+
+        # Wait for completion with proper error handling
+        results = await asyncio.gather(*execution_tasks, return_exceptions=True)
+
+        # Merge results
+        final_result = self.merge_parallel_results(results)
+
+        return final_result
+
+    def merge_parallel_results(self, results: List[Any]) -> MergedResult:
+        """
+        Merge results from parallel executions
+        """
+        # Handle exceptions
+        successful_results = [r for r in results if not isinstance(r, Exception)]
+        exceptions = [r for r in results if isinstance(r, Exception)]
+
+        # Combine successful outputs
+        merged_output = self.combine_outputs(successful_results)
+
+        return MergedResult(
+            success=len(exceptions) == 0,
+            output=merged_output,
+            exceptions=exceptions
+        )
+```
+
+### **Dependency Management**
+```python
+def analyze_dependencies(subtasks: List[Subtask]) -> DependencyGraph:
+    """
+    Analyze dependencies between subtasks to ensure proper execution order
+    """
+    graph = DependencyGraph()
+
+    for subtask in subtasks:
+        dependencies = identify_dependencies(subtask, subtasks)
+        graph.add_node(subtask, dependencies)
+
+    return graph
+
+def identify_dependencies(subtask: Subtask, all_subtasks: List[Subtask]) -> List[Subtask]:
+    """
+    Identify which other subtasks this one depends on
+    """
+    dependencies = []
+
+    for other in all_subtasks:
+        if has_dependency(subtask, other):
+            dependencies.append(other)
+
+    return dependencies
+```
+
+## 📊 **Performance Optimization**
+
+### **Resource Allocation**
+```python
+def optimize_parallel_execution(resources: ResourcePool, plan: ParallelPlan) -> OptimizedPlan:
+    """
+    Optimize parallel execution based on available resources
+    """
+    # Calculate optimal parallelism level
+    max_parallel = min(len(plan.assignments), resources.available_cores)
+
+    # Adjust plan for resource constraints
+    optimized_assignments = adjust_for_resources(plan.assignments, max_parallel)
+
+    return OptimizedPlan(
+        assignments=optimized_assignments,
+        expected_duration=calculate_expected_duration(optimized_assignments),
+        resource_usage=calculate_resource_usage(optimized_assignments)
+    )
+```
+
+### **Load Balancing**
+```python
+def balance_agent_workload(agents: List[Agent], tasks: List[Task]) -> BalancedAssignments:
+    """
+    Balance workload across available agents
+    """
+    # Calculate agent capacities
+    capacities = {agent.id: agent.capacity for agent in agents}
+
+    # Assign tasks using load balancing algorithm
+    assignments = load_balance_tasks(tasks, capacities)
+
+    return BalancedAssignments(
+        agent_assignments=assignments,
+        load_distribution=calculate_load_distribution(assignments),
+        bottleneck_analysis=analyze_bottlenecks(assignments)
+    )
+```
+
+## 🛡️ **Safety & Validation**
+
+### **Plan Validation**
+```python
+def validate_parallel_plan(plan: ParallelPlan) -> ValidationResult:
+    """
+    Validate that a parallel plan is safe and feasible
+    """
+    issues = []
+
+    # Check for circular dependencies
+    if has_circular_dependencies(plan):
+        issues.append("Circular dependencies detected")
+
+    # Check resource requirements
+    if exceeds_resource_limits(plan):
+        issues.append("Plan exceeds available resources")
+
+    # Check for conflicts
+    conflicts = detect_assignment_conflicts(plan)
+    if conflicts:
+        issues.extend([f"Conflict: {c}" for c in conflicts])
+
+    return ValidationResult(
+        is_valid=len(issues) == 0,
+        issues=issues,
+        recommendations=generate_safety_recommendations(issues)
+    )
+```
+
+### **Execution Monitoring**
+```python
+class ExecutionMonitor:
+    """Monitor parallel execution for issues"""
+
+    def __init__(self):
+        self.execution_status = {}
+        self.error_handlers = {}
+
+    def monitor_execution(self, execution_id: str, status_callback: Callable):
+        """
+        Monitor execution progress and handle issues
+        """
+        self.execution_status[execution_id] = "running"
+
+        # Set up monitoring
+        monitor_task = asyncio.create_task(self._monitor_task(execution_id, status_callback))
+
+        return monitor_task
+
+    async def _monitor_task(self, execution_id: str, status_callback: Callable):
+        """
+        Background monitoring task
+        """
+        while self.execution_status[execution_id] == "running":
+            # Check execution health
+            health = await self.check_execution_health(execution_id)
+
+            if not health.is_healthy:
+                await self.handle_execution_issue(execution_id, health.issues)
+
+            # Update status
+            status_callback(execution_id, health)
+
+            await asyncio.sleep(5)  # Check every 5 seconds
+```
+
+## 📚 **Usage Guidelines**
+
+### **When to Apply**
+- Use for complex tasks requiring multiple steps
+- Apply when multiple agents are available
+- Use for independent subtasks that can run concurrently
+
+### **Best Practices**
+- Always validate plans before execution
+- Monitor resource usage during parallel execution
+- Use proper error handling for failed parallel tasks
+- Balance workload across agents
+
+### **Integration Points**
+- Works with `30_hybrid_moe_tot_reasoning.mdc` for planning
+- Integrates with `31_advanced_agent_steering.mdc` for agent coordination
+- Compatible with `70_learning_system.mdc` for optimization
+
+## 🔗 **Related Rules**
+- `30_hybrid_moe_tot_reasoning.mdc` - Planning integration
+- `31_advanced_agent_steering.mdc` - Agent coordination
+- `34_performance_optimization.mdc` - Resource management
+- `70_learning_system.mdc` - Execution optimization
+
+## 📈 **Metrics & Monitoring**
+
+### **Tracked Metrics**
+- Parallel execution efficiency
+- Resource utilization
+- Plan success rate
+- Time savings vs sequential execution
+
+### **Success Criteria**
+- >50% reduction in execution time for parallelizable tasks
+- <5% failure rate in parallel executions
+- >90% resource utilization efficiency
+
+## 🏷️ **Version History**
+
+- **v1.0** (November 2025): Initial implementation based on Cursor 2.0 best practices
+- **Source:** cursor_2_0_best_practices.json (bp-parallel-plan, bp-plan-mode)
+
+---
+
+**This rule implements workflow planning and parallel execution strategies from Cursor 2.0 October 2025 best practices, enabling AI Orchestrator to optimize complex task execution through structured planning and concurrent processing.**

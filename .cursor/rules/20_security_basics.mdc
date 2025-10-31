@@ -1,0 +1,975 @@
+---
+description: >
+  Security basics for Cursor agents. Covers CWE checklist, threat modeling,
+  secure design patterns, network security, container hardening, and MCP security.
+  Enforces a zero-trust approach across all aspects of software development.
+globs: ['**/*']
+alwaysApply: true
+---
+
+# Security Basics for Cursor Agents
+
+## Threat Modeling Framework
+
+### STRIDE Model Implementation
+
+#### Spoofing
+```
+Threats: Unauthorized access via impersonation
+Controls:
+- Multi-factor authentication (MFA)
+- Short-lived tokens with automatic expiration
+- Identity verification via digital certificates
+
+Code Implementation:
+- JWT with short TTL (<15min)
+- Refresh tokens with secure storage
+- Certificate pinning for API calls
+```
+
+#### Tampering
+```
+Threats: Data modification in transit or at rest
+Controls:
+- End-to-end encryption (TLS 1.3+)
+- Cryptographic signatures on all data
+- Integrity checks (hash verification)
+
+Implementation:
+- AES-256-GCM for data at rest
+- HMAC-SHA256 for integrity checks
+- Digital signatures for critical ops
+```
+
+#### Repudiation
+```
+Threats: Inability to prove actions
+Controls:
+- Comprehensive audit logging
+- Non-repudiable digital signatures
+- Tamper-evident logs
+
+Implementation:
+- Structured security logs
+- Cryptographic audit trails
+- Timestamped entries with sequence numbers
+```
+
+#### Information Disclosure
+```
+Threats: Unauthorized access to sensitive data
+Controls:
+- Defense in depth
+- Least privilege
+- Data classification and encryption
+
+Implementation:
+- RBAC, encryption in transit and at rest
+- Secure deletion (crypto shredding)
+```
+
+#### Denial of Service (DoS)
+```
+Controls:
+- Rate limiting & throttling
+- Resource quotas
+- Circuit breakers
+```
+
+#### Elevation of Privilege
+```
+Controls:
+- Least privilege
+- Secure defaults
+- Regular privilege reviews
+```
+
+## CWE Top 10 (2024) Checklist
+
+### A01: Broken Access Control
+```python
+@app.get("/api/users/{user_id}")
+async def get_user(user_id: str, current_user: User = Depends(get_current_user)):
+    if current_user.id != user_id and not current_user.is_admin:
+        raise HTTPException(status_code=403, detail="Access denied")
+    return await user_service.get_user(user_id)
+```
+
+### A02: Cryptographic Failures
+```python
+from cryptography.fernet import Fernet
+
+class EncryptionService:
+    def __init__(self):
+        self.key = Fernet.generate_key()
+        self.cipher = Fernet(self.key)
+
+    def encrypt_sensitive_data(self, data: str) -> str:
+        return self.cipher.encrypt(data.encode()).decode()
+
+    def decrypt_sensitive_data(self, encrypted_data: str) -> str:
+        return self.cipher.decrypt(encrypted_data.encode()).decode()
+```
+
+### A03: Injection
+```python
+# GOOD: Parameterized query
+user = await db.execute(
+    "SELECT * FROM users WHERE email = ?",
+    (email,)
+)
+
+# BAD: String concatenation
+user = await db.execute(f"SELECT * FROM users WHERE email = '{email}'")
+```
+
+### A04: Insecure Design
+- Threat modeling during design
+- Security requirements documented
+- Secure design patterns
+
+### A05: Security Misconfiguration
+```python
+@app.middleware("http")
+async def add_security_headers(request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Strict-Transport-Security"] = "max-age=31536000"
+    return response
+```
+
+### A06: Vulnerable Components
+- Automated dependency scanning (Dependabot, Snyk, Trivy)
+- Regular security updates
+- SBOM generation and monitoring
+
+### A07: Identification & Authentication Failures
+- Strong password policies
+- MFA enforcement
+- Account lockout mechanisms
+- Secure session management
+
+### A08: Software Integrity Failures
+- Code signing
+- Secure CI/CD pipelines
+- Dependency verification
+
+### A09: Logging & Monitoring Failures
+```python
+import logging, hashlib, json
+from datetime import datetime
+
+class SecureLogger:
+    def __init__(self):
+        self.logger = logging.getLogger(__name__)
+
+    def log_security_event(self, event_type: str, details: dict, user_id: str = None):
+        log_entry = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "event_type": event_type,
+            "user_id": user_id,
+            "details": details,
+            "integrity_hash": None
+        }
+        content = f"{log_entry['timestamp']}{event_type}{user_id or ''}{str(details)}"
+        log_entry["integrity_hash"] = hashlib.sha256(content.encode()).hexdigest()
+        self.logger.warning(json.dumps(log_entry))
+```
+
+### A10: SSRF
+```python
+import ipaddress
+from urllib.parse import urlparse
+
+def validate_url(url: str) -> bool:
+    try:
+        parsed = urlparse(url)
+        if parsed.scheme not in ['http', 'https']:
+            return False
+        host = parsed.hostname
+        if not host:
+            return False
+        try:
+            ip = ipaddress.ip_address(host)
+            if ip.is_private or ip.is_loopback:
+                return False
+        except ValueError:
+            if host in ['localhost', '127.0.0.1', '::1']:
+                return False
+        return True
+    except Exception:
+        return False
+```
+
+## Network Security — TLS
+```nginx
+server {
+    listen 443 ssl http2;
+    ssl_protocols TLSv1.3;
+    ssl_ciphers ECDHE-RSA-AES256-GCM-SHA512:DHE-RSA-AES256-GCM-SHA512;
+    ssl_prefer_server_ciphers off;
+    add_header Strict-Transport-Security "max-age=63072000" always;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 10m;
+}
+```
+
+## API Security (Updated 2025)
+- API key rotation and request signing
+- Rate limiting and input validation
+- **Post-quantum cryptography** for API authentication (CRYSTALS-Kyber, Falcon)
+- **Zero-trust SPIFFE/SPIRE** workload identity for service-to-service communication
+- **AI model protection** against prompt injection and model inversion attacks
+
+## Container Security — Hardening
+```dockerfile
+FROM gcr.io/distroless/static-debian11
+USER 1000:1000
+COPY --chown=1000:1000 ./binary /app/binary
+ENTRYPOINT ["/app/binary"]
+```
+
+## Docker Compose — Secure Defaults
+```yaml
+version: '3.8'
+services:
+  app:
+    image: myapp:latest
+    networks:
+      - app_network
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop:
+      - ALL
+    cap_add:
+      - NET_BIND_SERVICE
+
+  db:
+    image: postgres:15
+    networks:
+      - db_network
+
+networks:
+  app_network:
+    internal: true
+  db_network:
+    internal: true
+```
+
+## SBOM & CI Integration
+```yaml
+- name: Build Docker image
+  uses: docker/build-push-action@v5
+  with:
+    sbom: true
+    provenance: true
+
+- name: Generate SBOM
+  uses: anchore/sbom-action@v0
+  with:
+    format: spdx-json
+```
+
+## Security Hooks & Auditing (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-hooks-safety)
+**Implementation:** Custom hooks for runtime security enforcement
+
+### Hook Types & Implementation
+
+#### BeforeCommand Hook
+```python
+# Hook to intercept and validate shell commands
+def before_command_hook(command: str, context: dict) -> dict:
+    """
+    Validate shell commands before execution
+    """
+    forbidden_patterns = [
+        r'sudo.*',
+        r'rm\s+-rf\s+/',
+        r'> /dev/null',
+        r'curl.*\|\s*bash',
+        r'wget.*\|\s*sh'
+    ]
+
+    for pattern in forbidden_patterns:
+        if re.search(pattern, command, re.IGNORECASE):
+            return {
+                'action': 'block',
+                'reason': f'Forbidden command pattern: {pattern}',
+                'suggestion': 'Use sandboxed execution or manual approval'
+            }
+
+    return {'action': 'allow'}
+```
+
+#### BeforePrompt Hook
+```python
+# Hook to sanitize prompts and prevent secret exposure
+def before_prompt_hook(prompt: str, context: dict) -> str:
+    """
+    Sanitize prompts to prevent secret exposure
+    """
+    secret_patterns = [
+        r'(?i)(api[_-]?key|apikey)\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{20,})["\']?',
+        r'(?i)(password|pwd)\s*[:=]\s*["\']?([^"\s]{8,})["\']?',
+        r'(?i)(token|bearer)\s*[:=]\s*["\']?([a-zA-Z0-9_\-]{30,})["\']?'
+    ]
+
+    sanitized_prompt = prompt
+    for pattern in secret_patterns:
+        sanitized_prompt = re.sub(pattern, r'\1: [REDACTED]', sanitized_prompt)
+
+    return sanitized_prompt
+```
+
+#### Audit Hook
+```python
+# Hook for comprehensive audit logging
+def audit_hook(event: str, data: dict, context: dict) -> None:
+    """
+    Comprehensive audit logging for security events
+    """
+    audit_entry = {
+        'timestamp': datetime.utcnow().isoformat(),
+        'event': event,
+        'user_id': context.get('user_id'),
+        'session_id': context.get('session_id'),
+        'data': data,
+        'severity': determine_severity(event, data)
+    }
+
+    # Log to secure audit trail
+    secure_logger.log_security_event(
+        'cursor_agent_audit',
+        audit_entry,
+        context.get('user_id')
+    )
+```
+
+### Hook Configuration
+```json
+{
+  "hooks": {
+    "before_command": {
+      "enabled": true,
+      "script": "security_hooks.py:before_command_hook"
+    },
+    "before_prompt": {
+      "enabled": true,
+      "script": "security_hooks.py:before_prompt_hook"
+    },
+    "audit": {
+      "enabled": true,
+      "script": "security_hooks.py:audit_hook",
+      "events": ["command_executed", "prompt_processed", "file_accessed"]
+    }
+  }
+}
+```
+
+**Benefits:**
+- Runtime security enforcement
+- Automatic secret sanitization
+- Comprehensive audit trails
+- Prevention of dangerous operations
+
+## Sandbox Mode Execution (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-sandbox-mode)
+**Implementation:** Isolated execution environment
+
+### Sandbox Configuration
+
+#### Basic Sandbox Setup
+```python
+class SandboxManager:
+    """Manages sandboxed execution of agent commands"""
+
+    def __init__(self, workspace_root: str):
+        self.workspace_root = Path(workspace_root)
+        self.allowed_paths = self._get_allowed_paths()
+        self.forbidden_commands = self._get_forbidden_commands()
+
+    def _get_allowed_paths(self) -> list:
+        """Define allowed file system paths"""
+        return [
+            str(self.workspace_root),
+            str(self.workspace_root / 'node_modules'),
+            str(self.workspace_root / 'build'),
+            str(self.workspace_root / 'dist'),
+            '/tmp',
+            '/var/tmp'
+        ]
+
+    def _get_forbidden_commands(self) -> list:
+        """Commands that require explicit approval"""
+        return [
+            'sudo', 'su', 'chmod +x', 'curl | bash',
+            'wget | sh', 'npm install -g', 'pip install --user'
+        ]
+
+    def validate_command(self, command: str) -> dict:
+        """
+        Validate command for sandbox execution
+        """
+        # Check for forbidden commands
+        for forbidden in self.forbidden_commands:
+            if forbidden in command.lower():
+                return {
+                    'allowed': False,
+                    'reason': f'Command contains forbidden pattern: {forbidden}',
+                    'requires_approval': True
+                }
+
+        # Check if command operates within allowed paths
+        if not self._command_in_allowed_paths(command):
+            return {
+                'allowed': False,
+                'reason': 'Command operates outside allowed paths',
+                'requires_approval': True
+            }
+
+        return {'allowed': True, 'sandboxed': True}
+```
+
+#### Advanced Sandbox Features
+```python
+class AdvancedSandbox:
+    """Advanced sandbox with resource limits and monitoring"""
+
+    def execute_sandboxed(self, command: str, timeout: int = 30) -> dict:
+        """
+        Execute command in sandbox with resource limits
+        """
+        import subprocess
+        import resource
+
+        # Set resource limits
+        resource.setrlimit(resource.RLIMIT_CPU, (timeout, timeout))
+        resource.setrlimit(resource.RLIMIT_AS, (100 * 1024 * 1024, 100 * 1024 * 1024))  # 100MB
+
+        try:
+            # Execute in isolated environment
+            env = self._create_sandbox_env()
+            result = subprocess.run(
+                command,
+                shell=True,
+                cwd=self.workspace_root,
+                env=env,
+                capture_output=True,
+                text=True,
+                timeout=timeout
+            )
+
+            return {
+                'success': result.returncode == 0,
+                'stdout': result.stdout,
+                'stderr': result.stderr,
+                'returncode': result.returncode,
+                'sandboxed': True
+            }
+
+        except subprocess.TimeoutExpired:
+            return {
+                'success': False,
+                'error': 'Command timed out',
+                'sandboxed': True
+            }
+        except Exception as e:
+            return {
+                'success': False,
+                'error': str(e),
+                'sandboxed': True
+            }
+
+    def _create_sandbox_env(self) -> dict:
+        """
+        Create sandbox environment variables
+        """
+        env = os.environ.copy()
+
+        # Remove sensitive environment variables
+        sensitive_vars = ['AWS_ACCESS_KEY', 'DATABASE_URL', 'API_KEY']
+        for var in sensitive_vars:
+            env.pop(var, None)
+
+        # Set safe working directory
+        env['PWD'] = str(self.workspace_root)
+        env['HOME'] = str(self.workspace_root)
+
+        return env
+```
+
+### Enterprise Sandbox Policies
+```yaml
+# Enterprise sandbox configuration
+sandbox_policies:
+  default_mode: "strict"  # strict, moderate, permissive
+
+  strict_mode:
+    network_access: false
+    file_system_access: "workspace_only"
+    command_whitelist:
+      - "npm install"
+      - "npm run build"
+      - "python -m pytest"
+      - "git add"
+      - "git commit"
+
+  resource_limits:
+    cpu_time: 30  # seconds
+    memory: 100   # MB
+    disk_space: 50 # MB
+
+  audit_logging:
+    enabled: true
+    log_level: "detailed"
+    retention_days: 90
+```
+
+**Benefits:**
+- Complete isolation from system
+- Resource limits prevent abuse
+- Automatic secret sanitization
+- Audit trails for compliance
+
+## Context Isolation & Privacy (Cursor 2.0)
+
+**Source:** cursor_2_0_best_practices.json (bp-context-ignore)
+**Implementation:** Intelligent context filtering
+
+### .cursorignore Configuration
+
+#### Basic Ignore Patterns
+```gitignore
+# .cursorignore - Exclude files from AI context
+# Similar to .gitignore but for AI indexing
+
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Environment and secrets
+.env
+.env.local
+.env.*.local
+config/secrets.json
+config/keys/
+
+# Large data files
+*.log
+logs/
+*.sqlite
+*.db
+data/
+*.csv
+*.jsonl
+
+# Documentation that shouldn't be indexed
+docs/api/
+CHANGELOG.md
+*.md
+!README.md
+
+# Temporary files
+tmp/
+temp/
+.cache/
+```
+
+#### Advanced Context Filtering
+```python
+class ContextFilter:
+    """Advanced context filtering for AI privacy"""
+
+    def __init__(self, workspace_root: str):
+        self.workspace_root = Path(workspace_root)
+        self.ignore_patterns = self._load_ignore_patterns()
+        self.sensitivity_patterns = self._load_sensitivity_patterns()
+
+    def should_index_file(self, file_path: str) -> bool:
+        """
+        Determine if file should be indexed by AI
+        """
+        file_path = Path(file_path)
+
+        # Check ignore patterns
+        for pattern in self.ignore_patterns:
+            if file_path.match(pattern):
+                return False
+
+        # Check file size (skip large files)
+        if file_path.stat().st_size > 10 * 1024 * 1024:  # 10MB
+            return False
+
+        # Check content sensitivity
+        if self._contains_sensitive_content(file_path):
+            return False
+
+        return True
+
+    def _contains_sensitive_content(self, file_path: Path) -> bool:
+        """
+        Check if file contains sensitive content
+        """
+        try:
+            with open(file_path, 'r', encoding='utf-8', errors='ignore') as f:
+                content = f.read(1024)  # Check first 1KB
+
+                for pattern in self.sensitivity_patterns:
+                    if re.search(pattern, content, re.IGNORECASE):
+                        return True
+
+        except:
+            # If can't read file, err on side of caution
+            return True
+
+        return False
+
+    def _load_ignore_patterns(self) -> list:
+        """Load ignore patterns from .cursorignore"""
+        ignore_file = self.workspace_root / '.cursorignore'
+        if not ignore_file.exists():
+            return []
+
+        patterns = []
+        with open(ignore_file, 'r') as f:
+            for line in f:
+                line = line.strip()
+                if line and not line.startswith('#'):
+                    patterns.append(line)
+
+        return patterns
+
+    def _load_sensitivity_patterns(self) -> list:
+        """Load patterns for detecting sensitive content"""
+        return [
+            r'api[_-]?key\s*[:=]\s*["\']?[a-zA-Z0-9_\-]{20,}["\']?',
+            r'password\s*[:=]\s*["\']?[^"\s]{8,}["\']?',
+            r'token\s*[:=]\s*["\']?[a-zA-Z0-9_\-]{30,}["\']?',
+            r'secret\s*[:=]\s*["\']?[^"\s]{10,}["\']?',
+            r'private[_-]?key',
+            r'certificate',
+            r'database[_-]?url',
+            r'connection[_-]?string'
+        ]
+```
+
+### Privacy Monitoring
+```python
+class PrivacyMonitor:
+    """Monitor AI context for privacy violations"""
+
+    def __init__(self):
+        self.violation_log = []
+        self.alert_thresholds = {
+            'secret_exposure': 1,  # Any secret exposure
+            'large_file_indexed': 100,  # Files >100MB
+            'ignored_file_access': 5  # Access to ignored files
+        }
+
+    def check_context_privacy(self, context: dict) -> dict:
+        """
+        Check context for privacy violations
+        """
+        violations = []
+
+        # Check for secrets in context
+        if self._contains_secrets(context.get('files', {})):
+            violations.append({
+                'type': 'secret_exposure',
+                'severity': 'high',
+                'message': 'Context contains sensitive information'
+            })
+
+        # Check for large files
+        large_files = self._find_large_files(context.get('files', {}))
+        if large_files:
+            violations.append({
+                'type': 'large_file_indexed',
+                'severity': 'medium',
+                'message': f'Large files indexed: {large_files}',
+                'files': large_files
+            })
+
+        # Check for ignored files
+        ignored_access = self._find_ignored_files(context.get('files', {}))
+        if len(ignored_access) > self.alert_thresholds['ignored_file_access']:
+            violations.append({
+                'type': 'ignored_file_access',
+                'severity': 'low',
+                'message': f'Multiple ignored files accessed: {len(ignored_access)}',
+                'files': ignored_access
+            })
+
+        return {
+            'privacy_check_passed': len(violations) == 0,
+            'violations': violations,
+            'recommendations': self._generate_recommendations(violations)
+        }
+```
+
+### Enterprise Privacy Policies
+```json
+{
+  "privacy_policies": {
+    "context_filtering": {
+      "enabled": true,
+      "max_file_size_mb": 10,
+      "auto_ignore_sensitive": true,
+      "audit_context_access": true
+    },
+    "secret_detection": {
+      "patterns": [
+        "api_key", "password", "token", "secret",
+        "private_key", "certificate", "database_url"
+      ],
+      "redaction_level": "full",
+      "alert_on_detection": true
+    },
+    "compliance": {
+      "gdpr_compliant": true,
+      "hipaa_compliant": false,
+      "soc2_compliant": true,
+      "audit_retention_days": 365
+    }
+  }
+}
+```
+
+**Benefits:**
+- Automatic privacy protection
+- Intelligent context filtering
+- Compliance with data protection regulations
+- Prevention of sensitive data exposure
+
+## AI Security & Post-Quantum Protection (2025)
+
+**Source:** emerging_tech_research_2025
+**Implementation:** Advanced security for AI-native applications
+
+### Post-Quantum Cryptography Implementation
+```python
+# CRYSTALS-Kyber for key exchange (NIST standardized)
+from cryptography.hazmat.primitives.asymmetric import kyber
+
+class PostQuantumSecurity:
+    """Post-quantum cryptography for AI systems"""
+
+    def __init__(self):
+        self.kyber_keypair = kyber.generate_keypair()
+        self.falcon_signer = None  # For digital signatures
+
+    async def secure_ai_communication(self, ai_model_endpoint: str, data: bytes) -> bytes:
+        """Secure communication with AI models using PQ crypto"""
+        # Generate ephemeral key using Kyber
+        ephemeral_key = kyber.generate_keypair()
+
+        # Encrypt data with hybrid encryption (PQ + classical)
+        encrypted_data = await self._hybrid_encrypt(data, ephemeral_key.public_key)
+
+        # Send to AI model with PQ authentication
+        response = await self._authenticated_request(
+            ai_model_endpoint,
+            encrypted_data,
+            ephemeral_key
+        )
+
+        return response
+
+    async def _hybrid_encrypt(self, data: bytes, pq_public_key) -> bytes:
+        """Hybrid encryption: PQ key exchange + AES-GCM"""
+        # PQ key exchange for symmetric key
+        shared_secret = kyber.encapsulate(pq_public_key)
+
+        # Use shared secret for AES encryption
+        from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+        import os
+
+        key = shared_secret[:32]  # First 32 bytes for AES-256
+        iv = os.urandom(12)
+        cipher = Cipher(algorithms.AES(key), modes.GCM(iv))
+        encryptor = cipher.encryptor()
+        encrypted_data = encryptor.update(data) + encryptor.finalize()
+
+        return iv + encryptor.tag + encrypted_data
+```
+
+### Zero-Trust AI Architecture
+```python
+# SPIFFE/SPIRE workload identity for AI systems
+class ZeroTrustAI:
+    """Zero-trust architecture for AI model serving"""
+
+    def __init__(self, spire_agent_socket: str):
+        self.spire_client = spire.Client(spire_agent_socket)
+        self.workload_identity = None
+
+    async def authenticate_workload(self) -> bool:
+        """Authenticate AI workload using SPIFFE identity"""
+        try:
+            # Get SVID (SPIFFE Verifiable Identity Document)
+            svid = await self.spire_client.fetch_svid()
+
+            # Validate workload identity
+            if self._validate_ai_workload_identity(svid):
+                self.workload_identity = svid
+                return True
+
+            return False
+
+        except Exception as e:
+            logger.error(f"Workload authentication failed: {e}")
+            return False
+
+    async def authorize_model_access(self, model_name: str, user_identity: str) -> bool:
+        """Authorize access to AI models using zero-trust policies"""
+        # Check workload identity
+        if not self.workload_identity:
+            return False
+
+        # Validate user identity against model access policies
+        policy_result = await self._evaluate_access_policy(
+            model_name, user_identity, self.workload_identity
+        )
+
+        # Log access attempt
+        await self._log_access_attempt(
+            model_name, user_identity, policy_result
+        )
+
+        return policy_result.allowed
+```
+
+### AI Model Security Protections
+```python
+class AIModelSecurity:
+    """Security protections for AI models and prompts"""
+
+    def __init__(self):
+        self.prompt_filters = self._load_prompt_filters()
+        self.output_validators = self._load_output_validators()
+        self.rate_limiters = self._load_rate_limiters()
+
+    async def validate_prompt(self, prompt: str, context: dict) -> ValidationResult:
+        """Validate prompts against injection attacks"""
+        # Check for prompt injection patterns
+        injection_detected = await self._detect_injection_attacks(prompt)
+
+        # Validate against content policies
+        policy_violations = await self._check_content_policies(prompt, context)
+
+        # Rate limiting per user/session
+        rate_limit_exceeded = await self._check_rate_limits(context.get('user_id'))
+
+        return ValidationResult(
+            allowed=not (injection_detected or policy_violations or rate_limit_exceeded),
+            injection_detected=injection_detected,
+            policy_violations=policy_violations,
+            rate_limit_exceeded=rate_limit_exceeded
+        )
+
+    async def sanitize_model_output(self, output: str, model_name: str) -> str:
+        """Sanitize and validate AI model outputs"""
+        # Remove potential harmful content
+        sanitized = await self._remove_harmful_content(output)
+
+        # Validate output against safety constraints
+        validation_result = await self._validate_output_safety(sanitized, model_name)
+
+        # Log output for audit trail
+        await self._log_model_output(output, sanitized, validation_result)
+
+        return sanitized if validation_result.safe else "[OUTPUT FILTERED]"
+
+    async def _detect_injection_attacks(self, prompt: str) -> bool:
+        """Detect prompt injection and jailbreak attempts"""
+        injection_patterns = [
+            r"(?i)(ignore.*previous.*instructions)",
+            r"(?i)(override.*safety.*settings)",
+            r"(?i)(act.*as.*uncensored.*ai)",
+            r"(?i)(developer.*mode.*enabled)",
+            r"(?i)(admin.*override)"
+        ]
+
+        for pattern in injection_patterns:
+            if re.search(pattern, prompt):
+                return True
+
+        return False
+```
+
+### Quantum-Safe Database Encryption
+```sql
+-- PostgreSQL 17 with PQ cryptography support
+-- Enable quantum-safe encryption for sensitive AI training data
+
+-- Configure PQ key management
+CREATE EXTENSION IF NOT EXISTS pqcrypto;
+
+-- Create PQ-encrypted table for AI model weights
+CREATE TABLE ai_model_weights (
+    model_id UUID PRIMARY KEY,
+    layer_name TEXT NOT NULL,
+    weights BYTEA PQ_ENCRYPTED,  -- Quantum-safe encrypted
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- PQ key rotation policy
+CREATE POLICY pq_key_rotation ON ai_model_weights
+    USING (pg_pq_key_age(model_id) < INTERVAL '30 days');
+
+-- Secure AI inference with PQ authentication
+CREATE OR REPLACE FUNCTION secure_ai_inference(
+    model_id UUID,
+    input_data JSONB
+) RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+    result JSONB;
+BEGIN
+    -- Verify PQ authentication
+    IF NOT pq_verify_client_auth(current_user) THEN
+        RAISE EXCEPTION 'PQ authentication failed';
+    END IF;
+
+    -- Decrypt model weights using PQ keys
+    -- Perform inference
+    -- Re-encrypt result
+
+    RETURN result;
+END;
+$$;
+```
+
+**Benefits:**
+- **Quantum-resistant security** for AI systems and data
+- **Zero-trust authentication** for all AI workloads
+- **Injection attack prevention** in AI prompts and outputs
+- **Post-quantum database encryption** for sensitive ML data
+- **Comprehensive audit trails** for AI system activities
+
+---
+
+**Updated:** November 2025
+**New sections added based on emerging technologies research 2025**
+- Post-Quantum Cryptography (CRYSTALS-Kyber, Falcon)
+- Zero-Trust AI Architecture (SPIFFE/SPIRE)
+- AI Model Security Protections
+- Quantum-Safe Database Encryption

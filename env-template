@@ -1,0 +1,22 @@
+# AI Orchestrator Configuration
+# Copy this file to .env and fill in your actual API keys
+
+# OpenAI Configuration
+OPENAI_API_KEY=your_openai_api_key_here
+OPENAI_MODEL=gpt-4
+OPENAI_MAX_TOKENS=2000
+OPENAI_TEMPERATURE=0.3
+
+# Anthropic Configuration (optional)
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
+ANTHROPIC_MODEL=claude-3-sonnet
+ANTHROPIC_MAX_TOKENS=2000
+
+# Orchestrator Configuration
+ORCHESTRATOR_AUTO_SAVE=true
+ORCHESTRATOR_LOG_LEVEL=INFO
+ORCHESTRATOR_CACHE_ENABLED=true
+ORCHESTRATOR_TIMEOUT=300
+
+# Security Note: Never commit .env file to git!
+# Use env-template as a template for your local configuration

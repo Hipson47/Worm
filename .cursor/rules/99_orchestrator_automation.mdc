@@ -1,0 +1,567 @@
+---
+alwaysApply: true
+---
+
+# 🤖 AI Orchestrator Automation - Critical System Rule
+
+## 🎯 Purpose and Scope
+
+This rule has the **HIGHEST PRIORITY** and automatically enables the AI Orchestrator for all Cursor agent tasks.
+The Orchestrator supervises the agent by intelligently selecting optimal rules and execution strategies.
+
+**IMPORTANT:** This rule **CANNOT BE DISABLED** — it is critical for correct system operation.
+
+## 🚀 Automatic Activation
+
+### Prerequisites
+```python
+# The agent MUST verify these conditions BEFORE each task:
+def check_orchestrator_prerequisites():
+    """
+    Check prerequisites for the orchestrator
+    """
+    # 1. Is the orchestrator service running?
+    orchestrator_running = check_orchestrator_service()
+
+    # 2. Is the API configuration available?
+    config_available = check_ai_config()
+
+    # 3. Are all required files present?
+    files_available = check_orchestrator_files()
+
+    return orchestrator_running and config_available and files_available
+```
+
+### Automatic Startup
+```python
+def ensure_orchestrator_running():
+    """
+    Automatically start the orchestrator if not running
+    """
+    if not check_orchestrator_service():
+        logger.info("🚀 Auto-starting AI Orchestrator Service...")
+
+        # Start the service in background
+        start_orchestrator_background()
+
+        # Wait for initialization
+        wait_for_orchestrator_ready(timeout=30)
+
+        # Verify connection
+        if not verify_orchestrator_connection():
+            raise OrchestratorStartupError("Failed to start orchestrator service")
+
+    logger.info("✅ AI Orchestrator Service confirmed running")
+```
+
+## 🎛️ Agent Integration
+
+### Before Each Task
+```python
+def pre_task_orchestrator_integration(task_context):
+    """
+    Orchestrator integration before task execution
+    """
+    # 1. Ensure orchestrator is running
+    ensure_orchestrator_running()
+
+    # 2. Analyze the task with the orchestrator
+    task_analysis = analyze_task_with_orchestrator(task_context)
+
+    # 3. Get optimal rules for the task
+    optimal_rules = select_optimal_rules_orchestrator(
+        task_description=task_context['description'],
+        current_file=task_context.get('file'),
+        project_type=task_context.get('project_type')
+    )
+
+    # 4. Get the execution plan
+    execution_plan = get_execution_plan_orchestrator(task_context['description'])
+
+    # 5. Update task context
+    task_context.update({
+        'orchestrator_analysis': task_analysis,
+        'optimal_rules': optimal_rules,
+        'execution_plan': execution_plan,
+        'orchestrator_supervised': True
+    })
+
+    return task_context
+```
+
+### During Execution
+```python
+def during_task_orchestrator_supervision(task_context, current_step):
+    """
+    Orchestrator supervision during task execution
+    """
+    # 1. Monitor progress
+    progress_status = monitor_task_progress(current_step)
+
+    # 2. Adjust strategy if needed
+    if should_adjust_strategy(progress_status):
+        new_strategy = get_adjusted_strategy_orchestrator(progress_status)
+        apply_strategy_adjustment(new_strategy)
+
+    # 3. Collect feedback for learning
+    collect_execution_feedback(current_step)
+
+    # 4. Validate compliance with optimal rules
+    validate_rule_compliance(current_step, task_context['optimal_rules'])
+```
+
+### After Task Completion
+```python
+def post_task_orchestrator_learning(task_context, task_result):
+    """
+    Orchestrator learning after task completion
+    """
+    # 1. Assess execution results
+    execution_assessment = assess_execution_quality(task_result)
+
+    # 2. Send feedback to the learning system
+    send_feedback_to_learning_system({
+        'task': task_context,
+        'result': task_result,
+        'assessment': execution_assessment,
+        'rules_used': task_context.get('optimal_rules', []),
+        'execution_time': task_result.get('duration'),
+        'success_rate': execution_assessment.get('success_score')
+    })
+
+    # 3. Update performance metrics
+    update_performance_metrics(execution_assessment)
+
+    # 4. Optimize future strategies
+    optimize_future_strategies(execution_assessment)
+```
+
+## 📊 Metrics and Monitoring
+
+### Required Metrics
+```python
+ORCHESTRATOR_METRICS = {
+    'service_uptime': 'percentage',           # Service uptime
+    'task_supervision_rate': 'percentage',    # % of tasks supervised
+    'rule_selection_accuracy': 'score',       # Rule selection accuracy
+    'execution_plan_quality': 'score',        # Execution plan quality
+    'learning_effectiveness': 'score',        # Learning effectiveness
+    'api_response_time': 'milliseconds',      # API response time
+    'error_recovery_rate': 'percentage'       # Error recovery success
+}
+```
+
+### Critical Alerts
+```python
+CRITICAL_ALERTS = {
+    'orchestrator_service_down': {
+        'condition': 'service_uptime < 95%',
+        'action': 'immediate_restart',
+        'escalation': 'notify_admin'
+    },
+    'task_without_supervision': {
+        'condition': 'task_supervision_rate < 100%',
+        'action': 'log_warning',
+        'escalation': 'investigate_skip_reason'
+    },
+    'poor_rule_selection': {
+        'condition': 'rule_selection_accuracy < 0.8',
+        'action': 'analyze_patterns',
+        'escalation': 'update_training_data'
+    }
+}
+```
+
+## 🔧 Technical Implementation
+
+### Required Files
+```
+.cursor/orchestrator/
+├── ai_orchestrator.py              # Main orchestrator
+├── ai_orchestrator_service.py      # HTTP API service
+├── ai_orchestrator_client.py       # Client for the agent
+├── ai_simple_config.py             # Config system
+├── ai_config.json                  # API configuration
+├── start_orchestrator.sh           # Startup script
+└── test_full_integration.py        # Integration tests
+```
+
+### Imports in Rules
+```python
+# Required in every rule file:
+from pathlib import Path
+import sys
+import os
+
+# Add orchestrator path
+orchestrator_path = Path(__file__).parent.parent / 'orchestrator'
+if str(orchestrator_path) not in sys.path:
+    sys.path.insert(0, str(orchestrator_path))
+
+# Import the client
+try:
+    from ai_orchestrator_client import (
+        select_optimal_rules,
+        get_execution_plan,
+        analyze_code_for_insights,
+        get_project_context,
+        AIOrchestratorClient
+    )
+    ORCHESTRATOR_AVAILABLE = True
+except ImportError:
+    ORCHESTRATOR_AVAILABLE = False
+    logger.warning("AI Orchestrator not available - using fallback mode")
+```
+
+### Fallback Mode
+```python
+def orchestrator_fallback(task_context):
+    """
+    Fallback when orchestrator is unavailable
+    """
+    logger.warning("Using orchestrator fallback - limited functionality")
+
+    # Use baseline rules
+    fallback_rules = ['30_hybrid_moe_tot_reasoning', '31_advanced_agent_steering']
+
+    # Simple execution plan
+    fallback_plan = {
+        'Planning': {'tasks': ['Analyze requirements'], 'estimated_hours': 1},
+        'Implementation': {'tasks': ['Execute task'], 'estimated_hours': 2},
+        'Testing': {'tasks': ['Basic validation'], 'estimated_hours': 1}
+    }
+
+    return {
+        'rules': fallback_rules,
+        'plan': fallback_plan,
+        'fallback_mode': True
+    }
+```
+
+## 🚨 Security and Compliance
+
+### API Security
+- All orchestrator calls must use a secure protocol
+- API keys must never be logged or exposed
+- Communication must be encrypted (HTTPS in production)
+
+### Compatibility with Existing Rules
+- This rule **DOES NOT OVERRIDE** other rules
+- It **COMPLEMENTS** them by intelligently selecting optimal combinations
+- It **STRENGTHENS** existing rules through supervision and optimization
+
+### Error Handling
+```python
+def handle_orchestrator_errors(error, context):
+    """
+    Safe handling of orchestrator errors
+    """
+    error_types = {
+        'connection_error': 'retry_with_backoff',
+        'timeout_error': 'use_cached_results',
+        'api_error': 'fallback_to_local_logic',
+        'config_error': 'notify_user_setup_required'
+    }
+
+    error_type = classify_error(error)
+    action = error_types.get(error_type, 'log_and_continue')
+
+    execute_error_action(action, error, context)
+
+    # Always ensure a fallback
+    return ensure_fallback_available(context)
+```
+
+## 📈 System Benefits
+
+### For the Cursor Agent
+- **Smarter decision-making** - optimal strategy selection
+- **Continuous optimization** - learning from experience
+- **Better outcomes** - higher execution quality
+- **Automatic adaptation** - context-aware behavior
+
+### For Developers
+- **Transparency** - clear supervision over the agent
+- **Configurable behavior** - adjustable strategies
+- **Reliability** - automatic error recovery
+- **Monitoring** - full process visibility
+
+### For the Project
+- **Higher code quality** - intelligent use of best practices
+- **Faster delivery** - optimal plans and strategies
+- **Reduced risk** - supervision and validation
+- **Continuous improvement** - learning system
+
+---
+
+## 🔒 Status: CRITICAL SYSTEM RULE
+
+**This rule has the highest priority and cannot be modified without administrator approval.**
+
+**Violating this rule may lead to:**
+- Loss of supervision over the agent
+- Reduced execution quality
+- Disabled learning capabilities
+- Lower overall efficiency
+
+**Recommended actions:**
+1. Ensure continuous access to the orchestrator
+2. Monitor performance metrics
+3. Regularly update configuration
+4. Report integration issues
+
+## 🎛️ Integracja z Agentem
+
+### Przed Każdym Zadaniem
+```python
+def pre_task_orchestrator_integration(task_context):
+    """
+    Integracja orchestratora przed wykonaniem zadania
+    """
+    # 1. Upewnij się że orchestrator działa
+    ensure_orchestrator_running()
+
+    # 2. Przeanalizuj zadanie z orchestratorem
+    task_analysis = analyze_task_with_orchestrator(task_context)
+
+    # 3. Pobierz optymalne rules dla zadania
+    optimal_rules = select_optimal_rules_orchestrator(
+        task_description=task_context['description'],
+        current_file=task_context.get('file'),
+        project_type=task_context.get('project_type')
+    )
+
+    # 4. Pobierz plan wykonania
+    execution_plan = get_execution_plan_orchestrator(task_context['description'])
+
+    # 5. Zaktualizuj kontekst zadania
+    task_context.update({
+        'orchestrator_analysis': task_analysis,
+        'optimal_rules': optimal_rules,
+        'execution_plan': execution_plan,
+        'orchestrator_supervised': True
+    })
+
+    return task_context
+```
+
+### Podczas Wykonywania
+```python
+def during_task_orchestrator_supervision(task_context, current_step):
+    """
+    Nadzór orchestratora podczas wykonania zadania
+    """
+    # 1. Monitoruj postęp
+    progress_status = monitor_task_progress(current_step)
+
+    # 2. Jeśli potrzebne - dostosuj strategię
+    if should_adjust_strategy(progress_status):
+        new_strategy = get_adjusted_strategy_orchestrator(progress_status)
+        apply_strategy_adjustment(new_strategy)
+
+    # 3. Zbieraj feedback dla uczenia się
+    collect_execution_feedback(current_step)
+
+    # 4. Waliduj zgodność z optymalnymi rules
+    validate_rule_compliance(current_step, task_context['optimal_rules'])
+```
+
+### Po Zakończeniu Zadania
+```python
+def post_task_orchestrator_learning(task_context, task_result):
+    """
+    Uczenie się orchestratora po zakończeniu zadania
+    """
+    # 1. Oceń wyniki wykonania
+    execution_assessment = assess_execution_quality(task_result)
+
+    # 2. Wyślij feedback do systemu uczenia się
+    send_feedback_to_learning_system({
+        'task': task_context,
+        'result': task_result,
+        'assessment': execution_assessment,
+        'rules_used': task_context.get('optimal_rules', []),
+        'execution_time': task_result.get('duration'),
+        'success_rate': execution_assessment.get('success_score')
+    })
+
+    # 3. Zaktualizuj metryki wydajności
+    update_performance_metrics(execution_assessment)
+
+    # 4. Optymalizuj przyszłe strategie
+    optimize_future_strategies(execution_assessment)
+```
+
+## 📊 Metryki i Monitorowanie
+
+### Wymagane Metryki
+```python
+ORCHESTRATOR_METRICS = {
+    'service_uptime': 'percentage',           # Czas działania serwisu
+    'task_supervision_rate': 'percentage',    # % zadań nadzorowanych
+    'rule_selection_accuracy': 'score',       # Dokładność wyboru rules
+    'execution_plan_quality': 'score',        # Jakość planów wykonania
+    'learning_effectiveness': 'score',        # Efektywność uczenia się
+    'api_response_time': 'milliseconds',      # Czas odpowiedzi API
+    'error_recovery_rate': 'percentage'       # Skuteczność odzyskiwania błędów
+}
+```
+
+### Alerty Krytyczne
+```python
+CRITICAL_ALERTS = {
+    'orchestrator_service_down': {
+        'condition': 'service_uptime < 95%',
+        'action': 'immediate_restart',
+        'escalation': 'notify_admin'
+    },
+    'task_without_supervision': {
+        'condition': 'task_supervision_rate < 100%',
+        'action': 'log_warning',
+        'escalation': 'investigate_skip_reason'
+    },
+    'poor_rule_selection': {
+        'condition': 'rule_selection_accuracy < 0.8',
+        'action': 'analyze_patterns',
+        'escalation': 'update_training_data'
+    }
+}
+```
+
+## 🔧 Implementacja Techniczna
+
+### Wymagane Pliki
+```
+.cursor/orchestrator/
+├── ai_orchestrator.py              # Główny orchestrator
+├── ai_orchestrator_service.py      # HTTP API service
+├── ai_orchestrator_client.py       # Klient dla agenta
+├── ai_simple_config.py             # Config system
+├── ai_config.json                  # Konfiguracja API
+├── start_orchestrator.sh           # Skrypt startowy
+└── test_full_integration.py        # Testy integracyjne
+```
+
+### Importy w Rules
+```python
+# W każdej rules wymagane jest:
+from pathlib import Path
+import sys
+import os
+
+# Dodaj ścieżkę do orchestratora
+orchestrator_path = Path(__file__).parent.parent / 'orchestrator'
+if str(orchestrator_path) not in sys.path:
+    sys.path.insert(0, str(orchestrator_path))
+
+# Importuj klienta
+try:
+    from ai_orchestrator_client import (
+        select_optimal_rules,
+        get_execution_plan,
+        analyze_code_for_insights,
+        get_project_context,
+        AIOrchestratorClient
+    )
+    ORCHESTRATOR_AVAILABLE = True
+except ImportError:
+    ORCHESTRATOR_AVAILABLE = False
+    logger.warning("AI Orchestrator not available - using fallback mode")
+```
+
+### Fallback Mode
+```python
+def orchestrator_fallback(task_context):
+    """
+    Fallback gdy orchestrator nie jest dostępny
+    """
+    logger.warning("Using orchestrator fallback - limited functionality")
+
+    # Użyj podstawowych rules
+    fallback_rules = ['30_hybrid_moe_tot_reasoning', '31_advanced_agent_steering']
+
+    # Prosty plan wykonania
+    fallback_plan = {
+        'Planning': {'tasks': ['Analyze requirements'], 'estimated_hours': 1},
+        'Implementation': {'tasks': ['Execute task'], 'estimated_hours': 2},
+        'Testing': {'tasks': ['Basic validation'], 'estimated_hours': 1}
+    }
+
+    return {
+        'rules': fallback_rules,
+        'plan': fallback_plan,
+        'fallback_mode': True
+    }
+```
+
+## 🚨 Bezpieczeństwo i Zgodność
+
+### Bezpieczeństwo API
+- Wszystkie wywołania do orchestratora muszą używać bezpiecznego protokołu
+- API keys nigdy nie mogą być logowane lub ujawniane
+- Komunikacja musi być szyfrowana (HTTPS w produkcji)
+
+### Zgodność z Istniejącymi Rules
+- Ta reguła **NIE NADPISUJE** innych rules
+- **UZUPEŁNIA** je poprzez inteligentne wybieranie optymalnych kombinacji
+- **WZMACNIA** istniejące reguły poprzez nadzor i optymalizację
+
+### Obsługa Błędów
+```python
+def handle_orchestrator_errors(error, context):
+    """
+    Bezpieczna obsługa błędów orchestratora
+    """
+    error_types = {
+        'connection_error': 'retry_with_backoff',
+        'timeout_error': 'use_cached_results',
+        'api_error': 'fallback_to_local_logic',
+        'config_error': 'notify_user_setup_required'
+    }
+
+    error_type = classify_error(error)
+    action = error_types.get(error_type, 'log_and_continue')
+
+    execute_error_action(action, error, context)
+
+    # Zawsze zapewnij fallback
+    return ensure_fallback_available(context)
+```
+
+## 📈 Korzyści Systemu
+
+### Dla Agenta Cursor
+- **Inteligentne podejmowanie decyzji** - wybór optymalnych strategii
+- **Ciągła optymalizacja** - uczenie się z doświadczeń
+- **Lepsze wyniki** - wyższa jakość wykonania zadań
+- **Automatyczna adaptacja** - dostosowanie do kontekstu projektu
+
+### Dla Dewelopera
+- **Przejrzyste działanie** - jasny nadzór nad agentem
+- **Konfigurowalne zachowanie** - możliwość dostosowania strategii
+- **Niezawodność** - automatyczne odzyskiwanie po błędach
+- **Monitorowanie** - pełna widoczność procesów
+
+### Dla Projektu
+- **Wyższa jakość kodu** - inteligentne stosowanie najlepszych praktyk
+- **Szybsze wykonywanie** - optymalne plany i strategie
+- **Mniejsze ryzyko błędów** - nadzor i walidacja
+- **Ciągłe doskonalenie** - system uczenia się
+
+---
+
+## 🔒 Status: CRITICAL SYSTEM RULE
+
+**Ta reguła ma najwyższy priorytet i nie może być modyfikowana bez zgody administratora systemu.**
+
+**Naruszenie tej reguły może prowadzić do:**
+- Utraty nadzoru nad agentem
+- Pogorszenia jakości wykonania zadań
+- Brak możliwości uczenia się systemu
+- Obniżenia efektywności pracy
+
+**Recommended actions:**
+1. Ensure continuous access to the orchestrator
+2. Monitor performance metrics
+3. Regularly update configuration
+4. Report integration issues
