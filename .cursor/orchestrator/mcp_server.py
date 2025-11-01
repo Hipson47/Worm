@@ -243,22 +243,26 @@ class OrchestratorMCPServer:
             elif request.method == "ping":
                 return await self._handle_ping(request)
             else:
-                return MCPResponse(
-                    id=request.id,
-                    error={
-                        "code": -32601,
-                        "message": f"Method not found: {request.method}"
-                    }
+                # Method not found - return error response
+                return self._create_error_response(
+                    request.id, -32601, f"Method not found: {request.method}"
                 )
         except Exception as e:
             logger.error(f"Error handling request {request.id}: {e}")
-            return MCPResponse(
-                id=request.id,
-                error={
-                    "code": -32603,
-                    "message": f"Internal error: {str(e)}"
-                }
+            return self._create_error_response(
+                request.id, -32603, f"Internal error: {str(e)}"
             )
+
+    def _create_error_response(self, request_id: Optional[Union[str, int]],
+                              error_code: int, error_message: str) -> MCPResponse:
+        """Create proper error response (no result field)"""
+        return MCPResponse(
+            id=request_id,
+            error={
+                "code": error_code,
+                "message": error_message
+            }
+        )
 
     async def _handle_initialize(self, request: MCPRequest) -> MCPResponse:
         """Handle initialization with full MCP capabilities"""
@@ -642,22 +646,30 @@ class MCPStdIOServer:
                         params=request_data.get("params", {})
                     )
 
-                    # Handle request
+                    # Handle request - skip notifications (no id = no response needed)
+                    if request.id is None:
+                        logger.debug(f"Received notification: {request.method}")
+                        continue
+
                     response = await self.server.handle_request(request)
 
                     # Send response to stdout
                     response_data = {
-                        "jsonrpc": "2.0"
+                        "jsonrpc": "2.0",
+                        "id": response.id
                     }
 
-                    # Only add id if it's not None (notifications don't have id)
-                    if response.id is not None:
-                        response_data["id"] = response.id
-
-                    if response.result is not None:
-                        response_data["result"] = response.result
+                    # Add either result OR error, never both
                     if response.error is not None:
                         response_data["error"] = response.error
+                    elif response.result is not None:
+                        response_data["result"] = response.result
+                    else:
+                        # Invalid response - neither result nor error
+                        response_data["error"] = {
+                            "code": -32603,
+                            "message": "Internal error: Invalid response format"
+                        }
 
                     # Debug logging of response being sent
                     logger.debug(f"Sending MCP response: {json.dumps(response_data)}")

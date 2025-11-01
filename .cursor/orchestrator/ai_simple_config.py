@@ -20,16 +20,32 @@ class AISimpleConfig:
     def __init__(self, config_dir: str = "."):
         self.config_dir = Path(config_dir)
 
-        # Load .env file only (required)
+        # Find and load .env file (search in project root)
+        env_paths = [
+            Path(".env"),  # Current directory
+            Path("../.env"),  # Parent directory (project root)
+            Path("../../.env"),  # Grandparent (for when running from subdirs)
+        ]
+
+        env_found = False
+        env_path_used = None
+        for env_path in env_paths:
+            if env_path.exists():
+                env_found = True
+                env_path_used = env_path
+                break
+
+        if not env_found:
+            raise FileNotFoundError(
+                ".env file is required but not found. "
+                "Run 'python setup_ai_config.py' from the project root directory first."
+            )
+
+        # Load .env file from the found location
         if DOTENV_AVAILABLE:
-            load_dotenv()
+            load_dotenv(env_path_used)
         else:
             raise ImportError("python-dotenv is required for .env configuration")
-
-        # Validate that .env exists
-        env_path = Path(".env")
-        if not env_path.exists():
-            raise FileNotFoundError(".env file is required but not found. Run 'python setup_ai_config.py' first.")
 
         # No fallback config loading - only .env is supported
 

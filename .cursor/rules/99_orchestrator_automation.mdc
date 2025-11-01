@@ -18,16 +18,16 @@ The Orchestrator supervises the agent by intelligently selecting optimal rules a
 # The agent MUST verify these conditions BEFORE each task:
 def check_orchestrator_prerequisites():
     """
-    Check prerequisites for the orchestrator
+    Check prerequisites for the MCP orchestrator
     """
-    # 1. Is the orchestrator service running?
-    orchestrator_running = check_orchestrator_service()
+    # 1. Is the MCP orchestrator server running?
+    orchestrator_running = check_mcp_orchestrator_server()
 
-    # 2. Is the API configuration available?
-    config_available = check_ai_config()
+    # 2. Is the .env configuration available?
+    config_available = check_env_config()
 
-    # 3. Are all required files present?
-    files_available = check_orchestrator_files()
+    # 3. Are all required MCP files present?
+    files_available = check_mcp_files()
 
     return orchestrator_running and config_available and files_available
 ```
@@ -36,22 +36,22 @@ def check_orchestrator_prerequisites():
 ```python
 def ensure_orchestrator_running():
     """
-    Automatically start the orchestrator if not running
+    Automatically start the MCP orchestrator if not running
     """
-    if not check_orchestrator_service():
-        logger.info("🚀 Auto-starting AI Orchestrator Service...")
+    if not check_mcp_orchestrator_server():
+        logger.info("🚀 Auto-starting MCP AI Orchestrator Service...")
 
-        # Start the service in background
-        start_orchestrator_background()
+        # Start the MCP server in background
+        start_mcp_orchestrator_background()
 
         # Wait for initialization
-        wait_for_orchestrator_ready(timeout=30)
+        wait_for_mcp_orchestrator_ready(timeout=30)
 
-        # Verify connection
-        if not verify_orchestrator_connection():
-            raise OrchestratorStartupError("Failed to start orchestrator service")
+        # Verify connection via MCP
+        if not verify_mcp_orchestrator_connection():
+            raise OrchestratorStartupError("Failed to start MCP orchestrator service")
 
-    logger.info("✅ AI Orchestrator Service confirmed running")
+    logger.info("✅ MCP AI Orchestrator Service confirmed running")
 ```
 
 ## 🎛️ Agent Integration
@@ -60,23 +60,23 @@ def ensure_orchestrator_running():
 ```python
 def pre_task_orchestrator_integration(task_context):
     """
-    Orchestrator integration before task execution
+    MCP Orchestrator integration before task execution
     """
-    # 1. Ensure orchestrator is running
+    # 1. Ensure MCP orchestrator is running
     ensure_orchestrator_running()
 
-    # 2. Analyze the task with the orchestrator
-    task_analysis = analyze_task_with_orchestrator(task_context)
+    # 2. Analyze the task with MCP orchestrator tools
+    task_analysis = analyze_task_with_mcp_orchestrator(task_context)
 
-    # 3. Get optimal rules for the task
-    optimal_rules = select_optimal_rules_orchestrator(
+    # 3. Get optimal rules for the task using MCP (sync)
+    optimal_rules = select_optimal_rules_sync(
         task_description=task_context['description'],
         current_file=task_context.get('file'),
         project_type=task_context.get('project_type')
     )
 
-    # 4. Get the execution plan
-    execution_plan = get_execution_plan_orchestrator(task_context['description'])
+    # 4. Get the execution plan using MCP (sync)
+    execution_plan = get_execution_plan_sync(task_context['description'])
 
     # 5. Update task context
     task_context.update({
@@ -177,13 +177,17 @@ CRITICAL_ALERTS = {
 ### Required Files
 ```
 .cursor/orchestrator/
-├── ai_orchestrator.py              # Main orchestrator
-├── ai_orchestrator_service.py      # HTTP API service
-├── ai_orchestrator_client.py       # Client for the agent
-├── ai_simple_config.py             # Config system
-├── ai_config.json                  # API configuration
-├── start_orchestrator.sh           # Startup script
-└── test_full_integration.py        # Integration tests
+├── mcp_server.py                  # MCP server with stdio transport
+├── rag_engine.py                   # RAG knowledge base engine
+├── ai_orchestrator.py              # Main orchestrator logic
+├── ai_simple_config.py             # .env configuration system
+├── start_mcp_server.sh            # MCP server startup script
+├── __main__.py                     # Module entry point
+└── test_mcp_simple.py              # MCP integration tests
+
+.cursor/
+├── mcp.json                        # MCP server configuration for Cursor
+└── knowledge/                      # Knowledge base directory
 ```
 
 ### Imports in Rules
@@ -198,19 +202,18 @@ orchestrator_path = Path(__file__).parent.parent / 'orchestrator'
 if str(orchestrator_path) not in sys.path:
     sys.path.insert(0, str(orchestrator_path))
 
-# Import the client
+# Import MCP-based orchestrator client (sync wrappers)
 try:
-    from ai_orchestrator_client import (
-        select_optimal_rules,
-        get_execution_plan,
-        analyze_code_for_insights,
-        get_project_context,
-        AIOrchestratorClient
+    from mcp_orchestrator_client import (
+        select_optimal_rules_sync,
+        get_execution_plan_sync,
+        analyze_code_sync,
+        query_knowledge_sync
     )
     ORCHESTRATOR_AVAILABLE = True
 except ImportError:
     ORCHESTRATOR_AVAILABLE = False
-    logger.warning("AI Orchestrator not available - using fallback mode")
+    logger.warning("MCP AI Orchestrator not available - using fallback mode")
 ```
 
 ### Fallback Mode
@@ -240,10 +243,11 @@ def orchestrator_fallback(task_context):
 
 ## 🚨 Security and Compliance
 
-### API Security
-- All orchestrator calls must use a secure protocol
-- API keys must never be logged or exposed
-- Communication must be encrypted (HTTPS in production)
+### MCP Security
+- MCP communication uses stdio transport (no network exposure)
+- API keys are stored securely in .env file
+- All sensitive data is handled through environment variables
+- MCP server runs as isolated process with limited privileges
 
 ### Compatibility with Existing Rules
 - This rule **DOES NOT OVERRIDE** other rules

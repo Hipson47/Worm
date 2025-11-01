@@ -324,39 +324,48 @@ class RuleCondition:
         return evaluators.get(condition_type, DefaultEvaluator())
 ```
 
-### Enterprise Rule Dashboard
+### MCP-Based Rule Management
 
-#### Rule Creation & Management
+#### Rule Creation & Management via MCP
 ```python
-class EnterpriseRuleDashboard:
-    """Web-based dashboard for team rule management"""
+class MCPRuleManager:
+    """MCP-based interface for team rule management"""
 
     def __init__(self, rule_manager: TeamRulesManager):
         self.rule_manager = rule_manager
-        self.api_endpoints = self._setup_api_endpoints()
+        self.mcp_tools = self._setup_mcp_tools()
 
-    def _setup_api_endpoints(self) -> dict:
-        """Setup REST API endpoints for rule management"""
+    def _setup_mcp_tools(self) -> dict:
+        """Setup MCP tools for rule management"""
         return {
-            "GET /api/rules": self.list_team_rules,
-            "POST /api/rules": self.create_rule,
-            "PUT /api/rules/{id}": self.update_rule,
-            "DELETE /api/rules/{id}": self.delete_rule,
-            "GET /api/rules/{id}/compliance": self.get_rule_compliance,
-            "POST /api/rules/validate": self.validate_rules,
-            "GET /api/audit": self.get_audit_log
+            "rules.list": self.list_team_rules,
+            "rules.create": self.create_rule,
+            "rules.update": self.update_rule,
+            "rules.delete": self.delete_rule,
+            "rules.get_compliance": self.get_rule_compliance,
+            "rules.validate": self.validate_rules,
+            "audit.get_log": self.get_audit_log
         }
 
-    async def create_rule(self, request: dict) -> APIResponse:
+    async def handle_mcp_request(self, tool_name: str, arguments: dict) -> MCPResponse:
+        """Handle MCP tool requests for rule management"""
+        if tool_name in self.mcp_tools:
+            handler = self.mcp_tools[tool_name]
+            result = await handler(arguments)
+            return MCPResponse(result=result)
+        else:
+            return MCPResponse(error=f"Unknown tool: {tool_name}")
+
+    async def create_rule(self, arguments: dict) -> dict:
         """
-        Create new team rule via dashboard
+        Create new team rule via MCP tool
         """
-        rule_data = request.get('rule', {})
+        rule_data = arguments
 
         # Validate rule structure
         validation = await self.validate_rule_structure(rule_data)
         if not validation.valid:
-            return APIResponse.error(f"Invalid rule: {validation.errors}")
+            return {"error": f"Invalid rule: {validation.errors}"}
 
         # Create rule object
         rule = TeamRule.from_dict(rule_data)
@@ -368,29 +377,33 @@ class EnterpriseRuleDashboard:
         await self.rule_manager.enforcement_engine.add_rule(rule)
 
         # Log creation
-        await self.rule_manager.audit_logger.log_rule_creation(rule, request.get('user'))
+        await self.rule_manager.audit_logger.log_rule_creation(rule, arguments.get('user'))
 
-        return APIResponse.success({"rule_id": rule_id, "status": "created"})
+        return {"rule_id": rule_id, "status": "created"}
 
-    async def get_rule_compliance(self, rule_id: str) -> APIResponse:
+    async def get_rule_compliance(self, arguments: dict) -> dict:
         """
-        Get compliance statistics for specific rule
+        Get compliance statistics for specific rule via MCP
         """
+        rule_id = arguments.get("rule_id")
+        if not rule_id:
+            return {"error": "rule_id parameter required"}
+
         # Get rule
         rule = await self.rule_manager.rule_repository.get_rule(rule_id)
         if not rule:
-            return APIResponse.error("Rule not found")
+            return {"error": "Rule not found"}
 
         # Get compliance data
         compliance_data = await self.calculate_rule_compliance(rule)
 
-        return APIResponse.success({
+        return {
             "rule_id": rule_id,
             "compliance_rate": compliance_data.overall_rate,
             "violations": compliance_data.violations,
             "trends": compliance_data.trends,
             "recommendations": compliance_data.improvements
-        })
+        }
 ```
 
 ### Rule Templates & Best Practices
@@ -559,5 +572,6 @@ class GovernanceReporter:
 ---
 
 **Updated:** November 2025
-**New section added based on Cursor 2.0 best practices from October 2025**
+**New sections added based on Cursor 2.0 best practices from October 2025**
 - Team Rules & Governance (bp-team-rules)
+- MCP-Based Rule Management (replaces REST API approach)
