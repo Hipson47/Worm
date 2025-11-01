@@ -62,6 +62,7 @@ logs/
 rag_db/
 chroma_db/
 vector_db/
+*.sqlite3
 knowledge_state.json
 
 # Config (uncomment if you want to keep out of git)
